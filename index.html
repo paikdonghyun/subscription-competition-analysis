@@ -324,7 +324,7 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
         <div style="overflow-x:auto">
           <table class="dt" id="api-table">
             <thead><tr>
-              <th>청약접수일</th><th>단지명 (클릭시 공고)</th><th>지역</th><th>공급위치</th>
+              <th>청약접수일</th><th>단지명</th><th>지역</th><th>공급위치</th>
               <th class="num">총공급</th><th class="num">총접수</th>
               <th class="num">1순위 경쟁률</th><th></th>
             </tr></thead>
@@ -679,12 +679,31 @@ async function fetchApi(q, page) {
     const startYM = (syEl && smEl) ? syEl.value + '-' + smEl.value : null;
     const endYM   = (eyEl && emEl) ? eyEl.value + '-' + emEl.value : null;
 
+    // 단어 경계 기반 검색: q가 토큰의 시작에 있는지 확인
+    // 예) "수지"로 검색 시 "수원당수지구"는 제외, "수지구"·"수지자이"는 포함
+    const wordMatch = (text, kw) => {
+      if (!text) return false;
+      const t = text.toLowerCase();
+      const k = kw.toLowerCase();
+      // 공백·괄호·쉼표·슬래시·하이픈·점·구분점으로 나눈 각 토큰이 kw로 시작하면 매칭
+      const tokens = t.split(/[\s()\-,./··]/);
+      for (const tok of tokens) {
+        if (tok && tok.startsWith(k)) return true;
+      }
+      // 텍스트 첫 글자거나, 공백/구분자 바로 뒤에 kw가 시작하면 매칭
+      const idx = t.indexOf(k);
+      if (idx === -1) return false;
+      if (idx === 0) return true;
+      const prev = t[idx - 1];
+      return /[\s()\-,./··]/.test(prev);
+    };
+
     const matched = allDetailData.filter(item => {
-      // 검색어 필터
-      const nm   = (item.HOUSE_NM || '').toLowerCase();
-      const addr = (item.HSSPLY_ADRES || '').toLowerCase();
-      const area = (item.SUBSCRPT_AREA_CODE_NM || '').toLowerCase();
-      const textMatch = nm.includes(qLow) || addr.includes(qLow) || area.includes(qLow);
+      // 검색어 필터 (단어 경계 기반)
+      const nm   = item.HOUSE_NM || '';
+      const addr = item.HSSPLY_ADRES || '';
+      const area = item.SUBSCRPT_AREA_CODE_NM || '';
+      const textMatch = wordMatch(nm, qLow) || wordMatch(addr, qLow) || wordMatch(area, qLow);
       if (!textMatch) return false;
 
       // 기간 필터 (RCEPT_BGNDE: 청약접수시작일 기준, 예: "2024-06-15")
@@ -886,21 +905,22 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
     const rNum    = getBestRate(cr);
     const lvl = rNum>=50?'tag-c':rNum>=20?'tag-b':rNum>=5?'tag-a':'tag-d';
     const lvlTxt  = rNum>=50?'초과열':rNum>=20?'과열':rNum>=5?'경쟁':'보통';
-    const nmHtml  = pblUrl
-      ? '<a href="' + pblUrl + '" style="color:var(--ink);text-decoration:underline;text-underline-offset:2px" target="_blank">' + nm + '</a>'
-      : nm;
+    // 단지명 셀: 클릭 시 상세 패널 / 오른쪽 [공고↗] 버튼: 공고 이동
+    const nmCell = '<span style="cursor:pointer;font-weight:500;color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(26,58,92,.3)" class="nm-detail-btn">' + nm + '</span>' +
+      (pblUrl ? '&nbsp;<a href="' + pblUrl + '" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(26,58,92,.08);border:1px solid rgba(26,58,92,.2);border-radius:3px;padding:1px 5px;text-decoration:none;white-space:nowrap;vertical-align:middle">공고↗</a>' : '');
+
     const rowId = 'row-ji-' + manNo;
     tbody.innerHTML += '<tr id="' + rowId + '" style="cursor:pointer" title="클릭하면 상세 경쟁률 보기">' +
       '<td style="white-space:nowrap;font-family:var(--mono);font-size:10px;color:var(--ink3)">' + rcpt + '</td>' +
-      '<td style="font-weight:500;min-width:160px">' + nmHtml + '</td>' +
+      '<td style="min-width:180px">' + nmCell + '</td>' +
       '<td style="font-size:11px;color:var(--ink3)">' + area + '</td>' +
       '<td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + addr + '">' + addr + '</td>' +
       '<td class="num">' + tot + '</td>' +
       '<td class="num">' + (totalReq ? totalReq.toLocaleString() : '—') + '</td>' +
       '<td class="num"><b>' + rate + '</b>&nbsp;<span class="tag ' + lvl + '">' + lvlTxt + '</span></td>' +
-      '<td style="font-size:10px;color:var(--ink3);white-space:nowrap">📊 상세보기</td>' +
+      '<td style="font-size:10px;color:var(--ink3);white-space:nowrap">📊</td>' +
       '</tr>';
-    // 행 클릭 이벤트 (지연 바인딩)
+    // 행 전체 클릭 → 상세 패널
     setTimeout(() => {
       const row = document.getElementById(rowId);
       if(row) row.addEventListener('click', () => showAptDetail(ji));
@@ -985,7 +1005,8 @@ function showAptDetail(ji) {
 
   // 제목
   const titleEl = document.getElementById('apt-detail-title');
-  titleEl.innerHTML = nm + (pblUrl ? ' <a href="' + pblUrl + '" target="_blank" style="font-size:11px;font-family:var(--mono);color:var(--ink3);margin-left:.5rem;text-decoration:underline">공고보기↗</a>' : '');
+  titleEl.innerHTML = nm +
+    (pblUrl ? '&nbsp;<a href="' + pblUrl + '" target="_blank" style="font-size:11px;font-family:var(--mono);color:var(--accent);background:rgba(26,58,92,.1);border:1px solid rgba(26,58,92,.25);border-radius:4px;padding:2px 8px;text-decoration:none;vertical-align:middle;margin-left:6px">청약홈 공고↗</a>' : '');
 
   // 요약 카드
   function getBestRt(data, rank, secd) {
