@@ -113,6 +113,7 @@ main{max-width:1160px;margin:0 auto;padding:1.5rem}
 .dt td{padding:.55rem .7rem;border-bottom:1px solid var(--bg3);color:var(--ink2);font-size:12.5px}
 .dt tr:last-child td{border-bottom:none}
 .dt tr:hover td{background:var(--bg3);transition:background .1s}
+.dt tbody tr[style*='cursor:pointer']:hover td{background:rgba(26,58,92,.08)}
 .dt .num{font-family:var(--mono);text-align:right;font-size:12px}
 .dt .hi{color:var(--red);font-weight:500}
 .dt .lo{color:var(--ink3)}
@@ -144,6 +145,7 @@ main{max-width:1160px;margin:0 auto;padding:1.5rem}
 .pager-info{color:var(--ink3);font-size:11px;font-family:var(--mono)}
 
 /* ── NOTE ── */
+.dt tbody tr.selected td{background:rgba(26,58,92,.1)!important}
 .note{background:var(--bg2);border-left:3px solid var(--bg3);padding:.7rem .9rem;border-radius:0 4px 4px 0;font-size:11px;color:var(--ink3);font-family:var(--mono);line-height:1.6;margin-top:1rem}
 
 /* ── FOOTER ── */
@@ -324,7 +326,7 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
             <thead><tr>
               <th>청약접수일</th><th>단지명 (클릭시 공고)</th><th>지역</th><th>공급위치</th>
               <th class="num">총공급</th><th class="num">총접수</th>
-              <th class="num">1순위 경쟁률</th>
+              <th class="num">1순위 경쟁률</th><th></th>
             </tr></thead>
             <tbody id="api-tbody"></tbody>
           </table>
@@ -337,6 +339,41 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
         <p class="pager-info" id="pager-info" style="text-align:center;margin-top:.5rem"></p>
       </div>
       <p class="note" id="api-note"></p>
+
+      <!-- ── 단지 상세 패널 ── -->
+      <div id="apt-detail-panel" style="display:none;margin-top:1.5rem">
+        <div class="sec">
+          <h3 class="sec-title" id="apt-detail-title">단지 상세 경쟁률</h3>
+          <div id="apt-detail-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.65rem;margin-bottom:1.25rem"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+            <div class="chart-box">
+              <p class="chart-lbl">주택형별 1순위 경쟁률 비교</p>
+              <div class="chart-wrap" style="height:220px"><canvas id="apt-type-chart" role="img" aria-label="주택형별 경쟁률"></canvas></div>
+            </div>
+            <div class="chart-box">
+              <p class="chart-lbl">거주구분별 접수 현황 (1순위)</p>
+              <div class="chart-wrap" style="height:220px"><canvas id="apt-reside-chart" role="img" aria-label="거주구분별 접수"></canvas></div>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="dt" id="apt-detail-table">
+              <thead><tr>
+                <th>주택형</th><th>모델</th><th>공급세대</th>
+                <th>거주구분</th><th class="num">순위</th>
+                <th class="num">접수건수</th><th class="num">경쟁률</th>
+              </tr></thead>
+              <tbody id="apt-detail-tbody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:.75rem">
+            <button onclick="document.getElementById('apt-detail-panel').style.display='none'" 
+              style="font-family:var(--mono);font-size:11px;background:var(--bg2);border:1px solid var(--bg3);
+              color:var(--ink3);padding:.4rem 1rem;border-radius:4px;cursor:pointer">
+              ✕ 닫기
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -765,6 +802,9 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
   document.getElementById('api-max-rate').innerHTML = maxRate + '<span class="sc-unit">:1</span>';
 
   // 차트 - 단지별 경쟁률
+  // joinedItems를 전역 저장 (클릭 이벤트에서 참조)
+  window._lastJoinedItems = joinedItems;
+
   destroyChart('apiTime');
   const chartLabels = joinedItems.map(ji => (ji.detail.HOUSE_NM || '').substring(0, 10));
   const chartRates  = joinedItems.map(ji => getBestRate(ji.cmpet));
@@ -772,27 +812,61 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
     type: 'bar',
     data:{ labels: chartLabels, datasets:[{
       label:'1순위 경쟁률', data: chartRates,
-      backgroundColor: chartRates.map(r => r>=50?'#8b2c2c':r>=20?'#1a3a5c':r>=5?'#2d6a4f':'#B4B2A9'),
-      borderRadius: 3
+      backgroundColor: chartRates.map(r => r>=50?'rgba(139,44,44,0.85)':r>=20?'rgba(26,58,92,0.85)':r>=5?'rgba(45,106,79,0.85)':'rgba(180,178,169,0.85)'),
+      borderRadius: 3,
+      hoverBackgroundColor: chartRates.map(r => r>=50?'#8b2c2c':r>=20?'#1a3a5c':r>=5?'#2d6a4f':'#888780'),
     }]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toFixed(1)+':1'}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:9},maxRotation:40}},
-              y:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}}}
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label: c => c.parsed.y ? c.parsed.y.toFixed(1)+':1' : '미달/데이터없음',
+          title: c => joinedItems[c[0].dataIndex]?.detail?.HOUSE_NM || ''
+        }}
+      },
+      onClick: (evt, elements) => {
+        if(elements.length > 0) {
+          const idx = elements[0].index;
+          const ji = window._lastJoinedItems?.[idx];
+          if(ji) showAptDetail(ji);
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:40}},
+        y:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}}
+      },
+      cursor: 'pointer'
     }
   });
+  document.getElementById('apiTimeChart').style.cursor = 'pointer';
 
   destroyChart('apiRank');
   const sorted = [...joinedItems].sort((a,b) => getBestRate(b.cmpet) - getBestRate(a.cmpet)).slice(0,8);
   charts.apiRank = new Chart(document.getElementById('apiRankChart'), {
     type: 'bar',
     data:{ labels: sorted.map(ji=>(ji.detail.HOUSE_NM||'').substring(0,12)),
-      datasets:[{data:sorted.map(ji=>getBestRate(ji.cmpet)), backgroundColor:'#1a3a5c', borderRadius:3}]},
+      datasets:[{
+        data: sorted.map(ji=>getBestRate(ji.cmpet)),
+        backgroundColor: sorted.map(ji => { const r=getBestRate(ji.cmpet); return r>=50?'rgba(139,44,44,0.85)':r>=20?'rgba(26,58,92,0.85)':'rgba(45,106,79,0.85)'; }),
+        hoverBackgroundColor: sorted.map(ji => { const r=getBestRate(ji.cmpet); return r>=50?'#8b2c2c':r>=20?'#1a3a5c':'#2d6a4f'; }),
+        borderRadius:3
+      }]},
     options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toFixed(1)+':1'}}},
-      scales:{x:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'}},y:{ticks:{font:{size:9}}}}
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c=>c.parsed.x?c.parsed.x.toFixed(1)+':1':'데이터없음',
+          title:c=>sorted[c[0].dataIndex]?.detail?.HOUSE_NM||''
+        }}
+      },
+      onClick:(evt,elements) => {
+        if(elements.length>0) { const ji=sorted[elements[0].index]; if(ji) showAptDetail(ji); }
+      },
+      scales:{x:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:9}}}}
     }
   });
+  document.getElementById('apiRankChart').style.cursor = 'pointer';
 
   // 테이블
   const tbody = document.getElementById('api-tbody');
@@ -815,7 +889,8 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
     const nmHtml  = pblUrl
       ? '<a href="' + pblUrl + '" style="color:var(--ink);text-decoration:underline;text-underline-offset:2px" target="_blank">' + nm + '</a>'
       : nm;
-    tbody.innerHTML += '<tr>' +
+    const rowId = 'row-ji-' + manNo;
+    tbody.innerHTML += '<tr id="' + rowId + '" style="cursor:pointer" title="클릭하면 상세 경쟁률 보기">' +
       '<td style="white-space:nowrap;font-family:var(--mono);font-size:10px;color:var(--ink3)">' + rcpt + '</td>' +
       '<td style="font-weight:500;min-width:160px">' + nmHtml + '</td>' +
       '<td style="font-size:11px;color:var(--ink3)">' + area + '</td>' +
@@ -823,7 +898,13 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
       '<td class="num">' + tot + '</td>' +
       '<td class="num">' + (totalReq ? totalReq.toLocaleString() : '—') + '</td>' +
       '<td class="num"><b>' + rate + '</b>&nbsp;<span class="tag ' + lvl + '">' + lvlTxt + '</span></td>' +
+      '<td style="font-size:10px;color:var(--ink3);white-space:nowrap">📊 상세보기</td>' +
       '</tr>';
+    // 행 클릭 이벤트 (지연 바인딩)
+    setTimeout(() => {
+      const row = document.getElementById(rowId);
+      if(row) row.addEventListener('click', () => showAptDetail(ji));
+    }, 0);
   });
 
   // 페이지네이션 — 번호 버튼 렌더링
@@ -878,6 +959,187 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
   document.getElementById('api-note').textContent =
     '※ 출처: 한국부동산원 청약홈 분양정보+경쟁률 조회 서비스 (ApplyhomeInfoDetailSvc + ApplyhomeInfoCmpetRtSvc) · ' +
     '1순위 해당지역 기준 경쟁률 · 청약홈 공고번호 클릭 시 공식 페이지로 이동 · 조회일: ' + new Date().toLocaleDateString('ko-KR');
+}
+
+function showAptDetail(ji) {
+  const detail = ji.detail;
+  const cmpet  = ji.cmpet;
+  const nm     = detail.HOUSE_NM || '단지명 없음';
+  const addr   = detail.HSSPLY_ADRES || '';
+  const area   = detail.SUBSCRPT_AREA_CODE_NM || '';
+  const rcpt   = detail.RCEPT_BGNDE || '';
+  const tot    = detail.TOT_SUPLY_HSHLDCO || '—';
+  const pblUrl = detail.PBLANC_URL || '';
+  const manNo  = detail.HOUSE_MANAGE_NO || '';
+
+  // 이전 선택 해제 후 현재 행 강조
+  document.querySelectorAll('#api-tbody tr.selected').forEach(r => r.classList.remove('selected'));
+  const manNo2 = detail.HOUSE_MANAGE_NO || '';
+  const selRow = document.getElementById('row-ji-' + manNo2);
+  if(selRow) selRow.classList.add('selected');
+
+  // 패널 표시
+  const panel = document.getElementById('apt-detail-panel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // 제목
+  const titleEl = document.getElementById('apt-detail-title');
+  titleEl.innerHTML = nm + (pblUrl ? ' <a href="' + pblUrl + '" target="_blank" style="font-size:11px;font-family:var(--mono);color:var(--ink3);margin-left:.5rem;text-decoration:underline">공고보기↗</a>' : '');
+
+  // 요약 카드
+  function getBestRt(data, rank, secd) {
+    const filtered = data.filter(it => it.SUBSCRPT_RANK_CODE == rank && (secd ? it.RESIDE_SECD === secd : true));
+    const rates = filtered.map(it => {
+      const r = it.CMPET_RATE || '';
+      if (r === '-' || r.startsWith('(')) return 0;
+      return parseFloat(r) || 0;
+    }).filter(v => v > 0);
+    return rates.length ? Math.max(...rates) : 0;
+  }
+  const totalReq1 = cmpet.filter(it => it.SUBSCRPT_RANK_CODE == 1).reduce((s,it) => s + (parseInt(it.REQ_CNT)||0), 0);
+  const best1Rt   = getBestRt(cmpet, 1, '01');
+  const best2Rt   = getBestRt(cmpet, 2, '01');
+
+  const sumCards = [
+    {lbl:'단지명', val:nm.length>15?nm.substring(0,15)+'…':nm, sub:area, color:'b'},
+    {lbl:'청약접수 시작', val:rcpt||'—', sub:addr.substring(0,20), color:'g'},
+    {lbl:'총 공급세대', val:(tot||'—')+'세대', sub:'주택관리번호: '+manNo, color:'o'},
+    {lbl:'1순위 최고 경쟁률', val:best1Rt?best1Rt.toFixed(1)+':1':'—', sub:'해당지역 기준', color:best1Rt>=50?'r':'b'},
+    {lbl:'2순위 최고 경쟁률', val:best2Rt?best2Rt.toFixed(1)+':1':'—', sub:'해당지역 기준', color:'g'},
+    {lbl:'총 청약 접수', val:totalReq1.toLocaleString()+'건', sub:'1순위 전체', color:'o'},
+  ];
+  const sumWrap = document.getElementById('apt-detail-summary');
+  sumWrap.innerHTML = sumCards.map(c =>
+    '<div class="sc ' + c.color + '" style="min-width:130px">' +
+    '<p class="sc-lbl">' + c.lbl + '</p>' +
+    '<p class="sc-val" style="font-size:1.3rem">' + c.val + '</p>' +
+    '<p class="sc-sub">' + c.sub + '</p></div>'
+  ).join('');
+
+  // 주택형별 데이터 집계
+  const typeMap = {};
+  cmpet.forEach(it => {
+    const ht   = it.HOUSE_TY || '—';
+    const rank = it.SUBSCRPT_RANK_CODE;
+    const secd = it.RESIDE_SECD;
+    const key  = ht;
+    if (!typeMap[key]) typeMap[key] = { ht, items: [] };
+    typeMap[key].items.push(it);
+  });
+
+  const types = Object.keys(typeMap).sort();
+
+  // 주택형별 1순위 해당지역 경쟁률
+  const typeLabels = types.map(t => t.replace(/\.\d+/, '').replace('0000','').trim() || t);
+  const typeRates  = types.map(t => {
+    const its = typeMap[t].items.filter(it => it.SUBSCRPT_RANK_CODE == 1 && it.RESIDE_SECD === '01');
+    const rates = its.map(it => {
+      const r = it.CMPET_RATE || '';
+      if (r === '-' || r.startsWith('(')) return 0;
+      return parseFloat(r) || 0;
+    }).filter(v => v > 0);
+    return rates.length ? Math.max(...rates) : 0;
+  });
+  const typeReqs = types.map(t => {
+    return typeMap[t].items.filter(it => it.SUBSCRPT_RANK_CODE == 1).reduce((s,it) => s+(parseInt(it.REQ_CNT)||0), 0);
+  });
+
+  // 주택형별 경쟁률 차트
+  destroyChart('aptType');
+  const typeColors = typeRates.map(r => r>=50?'#8b2c2c':r>=20?'#1a3a5c':r>=5?'#2d6a4f':'#B4B2A9');
+  charts.aptType = new Chart(document.getElementById('apt-type-chart'), {
+    type: 'bar',
+    data:{ labels: typeLabels, datasets:[
+      {label:'1순위 경쟁률', data:typeRates, backgroundColor:typeColors, borderRadius:3, yAxisID:'y'},
+      {label:'접수건수', data:typeReqs, type:'line', borderColor:'#BA7517', backgroundColor:'transparent',
+       pointRadius:4, pointBackgroundColor:'#BA7517', tension:.3, yAxisID:'y1'}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true, labels:{font:{size:10}, boxWidth:10}},
+        tooltip:{callbacks:{label:c => c.datasetIndex===0 ? c.parsed.y.toFixed(1)+':1' : c.parsed.y.toLocaleString()+'건'}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{size:9}}},
+        y:{beginAtZero:true, position:'left',  ticks:{font:{size:9}, callback:v=>v+':1'}, grid:{color:'rgba(0,0,0,.05)'}},
+        y1:{beginAtZero:true, position:'right', ticks:{font:{size:9}, callback:v=>v>999?Math.round(v/1000)+'k':v}, grid:{display:false}}
+      }
+    }
+  });
+
+  // 거주구분별 접수 파이 차트
+  const resideMap = {'01':'해당지역','02':'기타지역','03':'기타경기'};
+  const resideReqs = ['01','02','03'].map(secd =>
+    cmpet.filter(it => it.SUBSCRPT_RANK_CODE==1 && it.RESIDE_SECD===secd)
+         .reduce((s,it) => s+(parseInt(it.REQ_CNT)||0), 0)
+  ).filter((v,i,arr) => v > 0 ? true : (arr.some(x=>x>0)));
+  const resideLabels = ['01','02','03'].filter((s,i) => resideReqs[i] > 0).map(s => resideMap[s]);
+  const resideVals   = resideReqs.filter(v => v > 0);
+
+  destroyChart('aptReside');
+  charts.aptReside = new Chart(document.getElementById('apt-reside-chart'), {
+    type: 'doughnut',
+    data:{ labels: resideLabels, datasets:[{
+      data: resideVals,
+      backgroundColor:['#1a3a5c','#2d6a4f','#BA7517'],
+      borderWidth: 2, borderColor: 'transparent'
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true, position:'bottom', labels:{font:{size:10}, boxWidth:10}},
+        tooltip:{callbacks:{label:c => c.label+': '+c.parsed.toLocaleString()+'건 ('+
+          (c.parsed/resideVals.reduce((a,b)=>a+b,1)*100).toFixed(1)+'%)'}}
+      }
+    }
+  });
+
+  // 상세 테이블
+  const tbody = document.getElementById('apt-detail-tbody');
+  tbody.innerHTML = '';
+
+  // 주택형 × 순위 × 거주구분 정렬
+  const sorted = [...cmpet].sort((a,b) => {
+    const htCmp = (a.HOUSE_TY||'').localeCompare(b.HOUSE_TY||'');
+    if(htCmp !== 0) return htCmp;
+    const rnkCmp = (a.SUBSCRPT_RANK_CODE||0) - (b.SUBSCRPT_RANK_CODE||0);
+    if(rnkCmp !== 0) return rnkCmp;
+    return (a.RESIDE_SECD||'').localeCompare(b.RESIDE_SECD||'');
+  });
+
+  const resideNm = {'01':'해당지역','02':'기타지역','03':'기타경기'};
+  let lastHt = null;
+  sorted.forEach(it => {
+    const ht   = it.HOUSE_TY || '—';
+    const mn   = it.MODEL_NO || '—';
+    const sd   = it.SUPLY_HSHLDCO || '—';
+    const rsnm = resideNm[it.RESIDE_SECD] || it.RESIDE_SENM || '—';
+    const rank = it.SUBSCRPT_RANK_CODE || '—';
+    const req  = parseInt(it.REQ_CNT) || 0;
+    const cr   = it.CMPET_RATE || '—';
+
+    const isNew = ht !== lastHt;
+    lastHt = ht;
+
+    // 경쟁률 색상
+    const crNum = parseFloat(cr) || 0;
+    const crClass = crNum>=50?'hi':crNum>=20?'':crNum>0?'':'lo';
+    const crStyle = crNum>=50?'color:var(--red);font-weight:500':crNum>=20?'color:var(--accent);font-weight:500':'';
+
+    tbody.innerHTML += '<tr style="' + (isNew?'border-top:1.5px solid var(--bg3)':'') + '">' +
+      '<td style="font-family:var(--mono);font-size:12px' + (isNew?';font-weight:500;color:var(--ink)':'') + '">' + ht + '</td>' +
+      '<td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">' + mn + '</td>' +
+      '<td class="num">' + sd + '</td>' +
+      '<td style="font-size:12px">' +
+        '<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-family:var(--mono);' +
+        (it.RESIDE_SECD==='01'?'background:#e8eef5;color:#1a3a5c':
+         it.RESIDE_SECD==='02'?'background:#e8f0e8;color:#2d6a4f':
+         'background:#faeeda;color:#633806') + '">' + rsnm + '</span></td>' +
+      '<td class="num" style="font-family:var(--mono)">' + rank + '순위</td>' +
+      '<td class="num">' + (req?req.toLocaleString():'—') + '</td>' +
+      '<td class="num" style="' + crStyle + '">' + cr + '</td>' +
+      '</tr>';
+  });
 }
 
 function changePage(dir) {
