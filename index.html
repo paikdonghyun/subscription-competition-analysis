@@ -134,11 +134,14 @@ main{max-width:1160px;margin:0 auto;padding:1.5rem}
 .apt-badge{position:absolute;top:.75rem;right:.75rem;font-size:9.5px;font-family:var(--mono);padding:2px 7px;border-radius:3px}
 
 /* ── PAGINATION ── */
-.pager{display:flex;align-items:center;gap:.5rem;justify-content:center;margin-top:1.25rem;font-family:var(--mono);font-size:12px}
+.pager{display:flex;align-items:center;gap:.5rem;justify-content:center;margin-top:1.25rem;font-family:var(--mono);font-size:12px;flex-wrap:wrap}
 .pager-btn{background:var(--bg2);border:1px solid var(--bg3);color:var(--ink2);padding:.4rem .85rem;border-radius:4px;cursor:pointer;transition:all .12s}
 .pager-btn:hover:not(:disabled){background:var(--bg3)}
 .pager-btn:disabled{opacity:.4;cursor:not-allowed}
-.pager-info{color:var(--ink3)}
+.pager-num{background:var(--bg2);border:1px solid var(--bg3);color:var(--ink2);padding:.35rem .65rem;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:11px;transition:all .12s;min-width:32px;text-align:center}
+.pager-num:hover{background:var(--bg3)}
+.pager-num.active{background:var(--accent);color:#f0ece4;border-color:var(--accent)}
+.pager-info{color:var(--ink3);font-size:11px;font-family:var(--mono)}
 
 /* ── NOTE ── */
 .note{background:var(--bg2);border-left:3px solid var(--bg3);padding:.7rem .9rem;border-radius:0 4px 4px 0;font-size:11px;color:var(--ink3);font-family:var(--mono);line-height:1.6;margin-top:1rem}
@@ -326,11 +329,12 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
             <tbody id="api-tbody"></tbody>
           </table>
         </div>
-        <div class="pager">
+        <div class="pager" id="pager-wrap">
           <button class="pager-btn" id="prev-btn" onclick="changePage(-1)" disabled>← 이전</button>
-          <span class="pager-info" id="pager-info"></span>
+          <div id="pager-numbers" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center"></div>
           <button class="pager-btn" id="next-btn" onclick="changePage(1)">다음 →</button>
         </div>
+        <p class="pager-info" id="pager-info" style="text-align:center;margin-top:.5rem"></p>
       </div>
       <p class="note" id="api-note"></p>
     </div>
@@ -408,6 +412,18 @@ function doSearch() {
 }
 
 document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+// 기간 필터 변경 시 재검색 (단지별 탭에서만)
+['startYear','startMonth','endYear','endMonth'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', () => {
+    if(currentTab === 'api' && apiCurrentQuery) {
+      apiCurrentPage = 1;
+      fetchApi(apiCurrentQuery, 1);
+    }
+  });
+});
+
 setupChips();
 
 // ────────────────────────────────────────────────
@@ -615,13 +631,33 @@ async function fetchApi(q, page) {
       restResults.forEach(data => allDetailData = allDetailData.concat(data));
     }
 
-    // ── STEP 2: 검색어로 필터링 ──
+    // ── STEP 2: 검색어 + 기간으로 필터링 ──
     const qLow = q.trim().toLowerCase();
+
+    // 기간 필터 값 읽기
+    const syEl = document.getElementById('startYear');
+    const smEl = document.getElementById('startMonth');
+    const eyEl = document.getElementById('endYear');
+    const emEl = document.getElementById('endMonth');
+    const startYM = (syEl && smEl) ? syEl.value + '-' + smEl.value : null;
+    const endYM   = (eyEl && emEl) ? eyEl.value + '-' + emEl.value : null;
+
     const matched = allDetailData.filter(item => {
+      // 검색어 필터
       const nm   = (item.HOUSE_NM || '').toLowerCase();
       const addr = (item.HSSPLY_ADRES || '').toLowerCase();
       const area = (item.SUBSCRPT_AREA_CODE_NM || '').toLowerCase();
-      return nm.includes(qLow) || addr.includes(qLow) || area.includes(qLow);
+      const textMatch = nm.includes(qLow) || addr.includes(qLow) || area.includes(qLow);
+      if (!textMatch) return false;
+
+      // 기간 필터 (RCEPT_BGNDE: 청약접수시작일 기준, 예: "2024-06-15")
+      if (startYM || endYM) {
+        const rcpt = (item.RCEPT_BGNDE || '').substring(0, 7); // "YYYY-MM"
+        if (!rcpt) return true; // 날짜 없으면 통과
+        if (startYM && rcpt < startYM) return false;
+        if (endYM   && rcpt > endYM)   return false;
+      }
+      return true;
     });
 
     if (matched.length === 0) {
@@ -633,7 +669,7 @@ async function fetchApi(q, page) {
       matched.length + '개 단지 경쟁률 조회 중 (2/2)...';
 
     // 페이지네이션 처리
-    const perPageDetail = 10;
+    const perPageDetail = 20;
     const totalMatchCount = matched.length;
     const startIdx = (page - 1) * perPageDetail;
     const pageItems = matched.slice(startIdx, startIdx + perPageDetail);
@@ -790,11 +826,54 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
       '</tr>';
   });
 
-  // 페이지네이션
-  const totalPages = Math.ceil(totalMatchCount / 10);
-  document.getElementById('pager-info').textContent = page + ' / ' + totalPages + '페이지 (' + totalMatchCount + '단지)';
+  // 페이지네이션 — 번호 버튼 렌더링
+  const perPage = 20;
+  const totalPages = Math.ceil(totalMatchCount / perPage);
+  document.getElementById('pager-info').textContent =
+    '총 ' + totalMatchCount + '개 단지 · ' + page + ' / ' + totalPages + '페이지';
   document.getElementById('prev-btn').disabled = page <= 1;
   document.getElementById('next-btn').disabled = page >= totalPages;
+
+  // 페이지 번호 버튼 생성 (최대 10개 표시)
+  const numWrap = document.getElementById('pager-numbers');
+  numWrap.innerHTML = '';
+  const delta = 4;
+  let pStart = Math.max(1, page - delta);
+  let pEnd   = Math.min(totalPages, page + delta);
+  if (pEnd - pStart < delta * 2) {
+    pStart = Math.max(1, pEnd - delta * 2);
+    pEnd   = Math.min(totalPages, pStart + delta * 2);
+  }
+  if (pStart > 1) {
+    const b = document.createElement('button');
+    b.className = 'pager-num'; b.textContent = '1';
+    b.onclick = () => { fetchApi(apiCurrentQuery, 1); window.scrollTo({top:0,behavior:'smooth'}); };
+    numWrap.appendChild(b);
+    if (pStart > 2) {
+      const s = document.createElement('span');
+      s.style.cssText = 'font-family:var(--mono);font-size:11px;color:var(--ink3);padding:0 2px';
+      s.textContent = '…'; numWrap.appendChild(s);
+    }
+  }
+  for (let p = pStart; p <= pEnd; p++) {
+    const b = document.createElement('button');
+    b.className = 'pager-num' + (p === page ? ' active' : '');
+    b.textContent = p;
+    const pg = p;
+    b.onclick = () => { fetchApi(apiCurrentQuery, pg); window.scrollTo({top:0,behavior:'smooth'}); };
+    numWrap.appendChild(b);
+  }
+  if (pEnd < totalPages) {
+    if (pEnd < totalPages - 1) {
+      const s = document.createElement('span');
+      s.style.cssText = 'font-family:var(--mono);font-size:11px;color:var(--ink3);padding:0 2px';
+      s.textContent = '…'; numWrap.appendChild(s);
+    }
+    const b = document.createElement('button');
+    b.className = 'pager-num'; b.textContent = totalPages;
+    b.onclick = () => { fetchApi(apiCurrentQuery, totalPages); window.scrollTo({top:0,behavior:'smooth'}); };
+    numWrap.appendChild(b);
+  }
 
   document.getElementById('api-note').textContent =
     '※ 출처: 한국부동산원 청약홈 분양정보+경쟁률 조회 서비스 (ApplyhomeInfoDetailSvc + ApplyhomeInfoCmpetRtSvc) · ' +
@@ -803,10 +882,10 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
 
 function changePage(dir) {
   const newPage = apiCurrentPage + dir;
-  const totalPages = Math.ceil(apiTotalCount / 10);
+  const totalPages = Math.ceil(apiTotalCount / 20);
   if(newPage < 1 || newPage > totalPages) return;
   fetchApi(apiCurrentQuery, newPage);
-  window.scrollTo({top: document.getElementById('panel-api').offsetTop - 20, behavior:'smooth'});
+  window.scrollTo({top: 0, behavior:'smooth'});
 }
 </script>
 </body>
