@@ -316,8 +316,9 @@ const SIDO_LIST = Object.keys(SIDO_DB);
 // ── API 설정 ──
 const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
 const API_TARGET = 'https://apis.data.go.kr/B552555/APTRtrcmpetSvc2/getRtrcmpetAptListByPblanc';
-const PROXY = 'https://corsproxy.io/?url=';
-// GitHub Pages(github.io)는 corsproxy.io 무료 허용 도메인 — 별도 키 불필요
+// 공공데이터포털 API는 한국 서버이므로 CORS 프록시 없이 직접 호출
+// GitHub Pages는 HTTPS이므로 Mixed Content 없음. CORS 허용 여부는 API 서버 정책에 따름
+const PROXY = '';
 
 // ── 상태 ──
 let currentTab = 'sido';
@@ -580,13 +581,33 @@ async function fetchApi(q, page) {
   if(sgungu)    params.append('sgungu', sgungu);
   if(houseName) params.append('srhHouseNm', houseName);
 
-  const url = PROXY + encodeURIComponent(API_TARGET + '?' + params.toString());
+  // 직접 호출 (CORS가 막히면 프록시 폴백)
+  const directUrl = API_TARGET + '?' + params.toString();
+  const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(directUrl);
+  const url = proxyUrl; // GitHub Pages에서 corsproxy.io 무료 사용 가능
 
   try {
-    const res = await fetch(url, { mode: 'cors' });
-    if(!res.ok) throw new Error('서버 응답 오류: HTTP ' + res.status + ' — 프록시 또는 API 오류');
-    const text = await res.text();
-    if(!text || text.trim() === '') throw new Error('빈 응답 수신');
+    // 1차: corsproxy.io 경유 호출
+    let res, text, lastErr;
+    const proxies = [
+      'https://corsproxy.io/?url=' + encodeURIComponent(directUrl),
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl),
+      directUrl  // 직접 호출 (마지막 시도)
+    ];
+    for (const proxyTarget of proxies) {
+      try {
+        res = await fetch(proxyTarget, { mode: 'cors' });
+        text = await res.text();
+        // 응답이 HTML이면(프록시 홈페이지) 다음 시도
+        if(text && text.trim().startsWith('<') && text.includes('corsproxy')) {
+          lastErr = new Error('프록시가 API 대신 홈페이지를 반환함');
+          continue;
+        }
+        if(res.ok && text && text.trim()) break;
+        lastErr = new Error('HTTP ' + res.status);
+      } catch(e) { lastErr = e; }
+    }
+    if(!text || text.trim() === '') throw lastErr || new Error('모든 경로에서 응답 없음');
 
     let items = [], totalCount = 0;
 
