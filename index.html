@@ -637,10 +637,25 @@ async function fetchApi(q, page) {
 
     // 공공데이터포털 API는 한국 서버 → 직접 호출 먼저 시도
     // GitHub Pages는 HTTPS이므로 직접 fetch 가능 (API 서버가 CORS 허용 시)
+    // 공공데이터포털 API는 serviceKey 파라미터를 URL 인코딩 없이 받아야 함
+    // encodeURIComponent로 전체 URL 인코딩 시 = 가 %3D 로 변환되어 인증키 인식 실패
+    // 해결: serviceKey를 프록시 URL 구성 시 별도 처리
+
+    // 파라미터에서 serviceKey 분리
+    const paramsStr = params.toString();
+    // API URL without serviceKey (corsproxy 경유 시 serviceKey 별도 추가)
+    const paramsNoKey = paramsStr.replace(/serviceKey=[^&]+&?/, '');
+    const baseApiUrl = API_TARGET + '?' + paramsNoKey;
+
+    // corsproxy.io: 키를 corsproxy URL 뒤에 평문으로 추가 후 target URL 인코딩
+    const corsProxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(baseApiUrl) + '&serviceKey=' + API_KEY;
+    // allorigins: 전체 URL을 그대로 전달 (& 기준으로 첫번째 파라미터 문제)
+    const allOriginsUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl);
+
     const tryUrls = [
-      directUrl,  // 직접 호출 (API 서버가 CORS 허용하면 성공)
-      'https://corsproxy.io/?url=' + encodeURIComponent(directUrl),
-      'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl),
+      directUrl,        // 직접 호출 (1순위)
+      corsProxyUrl,     // corsproxy.io 경유 (2순위)
+      allOriginsUrl,    // allorigins 경유 (3순위)
     ];
 
     for (const tryUrl of tryUrls) {
