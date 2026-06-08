@@ -162,9 +162,9 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
 
 <header>
   <div class="hd-top">
-    <span class="hd-eye">한국부동산원 공공데이터 Open API · 2020.02 — 현재</span>
+    <span class="hd-eye">한국부동산원</span>
     <h1 class="hd-title">청약 경쟁률 분석 시스템</h1>
-    <p class="hd-sub">시도 통계 + 단지별 실시간 API 연동 · 시도 / 시군구 / 단지명 검색</p>
+    <p class="hd-sub">시군구 / 단지명 검색</p>
   </div>
   <div class="tab-bar">
     <div class="tab-inner">
@@ -379,8 +379,7 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
 </main>
 
 <footer>
-  한국부동산원 청약홈 Open API (data.go.kr · ID: 15098905) · 시도 통계: 지역별_청약_경쟁률_정보 (2020.02~2026.04)<br>
-  단지별 API 데이터는 실시간 청약홈 제공 · 은행 전산 상황에 따라 수치 변동 가능
+  한국부동산원
 </footer>
 
 <script>
@@ -977,8 +976,7 @@ function renderApiResult(q, joinedItems, totalMatchCount, page) {
   }
 
   document.getElementById('api-note').textContent =
-    '※ 출처: 한국부동산원 청약홈 분양정보+경쟁률 조회 서비스 (ApplyhomeInfoDetailSvc + ApplyhomeInfoCmpetRtSvc) · ' +
-    '1순위 해당지역 기준 경쟁률 · 청약홈 공고번호 클릭 시 공식 페이지로 이동 · 조회일: ' + new Date().toLocaleDateString('ko-KR');
+    '※ 출처: 한국부동산원 청약홈 분양정보 / 조회일: ' + new Date().toLocaleDateString('ko-KR');
 }
 
 function showAptDetail(ji) {
