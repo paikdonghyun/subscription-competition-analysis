@@ -25,11 +25,12 @@ header{background:var(--ink)}
 .hd-sub{font-size:11px;color:#555;font-family:var(--mono)}
 
 /* ── TAB BAR ── */
-.tab-bar{background:#111;border-top:1px solid #1e1e1e}
-.tab-inner{max-width:1160px;margin:0 auto;display:flex}
-.tab-btn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#666;padding:.85rem 1.25rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
-.tab-btn.active{color:#f0ece4;border-bottom-color:#f0ece4}
-.tab-btn:hover:not(.active){color:#999}
+.tab-bar{background:#0d0d0d;border-top:1px solid #222;padding:0 1.5rem}
+.tab-inner{max-width:1160px;margin:0 auto;display:flex;gap:.5rem;padding:.75rem 0}
+.tab-btn{font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:0;color:#888;padding:.55rem 1.25rem;cursor:pointer;border:1px solid transparent;border-radius:6px;transition:all .15s;white-space:nowrap;background:transparent}
+.tab-btn.active{color:#f0ece4;background:rgba(240,236,228,.1);border-color:rgba(240,236,228,.2)}
+.tab-btn:hover:not(.active){color:#bbb;background:rgba(255,255,255,.05)}
+.tab-icon{margin-right:.35rem;opacity:.7}
 
 /* ── SEARCH PANEL ── */
 .search-panel{background:#0a0a0a;padding:1.25rem 1.5rem 1.5rem;border-top:1px solid #1a1a1a}
@@ -162,13 +163,47 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
   </div>
   <div class="tab-bar">
     <div class="tab-inner">
-      <button class="tab-btn active" onclick="switchTab('sido')" id="tab-sido">시도 통계</button>
-      <button class="tab-btn" onclick="switchTab('api')" id="tab-api">단지별 API 조회</button>
+      <button class="tab-btn active" onclick="switchTab('sido')" id="tab-sido">
+        <span class="tab-icon">📊</span>시도 통계
+      </button>
+      <button class="tab-btn" onclick="switchTab('api')" id="tab-api">
+        <span class="tab-icon">🔍</span>단지별 실시간 조회
+      </button>
     </div>
   </div>
   <div class="search-panel">
     <div class="search-inner">
-      <p class="search-lbl" id="search-lbl-text">시도명 입력</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem">
+        <p class="search-lbl" id="search-lbl-text" style="margin:0">시도명 입력</p>
+        <div id="period-filter" style="display:none;align-items:center;gap:.5rem;font-family:var(--mono);font-size:11px;color:#555">
+          <span style="letter-spacing:.06em">기간</span>
+          <select id="startYear" style="background:#111;border:1px solid #2a2a2a;color:#bbb;padding:4px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;cursor:pointer">
+            <option value="2020">2020</option><option value="2021">2021</option>
+            <option value="2022">2022</option><option value="2023">2023</option>
+            <option value="2024" selected>2024</option><option value="2025">2025</option>
+            <option value="2026">2026</option>
+          </select>
+          <select id="startMonth" style="background:#111;border:1px solid #2a2a2a;color:#bbb;padding:4px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;cursor:pointer">
+            <option value="01">01월</option><option value="02">02월</option><option value="03">03월</option>
+            <option value="04">04월</option><option value="05">05월</option><option value="06">06월</option>
+            <option value="07">07월</option><option value="08">08월</option><option value="09">09월</option>
+            <option value="10">10월</option><option value="11">11월</option><option value="12" selected>12월</option>
+          </select>
+          <span style="color:#444">~</span>
+          <select id="endYear" style="background:#111;border:1px solid #2a2a2a;color:#bbb;padding:4px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;cursor:pointer">
+            <option value="2020">2020</option><option value="2021">2021</option>
+            <option value="2022">2022</option><option value="2023">2023</option>
+            <option value="2024">2024</option><option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+          </select>
+          <select id="endMonth" style="background:#111;border:1px solid #2a2a2a;color:#bbb;padding:4px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;cursor:pointer">
+            <option value="01">01월</option><option value="02">02월</option><option value="03">03월</option>
+            <option value="04">04월</option><option value="05">05월</option><option value="06" selected>06월</option>
+            <option value="07">07월</option><option value="08">08월</option><option value="09">09월</option>
+            <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+          </select>
+        </div>
+      </div>
       <div class="search-row">
         <input class="search-input" id="searchInput" type="text" placeholder="예: 경기, 서울, 충남..." autocomplete="off">
         <button class="search-btn" id="searchBtn" onclick="doSearch()">조회 →</button>
@@ -352,12 +387,15 @@ function switchTab(tab) {
     document.getElementById('tab-' + t).classList.toggle('active', t === tab);
   });
   const input = document.getElementById('searchInput');
+  const pf = document.getElementById('period-filter');
   if(tab === 'sido') {
     document.getElementById('search-lbl-text').textContent = '시도명 입력';
     input.placeholder = '예: 경기, 서울, 충남...';
+    pf.style.display = 'none';
   } else {
     document.getElementById('search-lbl-text').textContent = '지역 / 단지명 입력';
-    input.placeholder = '예: 용인, 수원 수지, 판교, 성남시';
+    input.placeholder = '예: 용인, 수원, 성남, 판교, 동탄...';
+    pf.style.display = 'flex';
   }
   setupChips();
 }
@@ -571,43 +609,61 @@ async function fetchApi(q, page) {
   }
 
   // ── API 호출 ──
+  // 기간 파라미터 읽기
+  const syEl = document.getElementById('startYear');
+  const smEl = document.getElementById('startMonth');
+  const eyEl = document.getElementById('endYear');
+  const emEl = document.getElementById('endMonth');
+  const startDay = (syEl && smEl) ? syEl.value + smEl.value : '202401';
+  const endDay   = (eyEl && emEl) ? eyEl.value + emEl.value : '202612';
+
   const params = new URLSearchParams({
     serviceKey: API_KEY,
     pageNo: String(page),
     numOfRows: String(apiPageSize),
     houseSecd: '01',
+    startDay: startDay,
+    endDay:   endDay,
   });
   if(sido)      params.append('sido', sido);
   if(sgungu)    params.append('sgungu', sgungu);
   if(houseName) params.append('srhHouseNm', houseName);
 
-  // 직접 호출 (CORS가 막히면 프록시 폴백)
   const directUrl = API_TARGET + '?' + params.toString();
-  const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(directUrl);
-  const url = proxyUrl; // GitHub Pages에서 corsproxy.io 무료 사용 가능
+  // 위 directUrl 직접 사용 → tryUrls 배열에서 처리
 
   try {
-    // 1차: corsproxy.io 경유 호출
     let res, text, lastErr;
-    const proxies = [
+
+    // 공공데이터포털 API는 한국 서버 → 직접 호출 먼저 시도
+    // GitHub Pages는 HTTPS이므로 직접 fetch 가능 (API 서버가 CORS 허용 시)
+    const tryUrls = [
+      directUrl,  // 직접 호출 (API 서버가 CORS 허용하면 성공)
       'https://corsproxy.io/?url=' + encodeURIComponent(directUrl),
       'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl),
-      directUrl  // 직접 호출 (마지막 시도)
     ];
-    for (const proxyTarget of proxies) {
+
+    for (const tryUrl of tryUrls) {
       try {
-        res = await fetch(proxyTarget, { mode: 'cors' });
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 12000);
+        res = await fetch(tryUrl, { mode: 'cors', signal: controller.signal });
+        clearTimeout(timer);
         text = await res.text();
-        // 응답이 HTML이면(프록시 홈페이지) 다음 시도
-        if(text && text.trim().startsWith('<') && text.includes('corsproxy')) {
-          lastErr = new Error('프록시가 API 대신 홈페이지를 반환함');
-          continue;
-        }
-        if(res.ok && text && text.trim()) break;
-        lastErr = new Error('HTTP ' + res.status);
-      } catch(e) { lastErr = e; }
+        // 유효하지 않은 응답 필터링
+        const trimmed = text ? text.trim() : '';
+        if(!trimmed) { lastErr = new Error('빈 응답'); continue; }
+        if(trimmed.startsWith('<!')) { lastErr = new Error('HTML 페이지 반환됨 (프록시 홈페이지)'); continue; }
+        if(trimmed === 'Unexpected errors') { lastErr = new Error('API 서버 오류 (500) — 파라미터 또는 인증키를 확인하세요'); continue; }
+        if(trimmed.startsWith('error code:')) { lastErr = new Error('프록시 오류: ' + trimmed); continue; }
+        break; // 유효한 응답 수신
+      } catch(e) {
+        lastErr = e.name === 'AbortError' ? new Error('응답 시간 초과 (12초)') : e;
+      }
     }
-    if(!text || text.trim() === '') throw lastErr || new Error('모든 경로에서 응답 없음');
+    if(!text || !text.trim() || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') {
+      throw lastErr || new Error('API 연결 실패');
+    }
 
     let items = [], totalCount = 0;
 
@@ -658,13 +714,18 @@ async function fetchApi(q, page) {
   } catch(err) {
     document.getElementById('api-loading').style.display = 'none';
     document.getElementById('api-error').style.display = 'block';
-    document.getElementById('api-error').innerHTML =
-      '<b>⚠ ' + err.message.replace(/\n/g,'<br>') + '</b>' +
-      (err.message.includes('없습니다') ? '' :
-      '<br><br>확인 사항:<br>' +
-      '① 인증키 활성화 여부 (발급 후 1~2일 소요)<br>' +
-      '② 검색어: 시도명(경기·서울 등) 또는 시군구명(용인·수원 등) 입력<br>' +
-      '③ 네트워크 연결 상태');
+    const isApiErr = err.message.includes('500') || err.message.includes('Unexpected') || err.message.includes('파라미터');
+    const isNoResult = err.message.includes('없습니다');
+    let hint = '';
+    if(isApiErr) {
+      hint = '<br><br>📌 API 서버 500 오류 해결 방법:<br>' +
+        '· 공공데이터포털(data.go.kr) 로그인 → 마이페이지 → 인증키 활성 상태 확인<br>' +
+        '· 해당 API 서비스(ID: 15098905) 활용신청 완료 여부 확인<br>' +
+        '· 인증키 발급 후 최대 1~2일 소요';
+    } else if(!isNoResult) {
+      hint = '<br><br>확인 사항: 네트워크 연결 상태, 검색어(경기·용인·수원 등 시도/시군구명)';
+    }
+    document.getElementById('api-error').innerHTML = '<b>⚠ ' + err.message.replace(/\n/g,'<br>') + '</b>' + hint;
   }
 }
 
