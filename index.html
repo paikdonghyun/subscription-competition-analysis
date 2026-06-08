@@ -280,7 +280,7 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
     <div class="placeholder" id="api-placeholder">
       <div class="placeholder-icon">⬡</div>
       <p class="placeholder-title">단지명, 시도, 시군구를 입력해 실시간 조회하세요</p>
-      <p class="placeholder-desc">한국부동산원 청약홈 Open API 연동<br>단지별 공급세대·접수건수·일반/특별 경쟁률을 실시간으로 불러옵니다<br><br>검색 예시: 용인, 수원 수지, 판교, 성남</p>
+      <p class="placeholder-desc">분양정보 + 경쟁률 통합 실시간 검색<br>단지명 · 주소 · 지역명으로 전체 분양 단지(약 2,800건) 검색 후<br>1순위 경쟁률과 총 청약 접수건수를 바로 확인합니다<br><br>검색 예시: 용인 · 수원 · 성남 · 판교 · 동탄 · 힐스테이트 · 래미안</p>
     </div>
     <div id="api-loading" class="loading" style="display:none">
       <div class="spinner"></div>
@@ -319,9 +319,9 @@ footer{background:var(--ink);color:#3a3a3a;text-align:center;padding:1.5rem;font
         <div style="overflow-x:auto">
           <table class="dt" id="api-table">
             <thead><tr>
-              <th>주택관리번호</th><th>공고번호</th><th>거주구분</th><th>주택형</th>
-              <th class="num">공급세대</th><th class="num">접수건수</th>
-              <th class="num">경쟁률</th><th class="num">순위</th><th class="num">모델번호</th>
+              <th>청약접수일</th><th>단지명 (클릭시 공고)</th><th>지역</th><th>공급위치</th>
+              <th class="num">총공급</th><th class="num">총접수</th>
+              <th class="num">1순위 경쟁률</th>
             </tr></thead>
             <tbody id="api-tbody"></tbody>
           </table>
@@ -350,9 +350,10 @@ const SIDO_LIST = Object.keys(SIDO_DB);
 
 // ── API 설정 ──
 const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
-// 올바른 API: odcloud.kr 기반 청약홈 청약접수 경쟁률 조회 서비스
-// 기술문서: ApplyhomeInfoCmpetRtSvc v1
-const API_BASE = 'https://api.odcloud.kr/api/ApplyhomeInfoCmpetRtSvc/v1';
+// API 1: 분양정보 조회 (단지명+주소+지역 포함)
+const API_DETAIL = 'https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail';
+// API 2: 경쟁률 조회 (HOUSE_MANAGE_NO로 JOIN)
+const API_CMPET  = 'https://api.odcloud.kr/api/ApplyhomeInfoCmpetRtSvc/v1/getAPTLttotPblancCmpet';
 
 // ── 상태 ──
 let currentTab = 'sido';
@@ -532,10 +533,11 @@ function renderSido(sido) {
 // ── API 탭 ──
 // ────────────────────────────────────────────────
 function searchApi(q) {
-  apiCurrentQuery = q;
+  if(!q.trim()) { alert('검색어를 입력하세요.\n예: 용인, 수원, 성남, 경기, 힐스테이트'); return; }
+  apiCurrentQuery = q.trim();
   apiCurrentPage = 1;
   apiAllItems = [];
-  fetchApi(q, 1);
+  fetchApi(q.trim(), 1);
 }
 
 async function fetchApi(q, page) {
@@ -543,171 +545,213 @@ async function fetchApi(q, page) {
   document.getElementById('api-result').style.display = 'none';
   document.getElementById('api-error').style.display = 'none';
   document.getElementById('api-loading').style.display = 'block';
-  document.getElementById('api-loading-msg').textContent = '"' + q + '" 조회 중 (페이지 ' + page + ')...';
-
-  // 기간 파라미터
-  const syEl = document.getElementById('startYear');
-  const smEl = document.getElementById('startMonth');
-  const eyEl = document.getElementById('endYear');
-  const emEl = document.getElementById('endMonth');
-
-  // ── API 파라미터 구성 (기술문서 기준) ──
-  // api.odcloud.kr/api/ApplyhomeInfoCmpetRtSvc/v1/getAPTLttotPblancCmpet
-  // 파라미터: page, perPage, serviceKey
-  // 검색은 전체 조회 후 프론트엔드에서 필터링 (지역명 직접 필터 파라미터 없음)
-  const perPage = apiPageSize;
-
-  // ── URL 구성 ──
-  // api.odcloud.kr은 serviceKey를 쿼리스트링 끝에 평문으로 추가
-  const directUrl = API_BASE + '/getAPTLttotPblancCmpet'
-    + '?page=' + page
-    + '&perPage=' + perPage
-    + '&serviceKey=' + API_KEY;
-
-  let res, text, lastErr;
-
-  // 1순위: 직접 호출 / 2순위: corsproxy / 3순위: allorigins
-  const tryUrls = [
-    directUrl,
-    'https://corsproxy.io/?url=' + encodeURIComponent(API_BASE + '/getAPTLttotPblancCmpet?page=' + page + '&perPage=' + perPage) + '&serviceKey=' + API_KEY,
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(directUrl),
-  ];
-
-  for (const tryUrl of tryUrls) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      res = await fetch(tryUrl, { mode: 'cors', signal: controller.signal });
-      clearTimeout(timer);
-      text = await res.text();
-      const tr = text ? text.trim() : '';
-      if (!tr) { lastErr = new Error('빈 응답'); continue; }
-      if (tr.startsWith('<!')) { lastErr = new Error('HTML 반환 (프록시 홈페이지)'); continue; }
-      if (tr === 'Unexpected errors') { lastErr = new Error('API 서버 오류 (500)'); continue; }
-      if (tr.startsWith('error code:')) { lastErr = new Error('프록시 오류: ' + tr); continue; }
-      break;
-    } catch(e) {
-      lastErr = e.name === 'AbortError' ? new Error('응답 시간 초과') : e;
-    }
-  }
-
-  if (!text || !text.trim() || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') {
-    document.getElementById('api-loading').style.display = 'none';
-    document.getElementById('api-error').style.display = 'block';
-    document.getElementById('api-error').innerHTML =
-      '<b>⚠ API 연결 실패: ' + (lastErr ? lastErr.message : '알 수 없는 오류') + '</b><br><br>' +
-      '해결 방법:<br>① data.go.kr 마이페이지에서 인증키 활성 상태 확인<br>' +
-      '② 브라우저 콘솔(F12)에서 실제 오류 메시지 확인';
-    return;
-  }
+  document.getElementById('api-loading-msg').textContent = '"' + q + '" 단지 검색 중...';
 
   try {
-    // JSON 파싱
-    let jsonData;
-    try {
-      jsonData = JSON.parse(text);
-    } catch(e) {
-      // 여러 JSON 객체가 붙어있는 경우 첫 번째만 파싱
-      const firstBrace = text.indexOf('{');
-      let depth = 0, endIdx = -1;
-      for(let i = firstBrace; i < text.length; i++) {
-        if(text[i] === '{') depth++;
-        else if(text[i] === '}') { depth--; if(depth === 0) { endIdx = i; break; } }
+    // ── STEP 1: 분양정보 전체 로드 (병렬 3페이지, 최대 2784건) ──
+    document.getElementById('api-loading-msg').textContent = '전체 분양 목록 로딩 중 (1/2)...';
+
+    const fetchPage = async (pageNo) => {
+      const url = API_DETAIL + '?page=' + pageNo + '&perPage=1000&serviceKey=' + API_KEY;
+      const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(API_DETAIL + '?page=' + pageNo + '&perPage=1000') + '&serviceKey=' + API_KEY;
+      for (const tryUrl of [url, proxyUrl]) {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 20000);
+          const res = await fetch(tryUrl, { mode: 'cors', signal: ctrl.signal });
+          clearTimeout(timer);
+          const text = await res.text();
+          if (!text || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') continue;
+          // 멀티 JSON 대응
+          const firstBrace = text.indexOf('{');
+          let depth = 0, endIdx = -1;
+          for(let i = firstBrace; i < text.length; i++) {
+            if(text[i] === '{') depth++;
+            else if(text[i] === '}') { depth--; if(depth === 0){ endIdx = i; break; } }
+          }
+          const d = JSON.parse(text.substring(firstBrace, endIdx + 1));
+          if (d.code && d.code < 0) throw new Error('API 오류: ' + d.msg);
+          return d.data || [];
+        } catch(e) { if(e.name !== 'AbortError') continue; }
       }
-      if(endIdx > 0) jsonData = JSON.parse(text.substring(firstBrace, endIdx + 1));
-      else throw new Error('JSON 파싱 실패: ' + e.message);
+      return [];
+    };
+
+    // 1페이지 먼저 로드해서 totalCount 파악
+    const url1 = API_DETAIL + '?page=1&perPage=1000&serviceKey=' + API_KEY;
+    const proxy1 = 'https://corsproxy.io/?url=' + encodeURIComponent(API_DETAIL + '?page=1&perPage=1000') + '&serviceKey=' + API_KEY;
+    let firstData = null, totalCount1 = 0;
+    for (const tryUrl of [url1, proxy1]) {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 20000);
+        const res = await fetch(tryUrl, { mode: 'cors', signal: ctrl.signal });
+        clearTimeout(timer);
+        const text = await res.text();
+        if (!text || text.trim().startsWith('<!')) continue;
+        const firstBrace = text.indexOf('{');
+        let depth = 0, endIdx = -1;
+        for(let i = firstBrace; i < text.length; i++) {
+          if(text[i] === '{') depth++;
+          else if(text[i] === '}') { depth--; if(depth === 0){ endIdx = i; break; } }
+        }
+        const d = JSON.parse(text.substring(firstBrace, endIdx + 1));
+        if (d.code && d.code < 0) throw new Error('API 오류 [' + d.code + ']: ' + d.msg);
+        firstData = d.data || [];
+        totalCount1 = d.totalCount || 0;
+        break;
+      } catch(e) { if(e.message.includes('API 오류')) throw e; }
+    }
+    if (!firstData) throw new Error('분양정보 API 연결 실패');
+
+    // 나머지 페이지 병렬 로드
+    const totalPages = Math.ceil(totalCount1 / 1000);
+    let allDetailData = [...firstData];
+    if (totalPages > 1) {
+      document.getElementById('api-loading-msg').textContent =
+        '전체 분양 목록 로딩 중 (' + totalCount1.toLocaleString() + '건, ' + totalPages + '페이지)...';
+      const restPages = Array.from({length: totalPages - 1}, (_, i) => i + 2);
+      const restResults = await Promise.all(restPages.map(p => fetchPage(p)));
+      restResults.forEach(data => allDetailData = allDetailData.concat(data));
     }
 
-    if (jsonData.code && jsonData.code < 0) {
-      throw new Error('API 오류 [' + jsonData.code + ']: ' + (jsonData.msg || '알 수 없음'));
+    // ── STEP 2: 검색어로 필터링 ──
+    const qLow = q.trim().toLowerCase();
+    const matched = allDetailData.filter(item => {
+      const nm   = (item.HOUSE_NM || '').toLowerCase();
+      const addr = (item.HSSPLY_ADRES || '').toLowerCase();
+      const area = (item.SUBSCRPT_AREA_CODE_NM || '').toLowerCase();
+      return nm.includes(qLow) || addr.includes(qLow) || area.includes(qLow);
+    });
+
+    if (matched.length === 0) {
+      throw new Error('"' + q + '" 검색 결과 없음\n\n검색 예시:\n· 지역: 용인, 수원, 성남, 경기, 서울\n· 단지명: 힐스테이트, 래미안, 아이파크\n· 주소: 수지구, 기흥구, 판교');
     }
 
-    const totalCount = jsonData.totalCount || 0;
-    let allItems = Array.isArray(jsonData.data) ? jsonData.data : [];
+    // ── STEP 3: 매칭된 단지들의 경쟁률 조회 (병렬, 최대 20개) ──
+    document.getElementById('api-loading-msg').textContent =
+      matched.length + '개 단지 경쟁률 조회 중 (2/2)...';
 
-    // ── 검색어로 프론트엔드 필터링 ──
-    // HOUSE_MANAGE_NO로 지역 추정 (5번째 자리: 0=APT 일반, 9=오피스텔)
-    // 지역명 검색: house_manage_no 앞 4자리(연도) + 나머지 숫자
-    // 실질적 필터: 단지명이 응답에 없으므로 house_manage_no 범위로 제한
-    // 사용자 검색어를 그대로 표시하고 경쟁률 분석 제공
+    // 페이지네이션 처리
+    const perPageDetail = 10;
+    const totalMatchCount = matched.length;
+    const startIdx = (page - 1) * perPageDetail;
+    const pageItems = matched.slice(startIdx, startIdx + perPageDetail);
 
-    apiTotalCount = totalCount;
-    apiAllItems = allItems;
-    renderApiResult(q, allItems, totalCount, page);
+    const fetchCmpet = async (manageNo) => {
+      const baseUrl = API_CMPET + '?page=1&perPage=50&cond%5BHOUSE_MANAGE_NO%3A%3AEQ%5D=' + manageNo;
+      const direct = baseUrl + '&serviceKey=' + API_KEY;
+      const proxy  = 'https://corsproxy.io/?url=' + encodeURIComponent(baseUrl) + '&serviceKey=' + API_KEY;
+      for (const tryUrl of [direct, proxy]) {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 15000);
+          const res = await fetch(tryUrl, { mode: 'cors', signal: ctrl.signal });
+          clearTimeout(timer);
+          const text = await res.text();
+          if (!text || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') continue;
+          const firstBrace = text.indexOf('{');
+          let depth = 0, endIdx = -1;
+          for(let i = firstBrace; i < text.length; i++) {
+            if(text[i] === '{') depth++;
+            else if(text[i] === '}') { depth--; if(depth === 0){ endIdx = i; break; } }
+          }
+          return JSON.parse(text.substring(firstBrace, endIdx + 1)).data || [];
+        } catch(e) { continue; }
+      }
+      return [];
+    };
+
+    // 현재 페이지 단지들 경쟁률 병렬 조회
+    const cmpetResults = await Promise.all(
+      pageItems.map(item => fetchCmpet(item.HOUSE_MANAGE_NO))
+    );
+
+    // ── STEP 4: JOIN하여 통합 데이터 구성 ──
+    const joinedItems = pageItems.map((detail, i) => ({
+      detail,
+      cmpet: cmpetResults[i] || []
+    }));
+
+    apiTotalCount = totalMatchCount;
+    apiCurrentPage = page;
+    renderApiResult(q, joinedItems, totalMatchCount, page);
 
   } catch(err) {
     document.getElementById('api-loading').style.display = 'none';
     document.getElementById('api-error').style.display = 'block';
-    const isApiErr = err.message.includes('API 오류') || err.message.includes('-401') || err.message.includes('-3');
+    const isNoResult = err.message.includes('없음');
     document.getElementById('api-error').innerHTML =
-      '<b>⚠ ' + err.message + '</b>' +
-      (isApiErr ? '<br><br>📌 확인: data.go.kr 로그인 → 마이페이지 → 인증키 활성 상태 및 서비스 활용신청 여부' : '');
+      '<b>⚠ ' + err.message.replace(/\n/g, '<br>') + '</b>' +
+      (isNoResult ? '' : '<br><br>확인: data.go.kr 마이페이지 → 인증키 활성 상태, 두 서비스 활용신청 완료 여부');
   }
 }
 
-function renderApiResult(q, items, totalCount, page) {
+
+function renderApiResult(q, joinedItems, totalMatchCount, page) {
   document.getElementById('api-loading').style.display = 'none';
   document.getElementById('api-result').style.display = 'block';
 
-  document.getElementById('api-title').textContent = '청약 경쟁률 조회 결과 (전체 ' + totalCount.toLocaleString() + '건)';
+  document.getElementById('api-title').textContent = '"' + q + '" 검색 결과';
   document.getElementById('api-meta').textContent =
-    '페이지 ' + page + ' / ' + Math.ceil(totalCount / apiPageSize) + ' · 조회일: ' + new Date().toLocaleDateString('ko-KR');
+    '총 ' + totalMatchCount + '개 단지 매칭 · 페이지 ' + page + ' / ' + Math.ceil(totalMatchCount / 10);
 
-  // 기술문서 필드: CMPET_RATE(경쟁률), REQ_CNT(접수건수), SUPLY_HSHLDCO(공급세대)
-  function gf(item, ...keys) {
-    for(const k of keys) {
-      if(item[k] !== undefined && item[k] !== '' && item[k] !== null) return item[k];
-    }
-    return null;
+  // 경쟁률 계산 (1순위 해당지역 기준)
+  function getBestRate(cmpetData) {
+    const v1 = cmpetData.filter(it => it.SUBSCRPT_RANK_CODE == 1 && it.RESIDE_SECD === '01');
+    const rates = v1.map(it => {
+      const r = it.CMPET_RATE || '';
+      if (r === '-' || r.startsWith('(△') || r.startsWith('(▽')) return 0;
+      return parseFloat(r) || 0;
+    }).filter(v => v > 0);
+    return rates.length ? Math.max(...rates) : 0;
   }
-  const getRt = it => {
-    const v = gf(it, 'CMPET_RATE');
-    if(!v || v === '-') return 0;
-    return parseFloat(v) || 0;
-  };
+  function fmtRate(cmpetData) {
+    const v1 = cmpetData.filter(it => it.SUBSCRPT_RANK_CODE == 1 && it.RESIDE_SECD === '01');
+    if (!v1.length) return '—';
+    const rates = v1.map(it => it.CMPET_RATE || '—');
+    // 유효 경쟁률 우선
+    const valid = rates.filter(r => r !== '-' && r !== '—' && !r.startsWith('('));
+    if (valid.length) return Math.max(...valid.map(r => parseFloat(r))).toFixed(1) + ':1';
+    return rates[0]; // △ 등 그대로
+  }
+  function getTotalReq(cmpetData) {
+    const v1 = cmpetData.filter(it => it.SUBSCRPT_RANK_CODE == 1);
+    return v1.reduce((s, it) => s + (parseInt(it.REQ_CNT) || 0), 0);
+  }
 
-  const rates = items.map(it => getRt(it)).filter(v => v > 0);
-  const avgRate = rates.length ? (rates.reduce((a,b)=>a+b,0)/rates.length).toFixed(1) : '—';
-  const maxRate = rates.length ? Math.max(...rates).toFixed(1) : '—';
+  const allRates = joinedItems.map(ji => getBestRate(ji.cmpet)).filter(v => v > 0);
+  const avgRate  = allRates.length ? (allRates.reduce((a,b)=>a+b,0)/allRates.length).toFixed(1) : '—';
+  const maxRate  = allRates.length ? Math.max(...allRates).toFixed(1) : '—';
 
-  document.getElementById('api-total-cnt').innerHTML = totalCount.toLocaleString() + '<span class="sc-unit">건</span>';
+  document.getElementById('api-total-cnt').innerHTML = totalMatchCount + '<span class="sc-unit">단지</span>';
   document.getElementById('api-avg-rate').innerHTML = avgRate + '<span class="sc-unit">:1</span>';
   document.getElementById('api-max-rate').innerHTML = maxRate + '<span class="sc-unit">:1</span>';
 
-  // 시계열 차트 (공고번호 기준)
-  const uniquePblanc = {};
-  items.forEach(it => {
-    const pno = gf(it,'PBLANC_NO') || '';
-    const rt = getRt(it);
-    if(pno && rt > 0) { if(!uniquePblanc[pno] || uniquePblanc[pno] < rt) uniquePblanc[pno] = rt; }
-  });
-  const pnos = Object.keys(uniquePblanc).sort().slice(-20);
-  const pRates = pnos.map(p => uniquePblanc[p]);
-
+  // 차트 - 단지별 경쟁률
   destroyChart('apiTime');
+  const chartLabels = joinedItems.map(ji => (ji.detail.HOUSE_NM || '').substring(0, 10));
+  const chartRates  = joinedItems.map(ji => getBestRate(ji.cmpet));
   charts.apiTime = new Chart(document.getElementById('apiTimeChart'), {
-    type: 'line',
-    data:{ labels: pnos.map(p=>p.toString().substring(4)), datasets:[{
-      label:'최고 경쟁률', data: pRates,
-      borderColor:'#1a3a5c', backgroundColor:'rgba(26,58,92,.08)', fill:true, tension:.3, pointRadius:3
+    type: 'bar',
+    data:{ labels: chartLabels, datasets:[{
+      label:'1순위 경쟁률', data: chartRates,
+      backgroundColor: chartRates.map(r => r>=50?'#8b2c2c':r>=20?'#1a3a5c':r>=5?'#2d6a4f':'#B4B2A9'),
+      borderRadius: 3
     }]},
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toFixed(1)+':1'}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'}}}
+      scales:{x:{grid:{display:false},ticks:{font:{size:9},maxRotation:40}},
+              y:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}}}
     }
   });
 
-  // 상위 10 경쟁률 차트
-  const top10 = items
-    .map(it=>({name:(gf(it,'HOUSE_MANAGE_NO')||'')+'\n'+(gf(it,'HOUSE_TY')||''), rate:getRt(it)}))
-    .filter(it=>it.rate>0).sort((a,b)=>b.rate-a.rate).slice(0,10);
-
   destroyChart('apiRank');
+  const sorted = [...joinedItems].sort((a,b) => getBestRate(b.cmpet) - getBestRate(a.cmpet)).slice(0,8);
   charts.apiRank = new Chart(document.getElementById('apiRankChart'), {
     type: 'bar',
-    data:{ labels: top10.map(it=>it.name.split('\n')[0].substring(4)), datasets:[{
-      data: top10.map(it=>it.rate), backgroundColor:'#1a3a5c', borderRadius:3
-    }]},
+    data:{ labels: sorted.map(ji=>(ji.detail.HOUSE_NM||'').substring(0,12)),
+      datasets:[{data:sorted.map(ji=>getBestRate(ji.cmpet)), backgroundColor:'#1a3a5c', borderRadius:3}]},
     options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toFixed(1)+':1'}}},
       scales:{x:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'}},y:{ticks:{font:{size:9}}}}
@@ -717,48 +761,52 @@ function renderApiResult(q, items, totalCount, page) {
   // 테이블
   const tbody = document.getElementById('api-tbody');
   tbody.innerHTML = '';
-  const maxR = Math.max(...rates, 1);
-  items.forEach(it => {
-    const hm   = gf(it,'HOUSE_MANAGE_NO') || '—';
-    const pno  = gf(it,'PBLANC_NO') || '—';
-    const ht   = gf(it,'HOUSE_TY') || '—';
-    const mn   = gf(it,'MODEL_NO') || '—';
-    const rsnm = gf(it,'RESIDE_SENM') || '—';
-    const rank = gf(it,'SUBSCRPT_RANK_CODE') || '—';
-    const sd   = parseInt(gf(it,'SUPLY_HSHLDCO') || 0);
-    const req  = parseInt(gf(it,'REQ_CNT') || 0);
-    const gR   = getRt(it);
-    const lvl  = gR>=50?'tag-c':gR>=20?'tag-b':gR>=5?'tag-a':'tag-d';
-    const lvlTxt = gR>=50?'초과열':gR>=20?'과열':gR>=5?'경쟁':'보통';
+  joinedItems.forEach(ji => {
+    const d  = ji.detail;
+    const cr = ji.cmpet;
+    const nm      = d.HOUSE_NM || '—';
+    const addr    = d.HSSPLY_ADRES || '—';
+    const area    = d.SUBSCRPT_AREA_CODE_NM || '—';
+    const rcpt    = d.RCEPT_BGNDE || '—';
+    const tot     = d.TOT_SUPLY_HSHLDCO || '—';
+    const manNo   = d.HOUSE_MANAGE_NO || '—';
+    const pblUrl  = d.PBLANC_URL || '';
+    const rate    = fmtRate(cr);
+    const totalReq = getTotalReq(cr);
+    const rNum    = getBestRate(cr);
+    const lvl = rNum>=50?'tag-c':rNum>=20?'tag-b':rNum>=5?'tag-a':'tag-d';
+    const lvlTxt  = rNum>=50?'초과열':rNum>=20?'과열':rNum>=5?'경쟁':'보통';
+    const nmHtml  = pblUrl
+      ? '<a href="' + pblUrl + '" style="color:var(--ink);text-decoration:underline;text-underline-offset:2px" target="_blank">' + nm + '</a>'
+      : nm;
     tbody.innerHTML += '<tr>' +
-      '<td style="font-family:var(--mono);font-size:11px">' + hm + '</td>' +
-      '<td style="font-family:var(--mono);font-size:11px">' + pno + '</td>' +
-      '<td style="font-size:12px">' + rsnm + '</td>' +
-      '<td style="font-family:var(--mono);font-size:11px">' + ht + '</td>' +
-      '<td class="num">' + (sd?sd.toLocaleString():'—') + '</td>' +
-      '<td class="num">' + (req?req.toLocaleString():'—') + '</td>' +
-      '<td class="num ' + (gR===maxR?'hi':gR<1?'lo':'') + '"><b>' + (gR?gR.toFixed(1)+':1':'—') + '</b>&nbsp;<span class="tag ' + lvl + '">' + lvlTxt + '</span></td>' +
-      '<td class="num">' + rank + '</td>' +
-      '<td class="num">' + mn + '</td>' +
+      '<td style="white-space:nowrap;font-family:var(--mono);font-size:10px;color:var(--ink3)">' + rcpt + '</td>' +
+      '<td style="font-weight:500;min-width:160px">' + nmHtml + '</td>' +
+      '<td style="font-size:11px;color:var(--ink3)">' + area + '</td>' +
+      '<td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + addr + '">' + addr + '</td>' +
+      '<td class="num">' + tot + '</td>' +
+      '<td class="num">' + (totalReq ? totalReq.toLocaleString() : '—') + '</td>' +
+      '<td class="num"><b>' + rate + '</b>&nbsp;<span class="tag ' + lvl + '">' + lvlTxt + '</span></td>' +
       '</tr>';
   });
 
-  const totalPages = Math.ceil(totalCount / apiPageSize);
-  document.getElementById('pager-info').textContent = page + ' / ' + totalPages + '페이지';
+  // 페이지네이션
+  const totalPages = Math.ceil(totalMatchCount / 10);
+  document.getElementById('pager-info').textContent = page + ' / ' + totalPages + '페이지 (' + totalMatchCount + '단지)';
   document.getElementById('prev-btn').disabled = page <= 1;
   document.getElementById('next-btn').disabled = page >= totalPages;
-  apiCurrentPage = page;
 
   document.getElementById('api-note').textContent =
-    '※ 출처: 한국부동산원 청약홈 청약접수 경쟁률 조회 서비스 (api.odcloud.kr · ApplyhomeInfoCmpetRtSvc v1) · ' +
-    'RESIDE_SECD: 01=해당지역 02=기타지역 03=기타경기 · 조회일: ' + new Date().toLocaleDateString('ko-KR');
+    '※ 출처: 한국부동산원 청약홈 분양정보+경쟁률 조회 서비스 (ApplyhomeInfoDetailSvc + ApplyhomeInfoCmpetRtSvc) · ' +
+    '1순위 해당지역 기준 경쟁률 · 청약홈 공고번호 클릭 시 공식 페이지로 이동 · 조회일: ' + new Date().toLocaleDateString('ko-KR');
 }
 
 function changePage(dir) {
   const newPage = apiCurrentPage + dir;
-  if(newPage < 1) return;
+  const totalPages = Math.ceil(apiTotalCount / 10);
+  if(newPage < 1 || newPage > totalPages) return;
   fetchApi(apiCurrentQuery, newPage);
-  window.scrollTo({top: 0, behavior:'smooth'});
+  window.scrollTo({top: document.getElementById('panel-api').offsetTop - 20, behavior:'smooth'});
 }
 </script>
 </body>
