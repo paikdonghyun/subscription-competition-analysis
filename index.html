@@ -315,7 +315,9 @@ const SIDO_LIST = Object.keys(SIDO_DB);
 
 // ── API 설정 ──
 const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
-const API_BASE = 'https://apis.data.go.kr/B552555/APTRtrcmpetSvc2/getRtrcmpetAptListByPblanc';
+const API_TARGET = 'https://apis.data.go.kr/B552555/APTRtrcmpetSvc2/getRtrcmpetAptListByPblanc';
+const PROXY = 'https://corsproxy.io/?url=';
+// GitHub Pages(github.io)는 corsproxy.io 무료 허용 도메인 — 별도 키 불필요
 
 // ── 상태 ──
 let currentTab = 'sido';
@@ -578,11 +580,11 @@ async function fetchApi(q, page) {
   if(sgungu)    params.append('sgungu', sgungu);
   if(houseName) params.append('srhHouseNm', houseName);
 
-  const url = API_BASE + '?' + params.toString();
+  const url = PROXY + encodeURIComponent(API_TARGET + '?' + params.toString());
 
   try {
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('서버 응답 오류: HTTP ' + res.status);
+    const res = await fetch(url, { mode: 'cors' });
+    if(!res.ok) throw new Error('서버 응답 오류: HTTP ' + res.status + ' — 프록시 또는 API 오류');
     const text = await res.text();
     if(!text || text.trim() === '') throw new Error('빈 응답 수신');
 
