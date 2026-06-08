@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>게시글 · 청약랩</title>
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.post-body{font-size:14px;line-height:1.9;color:var(--ink2);white-space:pre-wrap;word-break:break-word;padding:1.25rem 0}
+.comment-item{padding:.875rem 0;border-bottom:1px solid var(--bg2)}
+.comment-item:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<nav class="gnav"><div class="gnav-inner">
+  <a href="/" class="gnav-logo"><span class="gnav-logo-kr">청약랩</span><span class="gnav-logo-en">ApplyLab</span></a>
+  <div class="gnav-divider"></div>
+  <div class="gnav-menu">
+    <a href="/" class="gnav-item">청약 분석</a>
+    <a href="/board.html" class="gnav-item active">게시판</a>
+  </div>
+  <div class="gnav-right" id="gnav-right"></div>
+</div></nav>
+
+<div style="max-width:1400px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start">
+  <div class="ad-col"><div class="ad-side">
+    <div class="ad-slot"><div class="ad-label">Ad</div><div class="ad-160x600"><ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins></div></div>
+  </div></div>
+
+  <div style="padding:0 1.25rem;min-width:0">
+    <a href="/board.html" style="font-size:12px;color:var(--ink3);font-family:var(--mono);display:inline-block;margin-bottom:1rem">← 목록으로</a>
+    <div id="post-wrap">
+      <div class="loading-wrap"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <div class="ad-col"><div class="ad-side">
+    <div class="ad-slot"><div class="ad-label">Ad</div><div class="ad-160x600"><ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins></div></div>
+  </div></div>
+</div>
+
+<footer class="gfooter">청약랩 · ApplyLab · 데이터 출처: 한국부동산원</footer>
+
+<script src="/js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp,
+         collection, addDoc, query, orderBy, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const postId = new URLSearchParams(location.search).get('id');
+let currentUser = null, userDoc = null, postData = null;
+const CATS = {analysis:'시장분석',info:'분양정보',strategy:'청약전략',qna:'질문',free:'자유'};
+const CAT_COLORS = {analysis:'badge-blue',info:'badge-green',strategy:'badge-gold',qna:'badge-red',free:'badge-gray'};
+
+onAuthStateChanged(auth, async u => {
+  currentUser = u;
+  if(u) {
+    const snap = await getDoc(doc(db,'users',u.uid));
+    userDoc = snap.data();
+    const r = document.getElementById('gnav-right');
+    if(r) r.innerHTML = `<div class="gnav-dropdown">
+      <div class="gnav-user" style="cursor:pointer;padding:.25rem .5rem;border-radius:var(--r);display:flex;align-items:center;gap:.5rem">
+        <div class="gnav-avatar">${(userDoc?.displayName||u.email)[0].toUpperCase()}</div>
+        <span style="font-size:12px">${userDoc?.displayName||u.email}</span>▾
+      </div>
+      <div class="gnav-dropdown-menu">
+        <a class="gnav-dropdown-item" href="/mypage.html">마이페이지</a>
+        ${userDoc?.role==='admin'?'<a class="gnav-dropdown-item" href="/admin/" style="color:var(--red)">⚙ 관리자</a>':''}
+        <a class="gnav-dropdown-item danger" href="#" onclick="location.href='/';return false">로그아웃</a>
+      </div></div>`;
+  } else {
+    const r = document.getElementById('gnav-right');
+    if(r) r.innerHTML = `<a href="/login.html" class="gnav-btn outline">로그인</a><a href="/login.html#register" class="gnav-btn solid">회원가입</a>`;
+  }
+  loadPost();
+});
+
+async function loadPost() {
+  if(!postId) { location.href='/board.html'; return; }
+  try {
+    const snap = await getDoc(doc(db,'board',postId));
+    if(!snap.exists() || snap.data().status==='deleted') { location.href='/board.html'; return; }
+    postData = snap.data();
+    await updateDoc(doc(db,'board',postId),{ views:increment(1) });
+    renderPost();
+    loadComments();
+  } catch(e) {
+    document.getElementById('post-wrap').innerHTML='<div class="alert alert-danger">게시글을 불러올 수 없습니다.</div>';
+  }
+}
+
+function renderPost() {
+  const date = postData.createdAt?.toDate().toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) || '—';
+  const cat  = CATS[postData.category]||'자유';
+  const clr  = CAT_COLORS[postData.category]||'badge-gray';
+  const isOwner = currentUser?.uid === postData.authorId;
+  const isAdmin = userDoc?.role === 'admin';
+  document.title = postData.title + ' · 청약랩';
+  document.getElementById('post-wrap').innerHTML = `
+    <div class="card" style="margin-bottom:1rem">
+      <div style="margin-bottom:1rem">
+        <span class="badge ${clr}" style="margin-bottom:.5rem;display:inline-block">${cat}</span>
+        <h1 style="font-family:var(--serif);font-size:1.3rem;font-weight:600;line-height:1.4;margin-bottom:.75rem">${postData.title}</h1>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+          <div style="display:flex;align-items:center;gap:.75rem;font-size:12px;color:var(--ink3);font-family:var(--mono)">
+            <span>👤 ${postData.authorName||'익명'}</span>
+            <span>📅 ${date}</span>
+            <span>👁 ${((postData.views||0)+1).toLocaleString()}</span>
+          </div>
+          ${(isOwner||isAdmin)?`<div style="display:flex;gap:.375rem">
+            ${isOwner?`<a href="/board-write.html?edit=${postId}" class="btn btn-secondary btn-sm">수정</a>`:''}
+            <button class="btn btn-danger btn-sm" onclick="deletePost()">삭제</button>
+          </div>`:''}
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--bg3)">
+      <div class="post-body">${escHtml(postData.content||'')}</div>
+    </div>
+
+    <div class="card" id="comment-section">
+      <h3 class="sec-title">댓글 <span id="comment-count" style="font-size:12px;font-weight:400;color:var(--ink3)"></span></h3>
+      <div id="comment-list"></div>
+      <div style="margin-top:1rem;border-top:1px solid var(--bg3);padding-top:1rem" id="comment-form">
+        ${currentUser ? `
+          <textarea class="form-input" id="comment-input" rows="3" placeholder="댓글을 입력하세요..." style="margin-bottom:.5rem;resize:none"></textarea>
+          <div style="text-align:right"><button class="btn btn-primary btn-sm" onclick="submitComment()">댓글 등록</button></div>
+        ` : `<p style="font-size:13px;color:var(--ink3);text-align:center;padding:1rem"><a href="/login.html" style="color:var(--accent)">로그인</a>하면 댓글을 작성할 수 있습니다.</p>`}
+      </div>
+    </div>`;
+}
+
+async function loadComments() {
+  const q = query(collection(db,'board',postId,'comments'), orderBy('createdAt','asc'));
+  const snap = await getDocs(q);
+  const comments = snap.docs.map(d=>({id:d.id,...d.data()}));
+  document.getElementById('comment-count').textContent = `(${comments.length})`;
+  const list = document.getElementById('comment-list');
+  if(!comments.length){ list.innerHTML='<p style="font-size:13px;color:var(--ink4);text-align:center;padding:1.5rem">첫 번째 댓글을 남겨보세요.</p>'; return; }
+  list.innerHTML = comments.map(c => {
+    const date = c.createdAt?.toDate().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})||'—';
+    const isOwner = currentUser?.uid === c.authorId || userDoc?.role==='admin';
+    return `<div class="comment-item">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <div class="gnav-avatar" style="width:22px;height:22px;font-size:10px">${(c.authorName||'?')[0].toUpperCase()}</div>
+          <span style="font-size:12px;font-weight:500">${c.authorName||'익명'}</span>
+          <span style="font-size:11px;color:var(--ink4);font-family:var(--mono)">${date}</span>
+        </div>
+        ${isOwner?`<button onclick="deleteComment('${c.id}')" style="font-size:10px;color:var(--ink4);background:none;border:none;cursor:pointer">삭제</button>`:''}
+      </div>
+      <p style="font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap">${escHtml(c.content||'')}</p>
+    </div>`;
+  }).join('');
+}
+
+window.submitComment = async () => {
+  const content = document.getElementById('comment-input').value.trim();
+  if(!content) return;
+  if(!currentUser) { location.href='/login.html'; return; }
+  const btn = document.querySelector('#comment-form button');
+  btn.disabled=true;
+  try {
+    await addDoc(collection(db,'board',postId,'comments'),{
+      content, authorId:currentUser.uid, authorName:userDoc?.displayName||currentUser.email,
+      createdAt:serverTimestamp()
+    });
+    await updateDoc(doc(db,'board',postId),{commentCount:increment(1)});
+    document.getElementById('comment-input').value='';
+    loadComments();
+  } finally { btn.disabled=false; }
+};
+
+window.deletePost = async () => {
+  if(!confirm('게시글을 삭제하시겠습니까?')) return;
+  await updateDoc(doc(db,'board',postId),{status:'deleted'});
+  location.href='/board.html';
+};
+
+window.deleteComment = async (cid) => {
+  if(!confirm('댓글을 삭제하시겠습니까?')) return;
+  await deleteDoc(doc(db,'board',postId,'comments',cid));
+  await updateDoc(doc(db,'board',postId),{commentCount:increment(-1)});
+  loadComments();
+};
+
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>

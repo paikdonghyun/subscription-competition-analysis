@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 대시보드 · 청약랩</title>
+<link rel="stylesheet" href="/css/common.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+body{background:#f1f5f9}
+.admin-wrap{display:flex;min-height:100vh}
+.admin-sidebar{width:220px;background:#1e293b;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.admin-sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.admin-sidebar-logo-kr{font-family:var(--serif);font-size:1.1rem;color:#f1f5f9;font-weight:600}
+.admin-sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:#64748b;letter-spacing:.08em;margin-top:2px}
+.admin-nav{padding:.75rem .75rem}
+.admin-nav-section{font-family:var(--mono);font-size:9px;color:#475569;letter-spacing:.1em;text-transform:uppercase;padding:.5rem .75rem .25rem;margin-top:.5rem}
+.admin-nav-item{display:flex;align-items:center;gap:.625rem;padding:.55rem .75rem;border-radius:var(--r);font-size:13px;color:#94a3b8;cursor:pointer;transition:all .12s;margin-bottom:2px}
+.admin-nav-item:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.admin-nav-item.active{background:rgba(29,78,216,.25);color:#93c5fd}
+.admin-main{flex:1;padding:2rem;min-width:0}
+.admin-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem}
+.admin-page-title{font-family:var(--serif);font-size:1.4rem;font-weight:600;color:#1e293b}
+.admin-page-sub{font-size:12px;color:#64748b;font-family:var(--mono);margin-top:.2rem}
+.stat-card{background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.05);border-top:3px solid var(--bg4)}
+.stat-card.blue{border-top-color:var(--accent)}.stat-card.green{border-top-color:var(--green)}
+.stat-card.orange{border-top-color:var(--orange)}.stat-card.red{border-top-color:var(--red)}
+.stat-label{font-size:10px;font-family:var(--mono);letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:.4rem}
+.stat-value{font-family:var(--serif);font-size:2rem;font-weight:600;color:#0f172a;line-height:1}
+.stat-sub{font-size:11px;color:#94a3b8;margin-top:.35rem;font-family:var(--mono)}
+.filter-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.filter-btn{font-size:12px;padding:.375rem .8rem;border:1px solid #e2e8f0;border-radius:var(--r);background:var(--white);color:#64748b;cursor:pointer;transition:all .12s;font-family:var(--mono)}
+.filter-btn.active,.filter-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chart-card{background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.chart-card-title{font-size:13px;font-weight:500;color:#334155;margin-bottom:1rem;font-family:var(--sans)}
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+<!-- 사이드바 -->
+<div class="admin-sidebar">
+  <div class="admin-sidebar-logo">
+    <div class="admin-sidebar-logo-kr">청약랩 관리자</div>
+    <div class="admin-sidebar-logo-sub">ApplyLab Admin</div>
+  </div>
+  <div class="admin-nav">
+    <div class="admin-nav-section">대시보드</div>
+    <a href="/admin/" class="admin-nav-item active">📊 방문자 통계</a>
+    <div class="admin-nav-section">관리</div>
+    <a href="/admin/members.html" class="admin-nav-item">👥 회원 관리</a>
+    <a href="/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
+    <a href="/admin/accounts.html" class="admin-nav-item">🔑 관리자 계정</a>
+    <div class="admin-nav-section" style="margin-top:auto"></div>
+    <a href="/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
+    <a href="#" class="admin-nav-item" onclick="doLogout();return false" style="color:#ef4444">🚪 로그아웃</a>
+  </div>
+</div>
+
+<!-- 메인 -->
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div>
+      <div class="admin-page-title">방문자 통계</div>
+      <div class="admin-page-sub" id="admin-user-info">로딩 중...</div>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <input type="date" id="date-from" class="form-input" style="width:140px;font-size:12px;padding:.4rem .625rem">
+      <input type="date" id="date-to"   class="form-input" style="width:140px;font-size:12px;padding:.4rem .625rem">
+      <button class="btn btn-primary btn-sm" onclick="loadStats()">조회</button>
+    </div>
+  </div>
+
+  <!-- 요약 카드 -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.5rem">
+    <div class="stat-card blue"><p class="stat-label">오늘 방문자</p><p class="stat-value" id="stat-today">—</p><p class="stat-sub" id="stat-today-sub">집계 중</p></div>
+    <div class="stat-card green"><p class="stat-label">이번 주</p><p class="stat-value" id="stat-week">—</p><p class="stat-sub">주간 누적</p></div>
+    <div class="stat-card orange"><p class="stat-label">이번 달</p><p class="stat-value" id="stat-month">—</p><p class="stat-sub">월간 누적</p></div>
+    <div class="stat-card red"><p class="stat-label">전체 누적</p><p class="stat-value" id="stat-total">—</p><p class="stat-sub">서비스 시작~현재</p></div>
+    <div class="stat-card blue"><p class="stat-label">전체 회원</p><p class="stat-value" id="stat-members">—</p><p class="stat-sub">가입 회원 수</p></div>
+    <div class="stat-card green"><p class="stat-label">게시글 수</p><p class="stat-value" id="stat-posts">—</p><p class="stat-sub">전체 게시글</p></div>
+  </div>
+
+  <!-- 기간 필터 -->
+  <div class="filter-row">
+    <span style="font-size:12px;color:#64748b;font-family:var(--mono)">기간:</span>
+    <button class="filter-btn" onclick="setPeriod(7)">7일</button>
+    <button class="filter-btn active" id="period-30" onclick="setPeriod(30)">30일</button>
+    <button class="filter-btn" onclick="setPeriod(90)">90일</button>
+    <button class="filter-btn" onclick="setPeriod(365)">1년</button>
+  </div>
+
+  <!-- 차트 -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div class="chart-card">
+      <p class="chart-card-title">일별 방문자 추이</p>
+      <div style="height:260px"><canvas id="daily-chart" role="img" aria-label="일별 방문자 차트"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <p class="chart-card-title">요일별 분포</p>
+      <div style="height:260px"><canvas id="dow-chart" role="img" aria-label="요일별 분포 차트"></canvas></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div class="chart-card">
+      <p class="chart-card-title">월별 방문자 추이</p>
+      <div style="height:220px"><canvas id="monthly-chart" role="img" aria-label="월별 방문자 차트"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <p class="chart-card-title">페이지별 조회 수</p>
+      <div style="height:220px"><canvas id="page-chart" role="img" aria-label="페이지별 조회수 차트"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 일별 상세 테이블 -->
+  <div class="chart-card">
+    <p class="chart-card-title">기간별 상세 (최근 30일)</p>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="daily-tbl">
+        <thead><tr><th>날짜</th><th class="num">방문자</th><th class="num">전일 대비</th></tr></thead>
+        <tbody id="daily-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="/js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs,
+         query, orderBy, limit, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+let dailyData = [], monthlyData = [], pageData = [];
+let charts = {};
+
+// 날짜 기본값 설정
+const today = new Date().toISOString().slice(0,10);
+const d30   = new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+document.getElementById('date-from').value = d30;
+document.getElementById('date-to').value   = today;
+
+onAuthStateChanged(auth, async u => {
+  if(!u){ location.href='/login.html'; return; }
+  const snap = await getDoc(doc(db,'users',u.uid));
+  const ud = snap.data();
+  if(ud?.role !== 'admin'){ alert('관리자만 접근할 수 있습니다.'); location.href='/'; return; }
+  document.getElementById('admin-user-info').textContent = `로그인: ${ud.displayName||u.email} (${ud.role})`;
+  loadStats();
+  loadSummary();
+});
+
+window.doLogout = async () => { await signOut(auth); location.href='/'; };
+window.loadStats = loadStats;
+
+window.setPeriod = (days) => {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const to   = new Date().toISOString().slice(0,10);
+  const from = new Date(Date.now()-days*86400000).toISOString().slice(0,10);
+  document.getElementById('date-from').value = from;
+  document.getElementById('date-to').value   = to;
+  loadStats();
+};
+
+async function loadStats() {
+  const from = document.getElementById('date-from').value;
+  const to   = document.getElementById('date-to').value;
+  try {
+    // 일별 데이터
+    const q = query(collection(db,'analytics_daily'), orderBy('date','asc'));
+    const snap = await getDocs(q);
+    dailyData = snap.docs.map(d=>({date:d.id, views:d.data().views||0}))
+      .filter(d => d.date >= from && d.date <= to);
+
+    // 오늘
+    const todaySnap = await getDoc(doc(db,'analytics_daily',today));
+    document.getElementById('stat-today').textContent = (todaySnap.data()?.views||0).toLocaleString();
+
+    // 주간
+    const weekAgo = new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+    const weekViews = dailyData.filter(d=>d.date>=weekAgo).reduce((s,d)=>s+d.views,0);
+    document.getElementById('stat-week').textContent = weekViews.toLocaleString();
+
+    // 월별 데이터
+    const mSnap = await getDocs(collection(db,'analytics_monthly'));
+    monthlyData = mSnap.docs.map(d=>({month:d.id, views:d.data().views||0})).sort((a,b)=>a.month.localeCompare(b.month));
+    const currMonth = today.slice(0,7);
+    const monthViews = (await getDoc(doc(db,'analytics_monthly',currMonth))).data()?.views||0;
+    document.getElementById('stat-month').textContent = monthViews.toLocaleString();
+
+    // 전체
+    const totalViews = mSnap.docs.reduce((s,d)=>s+(d.data().views||0),0);
+    document.getElementById('stat-total').textContent = totalViews.toLocaleString();
+
+    // 페이지별
+    const pSnap = await getDocs(collection(db,'analytics_pages'));
+    pageData = pSnap.docs.map(d=>({page:d.data().page||'/'+d.id, views:d.data().views||0}))
+      .sort((a,b)=>b.views-a.views).slice(0,8);
+
+    renderCharts();
+    renderTable();
+  } catch(e) { console.error(e); }
+}
+
+async function loadSummary() {
+  try {
+    const mSnap = await getCountFromServer(collection(db,'users'));
+    document.getElementById('stat-members').textContent = mSnap.data().count.toLocaleString();
+    const bSnap = await getCountFromServer(query(collection(db,'board'),where('status','==','active')));
+    document.getElementById('stat-posts').textContent = bSnap.data().count.toLocaleString();
+  } catch(e) {}
+}
+
+function destroyChart(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function renderCharts() {
+  // 일별 추이
+  destroyChart('daily');
+  charts.daily = new Chart(document.getElementById('daily-chart'),{
+    type:'line',
+    data:{labels:dailyData.map(d=>d.date.slice(5)),
+      datasets:[{label:'방문자',data:dailyData.map(d=>d.views),
+        borderColor:'#1d4ed8',backgroundColor:'rgba(29,78,216,.08)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#1d4ed8'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+'명'}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:15}},
+              y:{beginAtZero:true,ticks:{font:{size:10},callback:v=>v.toLocaleString()},grid:{color:'rgba(0,0,0,.05)'}}}}
+  });
+
+  // 요일별
+  destroyChart('dow');
+  const dowData = [0,0,0,0,0,0,0];
+  dailyData.forEach(d=>{ const dow=new Date(d.date).getDay(); dowData[dow]+=d.views; });
+  charts.dow = new Chart(document.getElementById('dow-chart'),{
+    type:'bar',
+    data:{labels:['일','월','화','수','목','금','토'],
+      datasets:[{data:dowData,backgroundColor:['#f87171','#60a5fa','#60a5fa','#60a5fa','#60a5fa','#60a5fa','#a78bfa'],borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+'명'}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}
+  });
+
+  // 월별
+  destroyChart('monthly');
+  charts.monthly = new Chart(document.getElementById('monthly-chart'),{
+    type:'bar',
+    data:{labels:monthlyData.map(d=>d.month),
+      datasets:[{data:monthlyData.map(d=>d.views),backgroundColor:'#1d4ed8',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+'명'}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,ticks:{font:{size:10}}}}}
+  });
+
+  // 페이지별
+  destroyChart('page');
+  charts.page = new Chart(document.getElementById('page-chart'),{
+    type:'bar', data:{labels:pageData.map(d=>d.page.replace('/','')+''),
+      datasets:[{data:pageData.map(d=>d.views),backgroundColor:'#0ea5e9',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toLocaleString()+'뷰'}}},
+      scales:{x:{beginAtZero:true,ticks:{font:{size:9}}},y:{ticks:{font:{size:10}}}}}
+  });
+}
+
+function renderTable() {
+  const tbody = document.getElementById('daily-tbody');
+  const sorted = [...dailyData].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+  tbody.innerHTML = sorted.map((d,i) => {
+    const prev = sorted[i+1]?.views||0;
+    const diff = d.views - prev;
+    const diffStr = diff>0?`<span style="color:var(--green)">+${diff.toLocaleString()}</span>`:
+                   diff<0?`<span style="color:var(--red)">${diff.toLocaleString()}</span>`:
+                   `<span style="color:var(--ink4)">—</span>`;
+    return `<tr><td style="font-family:var(--mono);font-size:12px">${d.date}</td>
+      <td class="num">${d.views.toLocaleString()}</td><td class="num">${diffStr}</td></tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

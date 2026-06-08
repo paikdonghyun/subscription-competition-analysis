@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 계정 · 청약랩</title>
+<link rel="stylesheet" href="/css/common.css">
+<style>body{background:#f1f5f9}.admin-wrap{display:flex;min-height:100vh}.admin-sidebar{width:220px;background:#1e293b;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}.admin-sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.08)}.admin-sidebar-logo-kr{font-family:var(--serif);font-size:1.1rem;color:#f1f5f9;font-weight:600}.admin-sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:#64748b;letter-spacing:.08em;margin-top:2px}.admin-nav{padding:.75rem}.admin-nav-section{font-family:var(--mono);font-size:9px;color:#475569;letter-spacing:.1em;text-transform:uppercase;padding:.5rem .75rem .25rem;margin-top:.5rem}.admin-nav-item{display:flex;align-items:center;gap:.625rem;padding:.55rem .75rem;border-radius:var(--r);font-size:13px;color:#94a3b8;cursor:pointer;transition:all .12s;margin-bottom:2px;text-decoration:none}.admin-nav-item:hover{background:rgba(255,255,255,.06);color:#e2e8f0}.admin-nav-item.active{background:rgba(29,78,216,.25);color:#93c5fd}.admin-main{flex:1;padding:2rem;min-width:0}.admin-page-title{font-family:var(--serif);font-size:1.4rem;font-weight:600;color:#1e293b;margin-bottom:.2rem}.admin-page-sub{font-size:12px;color:#64748b;font-family:var(--mono);margin-bottom:1.5rem}</style>
+</head>
+<body>
+<div class="admin-wrap">
+<div class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-sidebar-logo-kr">청약랩 관리자</div><div class="admin-sidebar-logo-sub">ApplyLab Admin</div></div>
+  <div class="admin-nav">
+    <div class="admin-nav-section">대시보드</div>
+    <a href="/admin/" class="admin-nav-item">📊 방문자 통계</a>
+    <div class="admin-nav-section">관리</div>
+    <a href="/admin/members.html" class="admin-nav-item">👥 회원 관리</a>
+    <a href="/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
+    <a href="/admin/accounts.html" class="admin-nav-item active">🔑 관리자 계정</a>
+    <a href="/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
+    <a href="#" class="admin-nav-item" onclick="doLogout();return false" style="color:#ef4444">🚪 로그아웃</a>
+  </div>
+</div>
+<div class="admin-main">
+  <div class="admin-page-title">관리자 계정 관리</div>
+  <div class="admin-page-sub">관리자 권한을 가진 계정 목록입니다</div>
+
+  <div id="alert-area"></div>
+
+  <!-- 관리자 목록 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start">
+    <div style="background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);padding:1.25rem">
+      <h3 style="font-size:14px;font-weight:600;color:#334155;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid #f1f5f9">현재 관리자 목록</h3>
+      <div id="admin-list"><div class="spinner" style="margin:2rem auto"></div></div>
+    </div>
+
+    <!-- 관리자 추가 -->
+    <div style="background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);padding:1.25rem">
+      <h3 style="font-size:14px;font-weight:600;color:#334155;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid #f1f5f9">관리자 권한 부여</h3>
+      <div class="form-group">
+        <label class="form-label">회원 이메일</label>
+        <input class="form-input" type="email" id="new-admin-email" placeholder="권한을 부여할 회원 이메일">
+        <p class="form-hint">해당 이메일로 가입된 회원에게 관리자 권한을 부여합니다</p>
+      </div>
+      <button class="btn btn-primary" onclick="grantAdmin()">관리자 권한 부여</button>
+    </div>
+  </div>
+
+  <!-- 내 계정 정보 -->
+  <div style="background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);padding:1.25rem;margin-top:1rem">
+    <h3 style="font-size:14px;font-weight:600;color:#334155;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid #f1f5f9">내 계정 정보</h3>
+    <div id="my-info" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:13px"></div>
+    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid #f1f5f9">
+      <h4 style="font-size:13px;font-weight:500;color:#475569;margin-bottom:.75rem">비밀번호 변경</h4>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <input type="password" class="form-input" id="new-pw" placeholder="새 비밀번호 (8자 이상)" style="max-width:220px">
+        <input type="password" class="form-input" id="new-pw2" placeholder="비밀번호 확인" style="max-width:220px">
+        <button class="btn btn-secondary" onclick="changePw()">변경</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="/js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
+let me=null, meAuth=null;
+
+onAuthStateChanged(auth, async u => {
+  if(!u){location.href='/login.html';return;}
+  meAuth=u;
+  const snap=await getDoc(doc(db,'users',u.uid));
+  me=snap.data();
+  if(me?.role!=='admin'){alert('관리자만 접근 가능합니다.');location.href='/';return;}
+  renderMyInfo();
+  loadAdmins();
+});
+window.doLogout=async()=>{await signOut(auth);location.href='/';};
+
+function showAlert(msg,type='success'){
+  const el=document.getElementById('alert-area');
+  el.innerHTML=`<div class="alert alert-${type}" style="margin-bottom:1rem">${msg}</div>`;
+  setTimeout(()=>el.innerHTML='',3000);
+}
+
+function renderMyInfo(){
+  const joinDate=me?.createdAt?.toDate().toLocaleString('ko-KR')||'—';
+  document.getElementById('my-info').innerHTML=`
+    <div><p class="form-label">이름</p><p>${me?.displayName||'—'}</p></div>
+    <div><p class="form-label">이메일</p><p style="font-family:var(--mono)">${meAuth?.email||'—'}</p></div>
+    <div><p class="form-label">권한</p><p><span class="badge badge-red">관리자</span></p></div>
+    <div><p class="form-label">가입일</p><p>${joinDate}</p></div>`;
+}
+
+async function loadAdmins(){
+  const q=query(collection(db,'users'),where('role','==','admin'));
+  const snap=await getDocs(q);
+  const admins=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const list=document.getElementById('admin-list');
+  if(!admins.length){list.innerHTML='<p style="color:var(--ink4);font-size:13px">관리자 없음</p>';return;}
+  list.innerHTML=admins.map(a=>{
+    const isSelf=a.id===meAuth?.uid;
+    const joinDate=a.createdAt?.toDate().toLocaleDateString('ko-KR')||'—';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.625rem 0;border-bottom:1px solid #f1f5f9">
+      <div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <div class="gnav-avatar" style="width:28px;height:28px;font-size:12px">${(a.displayName||'A')[0].toUpperCase()}</div>
+          <div>
+            <p style="font-size:13px;font-weight:500">${a.displayName||'—'} ${isSelf?'<span class="badge badge-blue" style="font-size:9px">나</span>':''}</p>
+            <p style="font-size:11px;color:var(--ink3);font-family:var(--mono)">${a.email||'—'}</p>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <p style="font-size:11px;color:var(--ink4);font-family:var(--mono)">${joinDate}</p>
+        ${!isSelf?`<button class="btn btn-danger btn-sm" style="margin-top:.25rem" onclick="revokeAdmin('${a.id}','${a.displayName||a.email}')">권한 해제</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.grantAdmin=async()=>{
+  const email=document.getElementById('new-admin-email').value.trim();
+  if(!email){showAlert('이메일을 입력해주세요.','danger');return;}
+  const q=query(collection(db,'users'),where('email','==',email));
+  const snap=await getDocs(q);
+  if(snap.empty){showAlert('해당 이메일로 가입된 회원이 없습니다.','danger');return;}
+  const target=snap.docs[0];
+  if(target.data().role==='admin'){showAlert('이미 관리자 권한이 있는 계정입니다.','danger');return;}
+  await updateDoc(doc(db,'users',target.id),{role:'admin'});
+  document.getElementById('new-admin-email').value='';
+  showAlert(`${email} 계정에 관리자 권한을 부여했습니다.`);
+  loadAdmins();
+};
+
+window.revokeAdmin=async(uid,name)=>{
+  if(!confirm(`'${name}' 계정의 관리자 권한을 해제하시겠습니까?`)) return;
+  await updateDoc(doc(db,'users',uid),{role:'user'});
+  showAlert(`${name} 계정의 관리자 권한을 해제했습니다.`);
+  loadAdmins();
+};
+
+window.changePw=async()=>{
+  const pw=document.getElementById('new-pw').value;
+  const pw2=document.getElementById('new-pw2').value;
+  if(pw.length<8){showAlert('비밀번호는 8자 이상이어야 합니다.','danger');return;}
+  if(pw!==pw2){showAlert('비밀번호가 일치하지 않습니다.','danger');return;}
+  try{
+    await updatePassword(meAuth,pw);
+    document.getElementById('new-pw').value='';
+    document.getElementById('new-pw2').value='';
+    showAlert('비밀번호가 변경됐습니다.');
+  }catch(e){
+    if(e.code==='auth/requires-recent-login') showAlert('보안을 위해 재로그인 후 다시 시도해주세요.','danger');
+    else showAlert('비밀번호 변경 실패: '+e.message,'danger');
+  }
+};
+</script>
+</body>
+</html>

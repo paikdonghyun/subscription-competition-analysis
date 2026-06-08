@@ -171,37 +171,42 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
 <body>
 
 <header>
-  <div class="top-bar">
+  <!-- 공통 CSS -->
+  <link rel="stylesheet" href="/css/common.css" id="common-css">
+  <div class="top-bar" style="background:#fff;border-bottom:1px solid var(--bg3)">
     <div class="top-bar-inner">
-      <div class="logo-area" style="gap:.75rem">
-        <a href="/" style="text-decoration:none;display:flex;align-items:baseline;gap:.4rem">
-          <span class="logo-title" style="font-size:1.3rem;letter-spacing:-.03em">청약랩</span>
-          <span style="font-family:var(--mono);font-size:.75rem;font-weight:500;color:var(--ink3);letter-spacing:.04em">ApplyLab</span>
-        </a>
-        <span class="logo-badge">한국부동산원</span>
-      </div>
-      <nav class="top-nav" id="top-nav">
-        <button class="top-nav-btn active" onclick="switchTab('sido')" id="tab-sido">📊 시도 통계</button>
-        <button class="top-nav-btn" onclick="switchTab('api')" id="tab-api">🔍 단지별 실시간 조회</button>
+      <a href="/" class="gnav-logo" style="display:flex;align-items:baseline;gap:.4rem;text-decoration:none">
+        <span class="gnav-logo-kr" style="font-family:var(--serif,serif);font-size:1.15rem;font-weight:600;color:var(--ink,#18181b)">청약랩</span>
+        <span class="gnav-logo-en" style="font-family:var(--mono,monospace);font-size:.7rem;color:var(--ink3,#71717a);letter-spacing:.05em">ApplyLab</span>
+      </a>
+      <div style="width:1px;height:18px;background:var(--bg3,#e5e7eb);flex-shrink:0"></div>
+      <nav style="display:flex;align-items:center;gap:.125rem;flex:1" id="top-nav">
+        <a href="/" class="top-nav-btn active" style="font-size:13px;font-weight:500;color:var(--accent,#1d4ed8);padding:.4rem .9rem;border-radius:6px;background:var(--accent-l,#eff6ff)">청약 분석</a>
+        <a href="/board.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s">게시판</a>
+        <a href="/mypage.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s">마이페이지</a>
       </nav>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-shrink:0" id="gnav-right">
+        <a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;border:1px solid var(--bg3,#e5e7eb);color:var(--ink2,#3f3f46)">로그인</a>
+        <a href="/login.html#register" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">회원가입</a>
+      </div>
     </div>
   </div>
-  <div class="search-bar">
-    <div class="search-bar-inner">
-      <span class="search-lbl" id="search-lbl-text">시도명</span>
-      <div class="search-row">
-        <input class="search-input" id="searchInput" type="text" placeholder="예: 경기, 서울, 충남..." autocomplete="off">
-        <button class="search-btn" id="searchBtn" onclick="doSearch()">조회</button>
+  <div class="search-bar" style="background:#fff;border-bottom:1px solid var(--bg3,#e5e7eb);padding:.875rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+    <div class="search-bar-inner" style="max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+      <span style="font-size:11px;font-family:monospace;letter-spacing:.08em;color:var(--ink4,#a1a1aa);white-space:nowrap;text-transform:uppercase" id="search-lbl-text">시도명</span>
+      <div style="display:flex;gap:0;flex:1;max-width:480px;min-width:200px">
+        <input class="search-input" style="flex:1;background:var(--bg2,#f3f4f6);border:1.5px solid var(--bg3,#e5e7eb);border-right:none;color:var(--ink,#18181b);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:6px 0 0 6px;transition:border-color .15s" id="searchInput" type="text" placeholder="예: 경기, 서울, 충남..." autocomplete="off">
+        <button style="background:var(--accent,#1d4ed8);color:#fff;border:none;padding:.55rem 1.1rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:0 6px 6px 0;white-space:nowrap" id="searchBtn" onclick="doSearch()">조회</button>
       </div>
-      <div class="period-wrap" id="period-filter">
+      <div style="display:none;align-items:center;gap:.4rem;font-size:11px;color:var(--ink4,#a1a1aa);font-family:monospace" id="period-filter">
         <span>기간</span>
-        <select id="startYear"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024" selected>2024</option><option value="2025">2025</option><option value="2026">2026</option></select>
-        <select id="startMonth"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06">06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12" selected>12월</option></select>
+        <select id="startYear" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024" selected>2024</option><option value="2025">2025</option><option value="2026">2026</option></select>
+        <select id="startMonth" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06">06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12" selected>12월</option></select>
         <span style="color:var(--ink4)">~</span>
-        <select id="endYear"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option></select>
-        <select id="endMonth"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06" selected>06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+        <select id="endYear" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option></select>
+        <select id="endMonth" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06" selected>06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
       </div>
-      <div class="chip-row" id="chipRow"></div>
+      <div style="display:flex;gap:.375rem;flex-wrap:wrap;align-items:center" id="chipRow"></div>
     </div>
   </div>
 </header>
@@ -1209,5 +1214,52 @@ function changePage(dir) {
   window.scrollTo({top: 0, behavior:'smooth'});
 }
 </script>
+
+<script src="/js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const _app = initializeApp(FIREBASE_CONFIG);
+const _auth = getAuth(_app);
+const _db = getFirestore(_app);
+onAuthStateChanged(_auth, async u => {
+  const right = document.getElementById('gnav-right');
+  if(!right) return;
+  if(u) {
+    const snap = await getDoc(doc(_db,'users',u.uid));
+    const ud = snap.data();
+    const name = ud?.displayName || u.email.split('@')[0];
+    const isAdmin = ud?.role === 'admin';
+    right.innerHTML = `<div style="position:relative" onmouseenter="this.querySelector('.dd').style.display='block'" onmouseleave="this.querySelector('.dd').style.display='none'">
+      <div style="display:flex;align-items:center;gap:.4rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;font-size:12px;color:var(--ink2)">
+        <div style="width:26px;height:26px;background:var(--accent,#1d4ed8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:500">${name[0].toUpperCase()}</div>
+        <span>${name}</span>${isAdmin?'<span style="background:#fef2f2;color:#dc2626;font-size:9px;padding:1px 5px;border-radius:3px;font-family:monospace">관리자</span>':''}▾
+      </div>
+      <div class="dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--bg3,#e5e7eb);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,.08);min-width:150px;padding:.375rem;z-index:300">
+        <a href="/mypage.html" style="display:block;padding:.5rem .75rem;font-size:13px;color:var(--ink2);border-radius:6px">마이페이지</a>
+        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">⚙ 관리자</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
+        <a href="#" onclick="signOut(getAuth(initializeApp(FIREBASE_CONFIG)));location.href='/';return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
+      </div>
+    </div>`;
+  } else {
+    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;border:1px solid var(--bg3,#e5e7eb);color:var(--ink2,#3f3f46)">로그인</a><a href="/login.html#register" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff">회원가입</a>`;
+  }
+  // 방문자 추적
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const month = today.slice(0,7);
+    const sk = 'al_v_'+today;
+    if(!sessionStorage.getItem(sk)) {
+      sessionStorage.setItem(sk,'1');
+      await setDoc(doc(_db,'analytics_daily',today),{views:increment(1),date:today,month},{merge:true});
+      await setDoc(doc(_db,'analytics_monthly',month),{views:increment(1),month},{merge:true});
+      const page = location.pathname.replace(/\//g,'_').replace(/^_/,'')||'home';
+      await setDoc(doc(_db,'analytics_pages',page),{views:increment(1),page:location.pathname},{merge:true});
+    }
+  } catch(e) {}
+});
+</script>
+
 </body>
 </html>
