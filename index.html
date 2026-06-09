@@ -198,7 +198,7 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
       </button>
       <button id="tab-api" onclick="switchTab('api')"
         style="font-size:13px;font-weight:400;padding:.75rem 1.125rem;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--ink3,#71717a);cursor:pointer;transition:all .15s;white-space:nowrap">
-        🔍 단지별 실시간 조회
+        🔍 시군구 통계
       </button>
     </div>
   </div>
@@ -499,8 +499,8 @@ function switchTab(tab) {
     input.placeholder = '예: 경기, 서울, 충남...';
     pf.style.display = 'none';
   } else {
-    document.getElementById('search-lbl-text').textContent = '지역 / 단지명';
-    input.placeholder = '예: 용인, 수원, 성남, 판교, 동탄...';
+    document.getElementById('search-lbl-text').textContent = '시군구 / 단지명';
+    input.placeholder = '예: 용인, 수원, 성남, 판교...';
     pf.style.display = 'flex';
   }
   setupChips();
