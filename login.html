@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>로그인 · 청약랩 ApplyLab</title>
+<title>관리자 로그인 · 청약랩 ApplyLab</title>
 <link rel="stylesheet" href="/css/common.css">
 <style>
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-l) 0%,var(--bg) 60%);padding:2rem}
@@ -39,10 +39,9 @@
       <div class="auth-logo-en">ApplyLab</div>
     </div>
 
-    <!-- 탭 -->
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="showTab('login')">로그인</button>
-      <button class="auth-tab" id="tab-register" onclick="showTab('register')">회원가입</button>
+    <!-- 로그인 전용 -->
+    <div style="text-align:center;margin-bottom:1.75rem">
+      <p style="font-size:13px;color:var(--ink3)">관리자 로그인</p>
     </div>
 
     <!-- 알림 -->
@@ -66,37 +65,7 @@
       </button>
     </div>
 
-    <!-- 회원가입 폼 -->
-    <div id="form-register" style="display:none">
-      <div class="form-group">
-        <label class="form-label">이름</label>
-        <input class="form-input" type="text" id="reg-name" placeholder="실명 또는 닉네임">
-      </div>
-      <div class="form-group">
-        <label class="form-label">이메일</label>
-        <input class="form-input" type="email" id="reg-email" placeholder="이메일 주소">
-      </div>
-      <div class="form-group">
-        <label class="form-label">비밀번호</label>
-        <input class="form-input" type="password" id="reg-pw" placeholder="8자 이상">
-        <p class="form-hint">영문·숫자·특수문자 조합 8자 이상</p>
-      </div>
-      <div class="form-group">
-        <label class="form-label">비밀번호 확인</label>
-        <input class="form-input" type="password" id="reg-pw2" placeholder="비밀번호 재입력" onkeydown="if(event.key==='Enter')doRegister()">
-      </div>
-      <div style="margin-bottom:1rem">
-        <label style="display:flex;align-items:center;gap:.5rem;font-size:12px;color:var(--ink2);cursor:pointer">
-          <input type="checkbox" id="agree-terms">
-          <span><a href="#" style="color:var(--accent)">이용약관</a> 및 <a href="#" style="color:var(--accent)">개인정보처리방침</a>에 동의합니다</span>
-        </label>
-      </div>
-      <button class="btn btn-primary btn-full btn-lg" onclick="doRegister()" id="reg-btn">회원가입</button>
-    </div>
-
-    <div class="auth-bottom" id="auth-bottom">
-      계정이 없으신가요? <span class="auth-link" onclick="showTab('register')">회원가입</span>
-    </div>
+    
   </div>
 </div>
 
@@ -118,30 +87,6 @@ onAuthStateChanged(auth, u => { if(u) location.href = '/'; });
 // 탭 URL 처리
 if(location.hash === '#register') showTab('register');
 
-window.showTab = (tab) => {
-  document.getElementById('form-login').style.display = tab==='login'?'block':'none';
-  document.getElementById('form-register').style.display = tab==='register'?'block':'none';
-  document.getElementById('tab-login').classList.toggle('active', tab==='login');
-  document.getElementById('tab-register').classList.toggle('active', tab==='register');
-  document.getElementById('auth-bottom').innerHTML = tab==='login'
-    ? '계정이 없으신가요? <span class="auth-link" onclick="showTab(\'register\')">회원가입</span>'
-    : '이미 계정이 있으신가요? <span class="auth-link" onclick="showTab(\'login\')">로그인</span>';
-  clearAlert();
-};
-
-function showAlert(msg, type='danger') {
-  const el = document.getElementById('auth-alert');
-  el.className = 'alert alert-' + type;
-  el.textContent = msg;
-  el.style.display = 'block';
-}
-function clearAlert() { document.getElementById('auth-alert').style.display='none'; }
-
-function setLoading(btnId, loading) {
-  const btn = document.getElementById(btnId);
-  btn.disabled = loading;
-  btn.textContent = loading ? '처리 중...' : (btnId==='login-btn'?'로그인':'회원가입');
-}
 
 window.doLogin = async () => {
   const email = document.getElementById('login-email').value.trim();
@@ -163,37 +108,6 @@ window.doLogin = async () => {
   } finally { setLoading('login-btn', false); }
 };
 
-window.doRegister = async () => {
-  const name  = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pw    = document.getElementById('reg-pw').value;
-  const pw2   = document.getElementById('reg-pw2').value;
-  const agreed = document.getElementById('agree-terms').checked;
-  if(!name) return showAlert('이름을 입력해주세요.');
-  if(!email) return showAlert('이메일을 입력해주세요.');
-  if(pw.length < 8) return showAlert('비밀번호는 8자 이상이어야 합니다.');
-  if(pw !== pw2) return showAlert('비밀번호가 일치하지 않습니다.');
-  if(!agreed) return showAlert('이용약관에 동의해주세요.');
-  setLoading('reg-btn', true);
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pw);
-    await updateProfile(cred.user, { displayName: name });
-    const role = email === ADMIN_EMAIL ? 'admin' : 'user';
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      uid: cred.user.uid, email, displayName: name, role,
-      createdAt: serverTimestamp(), lastLoginAt: serverTimestamp(), status: 'active'
-    });
-    showAlert('회원가입이 완료됐습니다! 환영합니다 🎉', 'success');
-    setTimeout(() => location.href = '/', 1200);
-  } catch(e) {
-    const msgs = {
-      'auth/email-already-in-use':'이미 사용 중인 이메일입니다.',
-      'auth/invalid-email':'올바른 이메일 형식이 아닙니다.',
-      'auth/weak-password':'비밀번호가 너무 약합니다.'
-    };
-    showAlert(msgs[e.code] || '회원가입에 실패했습니다: ' + e.message);
-  } finally { setLoading('reg-btn', false); }
-};
 
 window.doGoogleLogin = async () => {
   try {

@@ -182,12 +182,9 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
       <div style="width:1px;height:18px;background:var(--bg3,#e5e7eb);flex-shrink:0"></div>
       <nav style="display:flex;align-items:center;gap:.125rem;flex:1" id="top-nav">
         <a href="/" class="top-nav-btn active" style="font-size:13px;font-weight:500;color:var(--accent,#1d4ed8);padding:.4rem .9rem;border-radius:6px;background:var(--accent-l,#eff6ff)">청약 분석</a>
-        <a href="/board.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s">게시판</a>
-        <a href="/mypage.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s">마이페이지</a>
       </nav>
       <div style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-shrink:0" id="gnav-right">
-        <a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;border:1px solid var(--bg3,#e5e7eb);color:var(--ink2,#3f3f46)">로그인</a>
-        <a href="/login.html#register" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">회원가입</a>
+        <a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">관리자 로그인</a>
       </div>
     </div>
   </div>
@@ -1237,13 +1234,12 @@ onAuthStateChanged(_auth, async u => {
         <span>${name}</span>${isAdmin?'<span style="background:#fef2f2;color:#dc2626;font-size:9px;padding:1px 5px;border-radius:3px;font-family:monospace">관리자</span>':''}▾
       </div>
       <div class="dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--bg3,#e5e7eb);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,.08);min-width:150px;padding:.375rem;z-index:300">
-        <a href="/mypage.html" style="display:block;padding:.5rem .75rem;font-size:13px;color:var(--ink2);border-radius:6px">마이페이지</a>
-        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">⚙ 관리자</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
+        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px;font-weight:500">⚙ 관리자 대시보드</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
         <a href="#" onclick="signOut(getAuth(initializeApp(FIREBASE_CONFIG)));location.href='/';return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
       </div>
     </div>`;
   } else {
-    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;border:1px solid var(--bg3,#e5e7eb);color:var(--ink2,#3f3f46)">로그인</a><a href="/login.html#register" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff">회원가입</a>`;
+    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff;border:1px solid #1d4ed8">관리자 로그인</a>`;
   }
   // 방문자 추적
   try {
