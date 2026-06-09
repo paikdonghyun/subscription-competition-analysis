@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>분양가격 분석 · 청약랩 ApplyLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
+  --bg:#f9fafb;--bg2:#f3f4f6;--bg3:#e5e7eb;--bg4:#d1d5db;--white:#ffffff;
+  --accent:#1d4ed8;--accent-l:#eff6ff;--accent-h:#1e40af;
+  --red:#dc2626;--green:#16a34a;--gold:#b45309;--orange:#ea580c;
+  --serif:'Noto Serif KR',serif;--sans:'Noto Sans KR',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+  --r:6px;--r-lg:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;font-weight:300;font-size:14px}
+
+/* ── NAV ── */
+.gnav{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+.gnav-inner{max-width:1400px;margin:0 auto;height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:1.25rem}
+.gnav-logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none}
+.gnav-logo-kr{font-family:var(--serif);font-size:1.15rem;font-weight:600;color:var(--ink)}
+.gnav-logo-en{font-family:var(--mono);font-size:.7rem;color:var(--ink3);letter-spacing:.05em}
+.gnav-div{width:1px;height:18px;background:var(--bg3)}
+.gnav-menu{display:flex;gap:.125rem;flex:1}
+.gnav-item{font-size:13px;color:var(--ink3);padding:.4rem .875rem;border-radius:var(--r);transition:all .12s;text-decoration:none}
+.gnav-item:hover{color:var(--ink);background:var(--bg2)}
+.gnav-item.active{color:var(--accent);font-weight:500;background:var(--accent-l)}
+.gnav-right{margin-left:auto;flex-shrink:0}
+
+/* ── LAYOUT ── */
+.page-wrap{max-width:1400px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start}
+.page-content{padding:0 1.25rem;min-width:0}
+.ad-col{padding-top:0}
+.ad-side{position:sticky;top:72px}
+@media(max-width:1200px){.page-wrap{grid-template-columns:1fr}.ad-col{display:none}.page-content{padding:0}}
+
+/* ── AD ── */
+.ad-slot{background:var(--bg2);border:1px dashed var(--bg4);border-radius:var(--r-lg);text-align:center;overflow:hidden;margin-bottom:.75rem}
+.ad-label{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;padding:.3rem;border-bottom:1px solid var(--bg3)}
+.ad-h{display:flex;align-items:center;justify-content:center}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--white);border:1px solid var(--bg3);border-radius:var(--r-lg);padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:var(--shadow-sm)}
+.filter-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.filter-label{font-size:11px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink4);white-space:nowrap;text-transform:uppercase}
+.filter-select{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:.45rem .75rem;border-radius:var(--r);font-size:13px;cursor:pointer;outline:none;transition:border-color .15s}
+.filter-select:focus{border-color:var(--accent)}
+.filter-btn{font-size:12px;font-weight:500;padding:.4rem .875rem;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--bg3);background:var(--white);color:var(--ink3);transition:all .12s;white-space:nowrap;font-family:var(--mono)}
+.filter-btn.active,.filter-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.type-chips{display:flex;gap:.375rem;flex-wrap:wrap}
+.type-chip{font-size:11px;padding:3px 9px;border:1.5px solid var(--bg3);border-radius:20px;cursor:pointer;color:var(--ink3);background:var(--white);transition:all .12s;font-family:var(--mono)}
+.type-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.65rem;margin-bottom:1rem}
+.sc{background:var(--white);border:1px solid var(--bg3);border-radius:var(--r-lg);padding:.875rem 1rem;border-top:3px solid var(--bg4);box-shadow:var(--shadow-sm)}
+.sc.b{border-top-color:var(--accent)}.sc.r{border-top-color:var(--red)}
+.sc.g{border-top-color:var(--green)}.sc.o{border-top-color:var(--orange)}
+.sc-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.07em;color:var(--ink3);margin-bottom:.4rem;text-transform:uppercase}
+.sc-val{font-family:var(--serif);font-size:1.55rem;font-weight:600;color:var(--ink);line-height:1}
+.sc-unit{font-size:.75rem;font-weight:300;color:var(--ink3)}
+.sc-sub{font-size:11px;color:var(--ink4);margin-top:.3rem;font-family:var(--mono)}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--bg3);border-radius:var(--r-lg);padding:1.25rem;box-shadow:var(--shadow-sm)}
+.card-title{font-family:var(--serif);font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--bg2);display:flex;align-items:center;gap:.4rem}
+.card-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:700px){.chart-grid-2{grid-template-columns:1fr}}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;font-weight:500;color:var(--ink3);text-align:left;padding:.55rem .75rem;border-bottom:2px solid var(--bg3);background:var(--bg2);text-transform:uppercase;white-space:nowrap}
+.tbl td{padding:.55rem .75rem;border-bottom:1px solid var(--bg2);color:var(--ink2);font-size:12.5px;background:var(--white)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--accent-l)}
+.tbl .num{font-family:var(--mono);text-align:right;font-size:12px}
+.tbl .hi{color:var(--red);font-weight:500}
+.tbl .lo{color:var(--green);font-weight:500}
+.bar-cell{display:flex;align-items:center;gap:.5rem}
+.mini-bar{height:5px;border-radius:3px;background:var(--accent);min-width:2px}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:3rem;color:var(--ink4);font-family:var(--mono);font-size:12px}
+.spinner{width:28px;height:28px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── PAGER ── */
+.pager{display:flex;align-items:center;gap:.375rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
+.pager-btn,.pager-num{background:var(--white);border:1px solid var(--bg3);color:var(--ink2);padding:.35rem .7rem;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--mono);transition:all .12s;min-width:32px;text-align:center}
+.pager-btn:hover,.pager-num:hover{background:var(--bg2)}
+.pager-num.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pager-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── NOTE ── */
+.note{background:var(--bg2);border-left:3px solid var(--bg4);padding:.6rem .875rem;border-radius:0 var(--r) var(--r) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6;margin-top:1rem}
+footer{background:var(--bg2);border-top:1px solid var(--bg3);padding:1.5rem;text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink4);margin-top:3rem}
+</style>
+</head>
+<body>
+
+<nav class="gnav">
+  <div class="gnav-inner">
+    <a href="/subscription-competition-analysis/" class="gnav-logo">
+      <span class="gnav-logo-kr">청약랩</span>
+      <span class="gnav-logo-en">ApplyLab</span>
+    </a>
+    <div class="gnav-div"></div>
+    <nav class="gnav-menu">
+      <a href="/subscription-competition-analysis/" class="gnav-item">청약경쟁률</a>
+      <a href="/subscription-competition-analysis/price.html" class="gnav-item active">분양가격</a>
+    </nav>
+    <div class="gnav-right" id="gnav-right">
+      <a href="/subscription-competition-analysis/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent);color:#fff;text-decoration:none">관리자 로그인</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <!-- 좌측 광고 -->
+  <div class="ad-col"><div class="ad-side">
+    <div class="ad-slot"><div class="ad-label">Ad</div>
+      <div class="ad-h" style="width:160px;height:600px"><ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins></div>
+    </div>
+  </div></div>
+
+  <!-- 메인 콘텐츠 -->
+  <div class="page-content">
+
+    <!-- 필터바 -->
+    <div class="filter-bar">
+      <div class="filter-row">
+        <span class="filter-label">지역</span>
+        <select class="filter-select" id="sel-region">
+          <option value="전체">전국 평균</option>
+          <option value="서울">서울</option>
+          <option value="경기">경기</option>
+          <option value="인천">인천</option>
+          <option value="부산">부산</option>
+          <option value="대구">대구</option>
+          <option value="대전">대전</option>
+          <option value="광주">광주</option>
+          <option value="울산">울산</option>
+          <option value="세종">세종</option>
+          <option value="강원">강원</option>
+          <option value="충북">충북</option>
+          <option value="충남">충남</option>
+          <option value="전북">전북</option>
+          <option value="전남">전남</option>
+          <option value="경북">경북</option>
+          <option value="경남">경남</option>
+          <option value="제주">제주</option>
+        </select>
+
+        <span class="filter-label">기간</span>
+        <select class="filter-select" id="sel-year-from">
+          <option value="2015">2015년~</option>
+          <option value="2018">2018년~</option>
+          <option value="2020">2020년~</option>
+          <option value="2022">2022년~</option>
+          <option value="2024" selected>2024년~</option>
+        </select>
+        <span style="font-size:12px;color:var(--ink4)">~</span>
+        <select class="filter-select" id="sel-year-to">
+          <option value="2026" selected>2026년</option>
+          <option value="2025">2025년</option>
+          <option value="2024">2024년</option>
+          <option value="2023">2023년</option>
+        </select>
+
+        <button class="filter-btn active" id="btn-apply" onclick="applyFilter()">조회</button>
+      </div>
+      <div class="filter-row" style="margin-top:.75rem">
+        <span class="filter-label">면적</span>
+        <div class="type-chips" id="type-chips">
+          <button class="type-chip active" data-type="모든면적">전체</button>
+          <button class="type-chip" data-type="전용면적 60제곱미터이하">60㎡ 이하</button>
+          <button class="type-chip" data-type="전용면적 60제곱미터초과 85제곱미터이하">60~85㎡</button>
+          <button class="type-chip" data-type="전용면적 85제곱미터초과 102제곱미터이하">85~102㎡</button>
+          <button class="type-chip" data-type="전용면적 102제곱미터초과">102㎡ 초과</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 로딩 -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>분양가격 데이터 로딩 중...</p>
+    </div>
+
+    <!-- 결과 영역 -->
+    <div id="result" style="display:none">
+
+      <!-- 요약 카드 -->
+      <div class="stat-grid" id="stat-cards"></div>
+
+      <!-- 차트 영역 -->
+      <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:.75rem">
+
+        <!-- 가격 추이 -->
+        <div class="card">
+          <p class="card-title">월별 분양가격 추이 <span id="chart-title-sub" style="font-size:11px;font-weight:400;color:var(--ink3);margin-left:.375rem"></span></p>
+          <div class="type-chips" style="margin-bottom:.875rem" id="compare-chips">
+            <span style="font-size:11px;color:var(--ink4);font-family:var(--mono);margin-right:.25rem">비교지역:</span>
+            <button class="type-chip active" data-compare="none">없음</button>
+            <button class="type-chip" data-compare="서울">서울</button>
+            <button class="type-chip" data-compare="경기">경기</button>
+            <button class="type-chip" data-compare="전국">전국</button>
+          </div>
+          <div class="chart-wrap" style="height:280px"><canvas id="trend-chart" role="img" aria-label="분양가격 추이 차트"></canvas></div>
+        </div>
+
+        <div class="chart-grid-2">
+          <!-- 지역별 비교 -->
+          <div class="card">
+            <p class="card-title">지역별 평균 분양가격 <span id="region-chart-sub" style="font-size:11px;font-weight:400;color:var(--ink3)"></span></p>
+            <div class="chart-wrap" style="height:320px"><canvas id="region-chart" role="img" aria-label="지역별 분양가격 비교"></canvas></div>
+          </div>
+          <!-- 면적별 비교 -->
+          <div class="card">
+            <p class="card-title">면적 구분별 가격 비교</p>
+            <div class="chart-wrap" style="height:320px"><canvas id="type-chart" role="img" aria-label="면적별 분양가격"></canvas></div>
+          </div>
+        </div>
+
+        <!-- YoY 상승률 -->
+        <div class="card">
+          <p class="card-title">전년 동월 대비 상승률 (%)</p>
+          <div class="chart-wrap" style="height:200px"><canvas id="yoy-chart" role="img" aria-label="전년 동월 대비 상승률"></canvas></div>
+        </div>
+
+      </div>
+
+      <!-- 중간 광고 -->
+      <div class="ad-slot" style="margin-bottom:.75rem"><div class="ad-label">Advertisement</div>
+        <div class="ad-h" style="width:100%;height:90px"><ins class="adsbygoogle" style="display:block;width:100%;height:90px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
+      </div>
+
+      <!-- 데이터 테이블 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
+          <p class="card-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">상세 데이터</p>
+          <div style="display:flex;gap:.375rem;align-items:center">
+            <span style="font-size:11px;color:var(--ink4);font-family:var(--mono)" id="table-info"></span>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr>
+              <th>연도</th><th>월</th><th>지역</th><th>면적 구분</th>
+              <th class="num">㎡당 가격(천원)</th>
+              <th class="num">3.3㎡(평)당(만원)</th>
+              <th>추이</th>
+            </tr></thead>
+            <tbody id="tbl-body"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="tbl-pager"></div>
+      </div>
+
+      <p class="note" id="data-note"></p>
+    </div>
+
+  </div>
+
+  <!-- 우측 광고 -->
+  <div class="ad-col"><div class="ad-side">
+    <div class="ad-slot"><div class="ad-label">Ad</div>
+      <div class="ad-h" style="width:160px;height:600px"><ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins></div>
+    </div>
+    <div class="ad-slot" style="margin-top:.75rem"><div class="ad-label">Ad</div>
+      <div class="ad-h" style="width:160px;height:250px"><ins class="adsbygoogle" style="display:block;width:160px;height:250px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins></div>
+    </div>
+  </div></div>
+</div>
+
+<footer>청약랩 · ApplyLab · 데이터 출처: 주택도시보증공사(HUG) 전국 신규 민간아파트 분양가격 동향</footer>
+
+<script>
+const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+// 최신 엔드포인트 (2026-04-30) - 2015년부터 전체 누적 데이터 포함
+const API_ENDPOINT = 'https://api.odcloud.kr/api/15061057/v1/uddi:056e87ff-8f04-4d4a-a444-bd73434bb40f';
+const PROXY = 'https://corsproxy.io/?url=';
+
+let rawData = [];       // 전체 로드 데이터
+let filtered = [];      // 필터 적용 데이터
+let charts = {};
+let tblPage = 1;
+const TBL_SIZE = 20;
+let selectedType = '모든면적';
+let compareRegion = 'none';
+
+// ── 초기 로드 ──
+async function loadAll() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('result').style.display  = 'none';
+  try {
+    // 전체 건수 먼저 확인
+    const first = await fetchPage(1, 1);
+    const total = first.totalCount;
+    const pages = Math.ceil(total / 1000);
+
+    // 병렬 로드 (최대 11페이지 × 1000건 = 10795건)
+    document.querySelector('#loading p').textContent =
+      `분양가격 데이터 로딩 중... (총 ${total.toLocaleString()}건)`;
+    const results = await Promise.all(
+      Array.from({length: pages}, (_, i) => fetchPage(i+1, 1000))
+    );
+    rawData = results.flatMap(r => r.data || []);
+    // 필드명 정규화 (구버전/신버전 모두 대응)
+    rawData = rawData.map(it => ({
+      지역명:   it['지역명'] || '',
+      규모구분: it['규모구분'] || '',
+      연도:     parseInt(it['연도']) || 0,
+      월:       parseInt(it['월'])   || 0,
+      가격:     parseFloat(it['분양가격(제곱미터당 천원)'] || it['분양가격(㎡)'] || 0),
+    })).filter(it => it.가격 > 0 && it.연도 > 0);
+
+    applyFilter();
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      '<p style="color:#dc2626">데이터 로드 실패: ' + e.message + '</p>';
+  }
+}
+
+async function fetchPage(page, perPage) {
+  const direct = API_ENDPOINT + '?page=' + page + '&perPage=' + perPage + '&serviceKey=' + API_KEY;
+  const proxyUrl = PROXY + encodeURIComponent(API_ENDPOINT + '?page=' + page + '&perPage=' + perPage) + '&serviceKey=' + API_KEY;
+  for (const url of [direct, proxyUrl]) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 20000);
+      const res = await fetch(url, {mode:'cors', signal:ctrl.signal});
+      clearTimeout(t);
+      const text = await res.text();
+      if(!text || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') continue;
+      // JSON 파싱 (멀티JSON 대응)
+      const s = text.indexOf('{');
+      let d=0, ei=-1;
+      for(let i=s;i<text.length;i++){if(text[i]==='{')d++;else if(text[i]==='}'){d--;if(d===0){ei=i;break;}}}
+      return JSON.parse(text.substring(s, ei+1));
+    } catch(e) { continue; }
+  }
+  throw new Error('API 연결 실패');
+}
+
+// ── 면적 칩 이벤트 ──
+document.getElementById('type-chips').addEventListener('click', e => {
+  const btn = e.target.closest('.type-chip');
+  if(!btn) return;
+  document.querySelectorAll('#type-chips .type-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedType = btn.dataset.type;
+  if(rawData.length) applyFilter();
+});
+
+// ── 비교 지역 칩 ──
+document.getElementById('compare-chips').addEventListener('click', e => {
+  const btn = e.target.closest('.type-chip');
+  if(!btn) return;
+  document.querySelectorAll('#compare-chips .type-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  compareRegion = btn.dataset.compare;
+  if(filtered.length) renderTrendChart(filtered);
+});
+
+// ── 필터 적용 ──
+function applyFilter() {
+  const region  = document.getElementById('sel-region').value;
+  const yrFrom  = parseInt(document.getElementById('sel-year-from').value);
+  const yrTo    = parseInt(document.getElementById('sel-year-to').value);
+
+  filtered = rawData.filter(it => {
+    const regOk  = region === '전체' || it.지역명 === region;
+    const typeOk = it.규모구분 === selectedType;
+    const yrOk   = it.연도 >= yrFrom && it.연도 <= yrTo;
+    return regOk && typeOk && yrOk;
+  }).sort((a,b) => a.연도!==b.연도 ? a.연도-b.연도 : a.월-b.월);
+
+  tblPage = 1;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('result').style.display  = 'block';
+  renderAll();
+}
+
+// ── 전체 렌더 ──
+function renderAll() {
+  renderStats();
+  renderTrendChart(filtered);
+  renderRegionChart();
+  renderTypeChart();
+  renderYoyChart();
+  renderTable();
+}
+
+// ── 요약 통계 ──
+function renderStats() {
+  const region = document.getElementById('sel-region').value;
+  const prices = filtered.map(it => it.가격).filter(v=>v>0);
+  if(!prices.length) return;
+
+  const latest  = filtered[filtered.length-1];
+  const latestP = latest?.가격 || 0;
+  const prevY   = filtered.filter(it => it.연도===latest.연도-1 && it.월===latest.월)[0];
+  const yoy     = prevY ? ((latestP - prevY.가격)/prevY.가격*100).toFixed(1) : null;
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const avg = (prices.reduce((s,v)=>s+v,0)/prices.length);
+
+  // 3.3㎡당 만원 변환: 가격(천원/㎡) × 3.3 = 천원/평 → /100 = 만원/평
+  const py33 = v => (v * 3.3 / 100).toFixed(0);
+
+  const cards = [
+    { lbl:'최신 분양가', val: latestP.toLocaleString(), unit:'천원/㎡',
+      sub: `${latest?.연도}-${String(latest?.월).padStart(2,'0')} · ${py33(latestP)}만원/평`, cls:'b' },
+    { lbl:'전년 동월 대비', val: yoy ? (yoy>0?'+':'')+yoy : '—', unit:'%',
+      sub: prevY ? `${prevY.연도}-${String(prevY.월).padStart(2,'0')} 대비` : '비교 데이터 없음',
+      cls: yoy>0?'r':yoy<0?'g':'b' },
+    { lbl:'기간 최고가', val: max.toLocaleString(), unit:'천원/㎡',
+      sub: `${py33(max)}만원/평`, cls:'r' },
+    { lbl:'기간 최저가', val: min.toLocaleString(), unit:'천원/㎡',
+      sub: `${py33(min)}만원/평`, cls:'g' },
+    { lbl:'기간 평균가', val: avg.toFixed(0), unit:'천원/㎡',
+      sub: `${py33(avg)}만원/평`, cls:'o' },
+    { lbl:'조회 데이터', val: filtered.length.toLocaleString(), unit:'건',
+      sub: region === '전체' ? '전국 평균' : region, cls:'b' },
+  ];
+
+  document.getElementById('stat-cards').innerHTML = cards.map(c =>
+    `<div class="sc ${c.cls}">
+      <p class="sc-lbl">${c.lbl}</p>
+      <p class="sc-val">${c.val}<span class="sc-unit">${c.unit}</span></p>
+      <p class="sc-sub">${c.sub}</p>
+    </div>`
+  ).join('');
+}
+
+// ── 추이 차트 ──
+function renderTrendChart(data) {
+  destroyChart('trend');
+  const region  = document.getElementById('sel-region').value;
+  const labels  = data.map(it => `${it.연도}-${String(it.월).padStart(2,'0')}`);
+  const vals    = data.map(it => it.가격);
+
+  document.getElementById('chart-title-sub').textContent =
+    `${region==='전체'?'전국':region} · ${data[0]?.규모구분||''} · 천원/㎡`;
+
+  const datasets = [{
+    label: region==='전체'?'전국 평균':region,
+    data: vals, borderColor:'#1d4ed8', backgroundColor:'rgba(29,78,216,.07)',
+    fill:true, tension:.3, pointRadius:2, pointBackgroundColor:'#1d4ed8'
+  }];
+
+  // 비교 지역
+  if(compareRegion !== 'none') {
+    const compRegion = compareRegion === '전국' ? '전체' : compareRegion;
+    const compData = rawData.filter(it =>
+      (compRegion==='전체' || it.지역명===compRegion) &&
+      it.규모구분 === selectedType &&
+      it.연도 >= parseInt(document.getElementById('sel-year-from').value) &&
+      it.연도 <= parseInt(document.getElementById('sel-year-to').value)
+    ).sort((a,b)=>a.연도!==b.연도?a.연도-b.연도:a.월-b.월);
+
+    if(compData.length) {
+      // 기간 맞추기
+      const labSet = new Set(labels);
+      const compFiltered = compData.filter(it =>
+        labSet.has(`${it.연도}-${String(it.월).padStart(2,'0')}`)
+      );
+      datasets.push({
+        label: compareRegion,
+        data: compFiltered.map(it=>it.가격),
+        borderColor:'#dc2626', backgroundColor:'transparent',
+        borderDash:[5,4], tension:.3, pointRadius:2, fill:false
+      });
+    }
+  }
+
+  charts.trend = new Chart(document.getElementById('trend-chart'), {
+    type:'line', data:{labels, datasets},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:datasets.length>1, labels:{font:{size:11},boxWidth:12}},
+        tooltip:{callbacks:{
+          label: c => c.dataset.label+': '+c.parsed.y.toLocaleString()+'천원/㎡ ('+
+            (c.parsed.y*3.3/100).toFixed(0)+'만원/평)'
+        }}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:45, autoSkip:true, maxTicksLimit:24}},
+        y:{beginAtZero:false, ticks:{font:{size:10}, callback:v=>v.toLocaleString()},
+           grid:{color:'rgba(0,0,0,.05)'}}
+      }
+    }
+  });
+}
+
+// ── 지역별 비교 차트 ──
+function renderRegionChart() {
+  destroyChart('region');
+  const yrFrom = parseInt(document.getElementById('sel-year-from').value);
+  const yrTo   = parseInt(document.getElementById('sel-year-to').value);
+
+  const regions = ['서울','경기','인천','부산','대구','대전','광주','울산','강원','충북','충남','전북','전남','경북','경남','제주','세종'];
+  const avgs = regions.map(r => {
+    const vals = rawData.filter(it =>
+      it.지역명===r && it.규모구분===selectedType &&
+      it.연도>=yrFrom && it.연도<=yrTo
+    ).map(it=>it.가격).filter(v=>v>0);
+    return vals.length ? (vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+  });
+
+  const sortedIdx = avgs.map((_,i)=>i).sort((a,b)=>avgs[b]-avgs[a]);
+  const sortedRegions = sortedIdx.map(i=>regions[i]);
+  const sortedAvgs    = sortedIdx.map(i=>avgs[i]);
+  const selRegion     = document.getElementById('sel-region').value;
+
+  document.getElementById('region-chart-sub').textContent =
+    `(${yrFrom}~${yrTo}년 평균 · 천원/㎡)`;
+
+  charts.region = new Chart(document.getElementById('region-chart'), {
+    type:'bar',
+    data:{
+      labels: sortedRegions,
+      datasets:[{
+        data: sortedAvgs,
+        backgroundColor: sortedRegions.map(r =>
+          r===selRegion ? '#1d4ed8' : selRegion==='전체' ? '#60a5fa' : '#d1d5db'
+        ),
+        borderRadius:3
+      }]
+    },
+    options:{responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>c.parsed.x.toFixed(0)+'천원/㎡ ('+
+          (c.parsed.x*3.3/100).toFixed(0)+'만원/평)'}}},
+      scales:{x:{beginAtZero:true, ticks:{font:{size:9},callback:v=>v.toLocaleString()}},
+              y:{ticks:{font:{size:10}}, grid:{display:false}}}
+    }
+  });
+}
+
+// ── 면적별 비교 차트 ──
+function renderTypeChart() {
+  destroyChart('type');
+  const region  = document.getElementById('sel-region').value;
+  const yrFrom  = parseInt(document.getElementById('sel-year-from').value);
+  const yrTo    = parseInt(document.getElementById('sel-year-to').value);
+  const types   = ['전용면적 60제곱미터이하','전용면적 60제곱미터초과 85제곱미터이하',
+                   '전용면적 85제곱미터초과 102제곱미터이하','전용면적 102제곱미터초과'];
+  const typeNames = ['60㎡이하','60~85㎡','85~102㎡','102㎡초과'];
+  const colors    = ['#1d4ed8','#16a34a','#b45309','#dc2626'];
+
+  // 각 면적 유형별 시계열
+  const baseData = filtered.filter(it=>it.규모구분==='모든면적');
+  const labels   = baseData.map(it=>`${it.연도}-${String(it.월).padStart(2,'0')}`);
+
+  const datasets = types.map((t,i) => {
+    const vals = rawData.filter(it =>
+      (region==='전체'||it.지역명===region) && it.규모구분===t &&
+      it.연도>=yrFrom && it.연도<=yrTo
+    ).sort((a,b)=>a.연도!==b.연도?a.연도-b.연도:a.월-b.월);
+    const labSet = new Set(labels);
+    return {
+      label: typeNames[i],
+      data: vals.filter(it=>labSet.has(`${it.연도}-${String(it.월).padStart(2,'0')}`)).map(it=>it.가격),
+      borderColor: colors[i], backgroundColor:'transparent',
+      tension:.3, pointRadius:1.5, borderWidth:1.5
+    };
+  });
+
+  charts.type = new Chart(document.getElementById('type-chart'), {
+    type:'line', data:{labels, datasets},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true, labels:{font:{size:10},boxWidth:10}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString()+'천원/㎡'}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:12}},
+        y:{beginAtZero:false,ticks:{font:{size:9},callback:v=>v.toLocaleString()},grid:{color:'rgba(0,0,0,.04)'}}
+      }
+    }
+  });
+}
+
+// ── YoY 상승률 차트 ──
+function renderYoyChart() {
+  destroyChart('yoy');
+  const yoyData = [];
+  for(const it of filtered) {
+    const prev = rawData.find(p =>
+      p.지역명===it.지역명 && p.규모구분===it.규모구분 &&
+      p.연도===it.연도-1 && p.월===it.월
+    );
+    if(prev && prev.가격 > 0) {
+      yoyData.push({
+        label:`${it.연도}-${String(it.월).padStart(2,'0')}`,
+        val: ((it.가격-prev.가격)/prev.가격*100)
+      });
+    }
+  }
+  charts.yoy = new Chart(document.getElementById('yoy-chart'), {
+    type:'bar',
+    data:{
+      labels: yoyData.map(d=>d.label),
+      datasets:[{
+        data: yoyData.map(d=>d.val),
+        backgroundColor: yoyData.map(d=>d.val>=0?'rgba(220,38,38,.7)':'rgba(22,163,74,.7)'),
+        borderRadius:2
+      }]
+    },
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:20}},
+        y:{ticks:{font:{size:10},callback:v=>v.toFixed(0)+'%'},
+           grid:{color:'rgba(0,0,0,.05)'},
+           afterDataLimits(scale){scale.max+=0.5;scale.min-=0.5;}}
+      }
+    }
+  });
+}
+
+// ── 데이터 테이블 ──
+function renderTable() {
+  const start  = (tblPage-1)*TBL_SIZE;
+  const page   = filtered.slice().reverse().slice(start, start+TBL_SIZE);
+  const tbody  = document.getElementById('tbl-body');
+  document.getElementById('table-info').textContent =
+    `총 ${filtered.length.toLocaleString()}건 · ${tblPage}/${Math.ceil(filtered.length/TBL_SIZE)}페이지`;
+
+  if(!page.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--ink4)">데이터 없음</td></tr>'; return; }
+
+  const maxP = Math.max(...filtered.map(it=>it.가격));
+  tbody.innerHTML = page.map(it => {
+    const pct  = Math.round((it.가격/maxP)*100);
+    const p33  = (it.가격*3.3/100).toFixed(0);
+    // 전년 동월
+    const prev = rawData.find(p=>p.지역명===it.지역명&&p.규모구분===it.규모구분&&p.연도===it.연도-1&&p.월===it.월);
+    const chg  = prev && prev.가격>0 ? ((it.가격-prev.가격)/prev.가격*100).toFixed(1) : null;
+    const chgHtml = chg ? (parseFloat(chg)>0
+      ? `<span style="color:var(--red);font-size:11px">+${chg}%</span>`
+      : `<span style="color:var(--green);font-size:11px">${chg}%</span>`) : '—';
+    return `<tr>
+      <td style="font-family:var(--mono)">${it.연도}</td>
+      <td style="font-family:var(--mono)">${String(it.월).padStart(2,'0')}</td>
+      <td>${it.지역명}</td>
+      <td style="font-size:11px;color:var(--ink3)">${it.규모구분.replace('제곱미터','㎡').replace('전용면적 ','')}</td>
+      <td class="num">${it.가격.toLocaleString()}</td>
+      <td class="num" style="font-weight:500">${p33}</td>
+      <td><div class="bar-cell"><div class="mini-bar" style="width:${pct}%;max-width:80px"></div>${chgHtml}</div></td>
+    </tr>`;
+  }).join('');
+
+  renderPager();
+}
+
+function renderPager() {
+  const total = Math.ceil(filtered.length/TBL_SIZE);
+  const pager = document.getElementById('tbl-pager');
+  if(total<=1){pager.innerHTML='';return;}
+  let html = `<button class="pager-btn" onclick="goPg(${tblPage-1})" ${tblPage<=1?'disabled':''}>← 이전</button>`;
+  const s=Math.max(1,tblPage-4), e=Math.min(total,tblPage+4);
+  if(s>1){html+=`<button class="pager-num" onclick="goPg(1)">1</button>`;if(s>2)html+=`<span style="font-size:11px;color:var(--ink4);padding:0 2px">…</span>`;}
+  for(let p=s;p<=e;p++) html+=`<button class="pager-num ${p===tblPage?'active':''}" onclick="goPg(${p})">${p}</button>`;
+  if(e<total){if(e<total-1)html+=`<span style="font-size:11px;color:var(--ink4);padding:0 2px">…</span>`;html+=`<button class="pager-num" onclick="goPg(${total})">${total}</button>`;}
+  html+=`<button class="pager-btn" onclick="goPg(${tblPage+1})" ${tblPage>=total?'disabled':''}>다음 →</button>`;
+  pager.innerHTML=html;
+}
+function goPg(p){tblPage=p;renderTable();window.scrollTo({top:0,behavior:'smooth'});}
+window.goPg=goPg;
+
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+window.applyFilter = applyFilter;
+
+document.getElementById('data-note').textContent =
+  '※ 출처: 주택도시보증공사(HUG) 전국 신규 민간아파트 분양가격 동향 (공공데이터포털 ID: 15061057) · ' +
+  '가격 단위: 천원/㎡ · 3.3㎡(평)당 환산: 가격×3.3÷100 (만원/평) · 최신 업데이트: 2026-04-30';
+
+// 시작
+loadAll();
+</script>
+</body>
+</html>
