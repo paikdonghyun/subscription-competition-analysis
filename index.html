@@ -750,17 +750,22 @@ async function fetchApi(q, page) {
       if (!text) return false;
       const t = text.toLowerCase();
       const k = kw.toLowerCase();
-      // 공백·괄호·쉼표·슬래시·하이픈·점·구분점으로 나눈 각 토큰이 kw로 시작하면 매칭
+
+      // 1) 공백 포함 직접 매칭 (기존 방식)
       const tokens = t.split(/[\s()\-,./··]/);
       for (const tok of tokens) {
         if (tok && tok.startsWith(k)) return true;
       }
-      // 텍스트 첫 글자거나, 공백/구분자 바로 뒤에 kw가 시작하면 매칭
       const idx = t.indexOf(k);
-      if (idx === -1) return false;
-      if (idx === 0) return true;
-      const prev = t[idx - 1];
-      return /[\s()\-,./··]/.test(prev);
+      if (idx !== -1 && (idx === 0 || /[\s()\-,./··]/.test(t[idx-1]))) return true;
+
+      // 2) 공백 제거 후 매칭 (띄어쓰기 없이 검색해도 찾아줌)
+      // 예: "더샵관저아르테" → "더샵 관저아르테" 매칭
+      const tNoSpace = t.replace(/\s+/g, '');
+      const kNoSpace = k.replace(/\s+/g, '');
+      if (tNoSpace.includes(kNoSpace)) return true;
+
+      return false;
     };
 
     const matched = allDetailData.filter(item => {
