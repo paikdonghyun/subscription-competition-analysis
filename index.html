@@ -794,7 +794,17 @@ async function fetchApi(q, page) {
       const nm   = item.HOUSE_NM || '';
       const addr = item.HSSPLY_ADRES || '';
       const area = item.SUBSCRPT_AREA_CODE_NM || '';
-      const textMatch = wordMatch(nm, qLow) || wordMatch(addr, qLow) || wordMatch(area, qLow);
+      const hay  = [nm, addr, area];
+      // 1) 전체 구문 매칭 (기존 방식: "더샵 관저아르테" 등)
+      let textMatch = hay.some(t => wordMatch(t, qLow));
+      // 2) 다중 키워드 AND 매칭: "르엘 센텀" → "르엘"+"센텀" 모두 포함 시 매칭
+      //    예) "르엘 센텀" → "르엘 리버파크 센텀" 검색 가능
+      if (!textMatch) {
+        const kws = qLow.split(/\s+/).filter(Boolean);
+        if (kws.length > 1) {
+          textMatch = kws.every(kw => hay.some(t => wordMatch(t, kw)));
+        }
+      }
       if (!textMatch) return false;
 
       // 기간 필터 (RCEPT_BGNDE: 청약접수시작일 기준, 예: "2024-06-15")
