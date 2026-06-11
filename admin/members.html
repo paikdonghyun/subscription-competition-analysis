@@ -13,12 +13,12 @@
   <div class="admin-sidebar-logo"><div class="admin-sidebar-logo-kr">청약랩 관리자</div><div class="admin-sidebar-logo-sub">ApplyLab Admin</div></div>
   <div class="admin-nav">
     <div class="admin-nav-section">대시보드</div>
-    <a href="/admin/" class="admin-nav-item">📊 방문자 통계</a>
+    <a href="/subscription-competition-analysis/admin/" class="admin-nav-item">📊 방문자 통계</a>
     <div class="admin-nav-section">관리</div>
-    <a href="/admin/members.html" class="admin-nav-item active">👥 회원 관리</a>
-    <a href="/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
-    <a href="/admin/accounts.html" class="admin-nav-item">🔑 관리자 계정</a>
-    <a href="/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
+    <a href="/subscription-competition-analysis/admin/members.html" class="admin-nav-item active">👥 회원 관리</a>
+    <a href="/subscription-competition-analysis/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
+    <a href="/subscription-competition-analysis/admin/accounts.html" class="admin-nav-item">🔑 관리자 계정</a>
+    <a href="/subscription-competition-analysis/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
     <a href="#" class="admin-nav-item" onclick="doLogout();return false" style="color:#ef4444">🚪 로그아웃</a>
   </div>
 </div>
@@ -69,7 +69,7 @@
   </div>
 </div>
 
-<script src="/js/firebase-config.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -83,15 +83,15 @@ const PAGE = 20;
 let allMembers = [], filtered = [], currentPage = 1, me = null;
 
 onAuthStateChanged(auth, async u => {
-  if(!u){ location.href='/login.html'; return; }
+  if(!u){ location.href='/subscription-competition-analysis/login.html'; return; }
   const snap = await getDoc(doc(db,'users',u.uid));
   const ud = snap.data();
-  if(ud?.role !== 'admin'){ alert('관리자만 접근 가능합니다.'); location.href='/'; return; }
+  if(ud?.role !== 'admin'){ alert('관리자만 접근 가능합니다.'); location.href='/subscription-competition-analysis/'; return; }
   me = ud; me.uid = u.uid;
   loadMembers();
 });
 
-window.doLogout = async () => { await signOut(auth); location.href='/'; };
+window.doLogout = async () => { await signOut(auth); location.href='/subscription-competition-analysis/'; };
 
 async function loadMembers() {
   const q = query(collection(db,'users'), orderBy('createdAt','desc'));
