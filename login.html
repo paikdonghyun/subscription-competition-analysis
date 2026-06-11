@@ -4,126 +4,303 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관리자 로그인 · 청약랩 ApplyLab</title>
-<link rel="stylesheet" href="/css/common.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-l) 0%,var(--bg) 60%);padding:2rem}
-.auth-box{background:var(--white);border:1px solid var(--bg3);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);width:100%;max-width:420px;padding:2.5rem}
-.auth-logo{text-align:center;margin-bottom:2rem}
-.auth-logo-kr{font-family:var(--serif);font-size:1.6rem;font-weight:600;color:var(--ink)}
-.auth-logo-en{font-family:var(--mono);font-size:.75rem;color:var(--ink3);letter-spacing:.08em}
-.auth-tabs{display:flex;background:var(--bg2);border-radius:var(--r-lg);padding:.25rem;margin-bottom:1.75rem}
-.auth-tab{flex:1;text-align:center;padding:.5rem;border-radius:var(--r);font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s;border:none;background:transparent}
-.auth-tab.active{background:var(--white);color:var(--accent);box-shadow:var(--shadow-sm)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
+  --bg:#f9fafb;--bg2:#f3f4f6;--bg3:#e5e7eb;--white:#fff;
+  --accent:#1d4ed8;--accent-l:#eff6ff;--accent-h:#1e40af;
+  --red:#dc2626;--red-l:#fef2f2;--green:#16a34a;--green-l:#f0fdf4;
+  --serif:'Noto Serif KR',serif;--sans:'Noto Sans KR',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --sh:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+  --sh-lg:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.04);
+  --r:6px;--rl:12px;--rxl:16px;
+}
+html,body{min-height:100vh}
+body{font-family:var(--sans);background:linear-gradient(135deg,var(--accent-l) 0%,var(--bg) 60%);display:flex;flex-direction:column;font-size:14px;line-height:1.6;font-weight:300}
+
+/* 헤더 */
+.hd{background:var(--white);border-bottom:1px solid var(--bg3);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.5rem}
+.hd a{display:flex;align-items:baseline;gap:.35rem;text-decoration:none}
+.hd-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
+.hd-en{font-family:var(--mono);font-size:.7rem;color:var(--ink3)}
+
+/* 메인 */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+.box{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rxl);box-shadow:var(--sh-lg);width:100%;max-width:420px;padding:2.5rem}
+
+/* 로고 */
+.logo{text-align:center;margin-bottom:2rem}
+.logo-kr{font-family:var(--serif);font-size:1.6rem;font-weight:600;color:var(--ink)}
+.logo-en{font-family:var(--mono);font-size:.72rem;color:var(--ink3);letter-spacing:.08em;margin-top:2px}
+.logo-sub{font-size:12px;color:var(--ink4);margin-top:.5rem}
+
+/* 탭 */
+.tabs{display:flex;background:var(--bg2);border-radius:var(--rl);padding:.25rem;margin-bottom:1.75rem;gap:.25rem}
+.tab{flex:1;text-align:center;padding:.5rem;border-radius:var(--r);font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:var(--sans)}
+.tab.on{background:var(--white);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* 폼 */
+.fg{margin-bottom:1rem}
+.fl{display:block;font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:.375rem;letter-spacing:.02em}
+.fi{width:100%;background:var(--bg);border:1.5px solid var(--bg3);color:var(--ink);font-size:14px;padding:.6rem .875rem;border-radius:var(--r);outline:none;transition:border-color .15s;font-family:var(--sans)}
+.fi:focus{border-color:var(--accent);background:var(--white)}
+.fi::placeholder{color:var(--ink4)}
+.fhint{font-size:11px;color:var(--ink4);margin-top:.25rem;font-family:var(--mono)}
+
+/* 버튼 */
+.btn{display:flex;align-items:center;justify-content:center;gap:.375rem;font-size:14px;font-weight:500;padding:.65rem 1.25rem;border-radius:var(--r);border:1px solid transparent;cursor:pointer;transition:all .12s;width:100%;font-family:var(--sans)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover:not(:disabled){background:var(--accent-h)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-google{background:var(--white);color:var(--ink2);border-color:var(--bg3);margin-top:.5rem}
+.btn-google:hover{border-color:var(--accent);color:var(--accent)}
+
+/* 구분선 */
 .divider{display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;color:var(--ink4);font-size:11px;font-family:var(--mono)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bg3)}
-.social-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:.625rem;padding:.6rem;border:1.5px solid var(--bg3);border-radius:var(--r-lg);font-size:13px;font-weight:500;color:var(--ink2);background:var(--white);cursor:pointer;transition:all .12s;margin-bottom:.5rem}
-.social-btn:hover{border-color:var(--accent);color:var(--accent)}
-.auth-bottom{text-align:center;font-size:12px;color:var(--ink3);margin-top:1.25rem}
-.auth-link{color:var(--accent);font-weight:500;cursor:pointer}
-.auth-link:hover{text-decoration:underline}
+
+/* 알림 */
+.alert{padding:.75rem 1rem;border-radius:var(--r);font-size:13px;margin-bottom:1rem;border:1px solid transparent;line-height:1.5}
+.alert-danger{background:var(--red-l);color:var(--red);border-color:rgba(220,38,38,.2)}
+.alert-success{background:var(--green-l);color:var(--green);border-color:rgba(22,163,74,.2)}
+
+/* 하단 */
+.bottom{text-align:center;font-size:12px;color:var(--ink3);margin-top:1.25rem}
+.bl{color:var(--accent);font-weight:500;cursor:pointer;background:none;border:none;font-size:12px;font-family:var(--sans)}
+.bl:hover{text-decoration:underline}
+
+/* 체크박스 */
+.check-row{display:flex;align-items:flex-start;gap:.5rem;font-size:12px;color:var(--ink2);cursor:pointer;margin-bottom:1rem}
+.check-row input{margin-top:2px;accent-color:var(--accent);flex-shrink:0}
 </style>
 </head>
 <body>
-<!-- 심플한 헤더 -->
-<div style="background:var(--white);border-bottom:1px solid var(--bg3);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.5rem">
-  <a href="/" style="display:flex;align-items:baseline;gap:.35rem">
-    <span style="font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)">청약랩</span>
-    <span style="font-family:var(--mono);font-size:.7rem;color:var(--ink3)">ApplyLab</span>
+
+<div class="hd">
+  <a href="/subscription-competition-analysis/">
+    <span class="hd-kr">청약랩</span>
+    <span class="hd-en">ApplyLab</span>
   </a>
 </div>
 
-<div class="auth-wrap">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-logo-kr">청약랩</div>
-      <div class="auth-logo-en">ApplyLab</div>
+<div class="main">
+  <div class="box">
+    <div class="logo">
+      <div class="logo-kr">청약랩</div>
+      <div class="logo-en">ApplyLab</div>
+      <div class="logo-sub" id="logo-sub">관리자 로그인</div>
     </div>
 
-    <!-- 로그인 전용 -->
-    <div style="text-align:center;margin-bottom:1.75rem">
-      <p style="font-size:13px;color:var(--ink3)">관리자 로그인</p>
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab on" id="tab-login" onclick="showTab('login')">로그인</button>
+      <button class="tab" id="tab-reg" onclick="showTab('reg')">회원가입</button>
     </div>
 
     <!-- 알림 -->
-    <div id="auth-alert" style="display:none" class="alert"></div>
+    <div id="alert-box" style="display:none"></div>
 
     <!-- 로그인 폼 -->
-    <div id="form-login">
-      <div class="form-group">
-        <label class="form-label">이메일</label>
-        <input class="form-input" type="email" id="login-email" placeholder="이메일 주소">
+    <div id="f-login">
+      <div class="fg">
+        <label class="fl">이메일</label>
+        <input class="fi" type="email" id="l-email" placeholder="이메일 주소" autocomplete="email">
       </div>
-      <div class="form-group">
-        <label class="form-label">비밀번호</label>
-        <input class="form-input" type="password" id="login-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="fg">
+        <label class="fl">비밀번호</label>
+        <input class="fi" type="password" id="l-pw" placeholder="비밀번호" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <button class="btn btn-primary btn-full btn-lg" onclick="doLogin()" id="login-btn">로그인</button>
+      <button class="btn btn-primary" id="l-btn" onclick="doLogin()">로그인</button>
       <div class="divider">또는</div>
-      <button class="social-btn" onclick="doGoogleLogin()">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        Google로 계속하기
+      <button class="btn btn-google" onclick="doGoogleLogin()">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+          <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Google로 로그인
       </button>
+      <div class="bottom">
+        계정이 없으신가요? <button class="bl" onclick="showTab('reg')">회원가입</button>
+      </div>
     </div>
 
-    
+    <!-- 회원가입 폼 -->
+    <div id="f-reg" style="display:none">
+      <div class="fg">
+        <label class="fl">이름</label>
+        <input class="fi" type="text" id="r-name" placeholder="이름 또는 닉네임">
+      </div>
+      <div class="fg">
+        <label class="fl">이메일</label>
+        <input class="fi" type="email" id="r-email" placeholder="이메일 주소" autocomplete="email">
+      </div>
+      <div class="fg">
+        <label class="fl">비밀번호</label>
+        <input class="fi" type="password" id="r-pw" placeholder="8자 이상">
+        <p class="fhint">영문·숫자 조합 8자 이상</p>
+      </div>
+      <div class="fg">
+        <label class="fl">비밀번호 확인</label>
+        <input class="fi" type="password" id="r-pw2" placeholder="비밀번호 재입력"
+          onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="r-agree">
+        <span>
+          <a href="/subscription-competition-analysis/privacy.html" target="_blank" style="color:var(--accent)">개인정보취급방침</a>에 동의합니다
+        </span>
+      </label>
+      <button class="btn btn-primary" id="r-btn" onclick="doRegister()">회원가입</button>
+      <div class="bottom">
+        이미 계정이 있으신가요? <button class="bl" onclick="showTab('login')">로그인</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<script src="/js/firebase-config.js"></script>
+<script src="js/firebase-config.js"></script>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-         createUserWithEmailAndPassword, updateProfile,
-         GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged,
+         signInWithEmailAndPassword,
+         createUserWithEmailAndPassword,
+         updateProfile,
+         GoogleAuthProvider, signInWithPopup }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc,
+         getDoc, serverTimestamp }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const app  = initializeApp(FIREBASE_CONFIG);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const BASE  = '/subscription-competition-analysis/';
+const app   = initializeApp(FIREBASE_CONFIG);
+const auth  = getAuth(app);
+const db    = getFirestore(app);
 
-// 이미 로그인된 경우 리디렉션
-onAuthStateChanged(auth, u => { if(u) location.href = '/'; });
+// 이미 로그인 상태면 홈으로
+onAuthStateChanged(auth, u => {
+  if (u) {
+    const redirect = new URLSearchParams(location.search).get('from') || BASE;
+    location.href = redirect;
+  }
+});
 
 // 탭 URL 처리
-if(location.hash === '#register') showTab('register');
+if (location.hash === '#register') showTab('reg');
 
-
-window.doLogin = async () => {
-  const email = document.getElementById('login-email').value.trim();
-  const pw    = document.getElementById('login-pw').value;
-  if(!email || !pw) return showAlert('이메일과 비밀번호를 입력해주세요.');
-  setLoading('login-btn', true);
-  try {
-    await signInWithEmailAndPassword(auth, email, pw);
-    const redirect = new URLSearchParams(location.search).get('from') || '/';
-    location.href = redirect;
-  } catch(e) {
-    const msgs = {
-      'auth/user-not-found':'등록되지 않은 이메일입니다.',
-      'auth/wrong-password':'비밀번호가 올바르지 않습니다.',
-      'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않습니다.',
-      'auth/too-many-requests':'로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.'
-    };
-    showAlert(msgs[e.code] || '로그인에 실패했습니다: ' + e.message);
-  } finally { setLoading('login-btn', false); }
+// ── 탭 전환 ──
+window.showTab = (tab) => {
+  document.getElementById('f-login').style.display  = tab === 'login' ? 'block' : 'none';
+  document.getElementById('f-reg').style.display    = tab === 'reg'   ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('on', tab === 'login');
+  document.getElementById('tab-reg').classList.toggle('on',   tab === 'reg');
+  document.getElementById('logo-sub').textContent   = tab === 'login' ? '관리자 로그인' : '회원가입';
+  clearAlert();
 };
 
+// ── 알림 ──
+function showAlert(msg, type = 'danger') {
+  const el = document.getElementById('alert-box');
+  el.className = 'alert alert-' + type;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearAlert() {
+  document.getElementById('alert-box').style.display = 'none';
+}
 
+// ── 버튼 로딩 ──
+function setLoading(id, on) {
+  const btn = document.getElementById(id);
+  btn.disabled   = on;
+  btn.textContent = on ? '처리 중...' : (id === 'l-btn' ? '로그인' : '회원가입');
+}
+
+// ── Firestore에 유저 문서 저장 ──
+async function saveUser(user) {
+  const role = user.email === ADMIN_EMAIL ? 'admin' : 'user';
+  await setDoc(doc(db, 'users', user.uid), {
+    uid:         user.uid,
+    email:       user.email,
+    displayName: user.displayName || user.email.split('@')[0],
+    role,
+    createdAt:     serverTimestamp(),
+    lastLoginAt:   serverTimestamp(),
+    status:        'active'
+  }, { merge: true });
+}
+
+// ── 로그인 ──
+window.doLogin = async () => {
+  const email = document.getElementById('l-email').value.trim();
+  const pw    = document.getElementById('l-pw').value;
+  if (!email || !pw) { showAlert('이메일과 비밀번호를 입력해주세요.'); return; }
+  setLoading('l-btn', true);
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+    // onAuthStateChanged가 리다이렉트 처리
+  } catch (e) {
+    const msgs = {
+      'auth/user-not-found':     '등록되지 않은 이메일입니다.',
+      'auth/wrong-password':     '비밀번호가 올바르지 않습니다.',
+      'auth/invalid-credential': '이메일 또는 비밀번호가 올바르지 않습니다.',
+      'auth/invalid-email':      '올바른 이메일 형식이 아닙니다.',
+      'auth/too-many-requests':  '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.'
+    };
+    showAlert(msgs[e.code] || '로그인 실패: ' + e.message);
+    setLoading('l-btn', false);
+  }
+};
+
+// ── 회원가입 ──
+window.doRegister = async () => {
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pw    = document.getElementById('r-pw').value;
+  const pw2   = document.getElementById('r-pw2').value;
+  const agree = document.getElementById('r-agree').checked;
+
+  if (!name)          { showAlert('이름을 입력해주세요.'); return; }
+  if (!email)         { showAlert('이메일을 입력해주세요.'); return; }
+  if (pw.length < 8)  { showAlert('비밀번호는 8자 이상이어야 합니다.'); return; }
+  if (pw !== pw2)     { showAlert('비밀번호가 일치하지 않습니다.'); return; }
+  if (!agree)         { showAlert('개인정보취급방침에 동의해주세요.'); return; }
+
+  setLoading('r-btn', true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    await updateProfile(cred.user, { displayName: name });
+    await saveUser({ ...cred.user, displayName: name });
+    showAlert('회원가입 완료! 환영합니다 🎉', 'success');
+    // onAuthStateChanged가 리다이렉트 처리
+  } catch (e) {
+    const msgs = {
+      'auth/email-already-in-use': '이미 사용 중인 이메일입니다.',
+      'auth/invalid-email':        '올바른 이메일 형식이 아닙니다.',
+      'auth/weak-password':        '비밀번호가 너무 약합니다. 영문+숫자 조합 8자 이상을 입력해주세요.'
+    };
+    showAlert(msgs[e.code] || '회원가입 실패: ' + e.message);
+    setLoading('r-btn', false);
+  }
+};
+
+// ── Google 로그인 ──
 window.doGoogleLogin = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const cred = await signInWithPopup(auth, provider);
     const snap = await getDoc(doc(db, 'users', cred.user.uid));
-    if(!snap.exists()) {
-      await setDoc(doc(db, 'users', cred.user.uid), {
-        uid: cred.user.uid, email: cred.user.email,
-        displayName: cred.user.displayName || cred.user.email.split('@')[0],
-        role: cred.user.email === ADMIN_EMAIL ? 'admin' : 'user',
-        createdAt: serverTimestamp(), lastLoginAt: serverTimestamp(), status: 'active'
-      });
+    if (!snap.exists()) await saveUser(cred.user);
+    // onAuthStateChanged가 리다이렉트 처리
+  } catch (e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      showAlert('Google 로그인 실패: ' + e.message);
     }
-    location.href = '/';
-  } catch(e) { showAlert('Google 로그인에 실패했습니다.'); }
+  }
 };
 </script>
 </body>
