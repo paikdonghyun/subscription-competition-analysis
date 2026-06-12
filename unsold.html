@@ -166,9 +166,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
 
     <!-- 지역 토글 -->
     <div class="region-toggle" style="max-width:540px">
-      <button class="rt-btn on" id="rt-busan" onclick="switchRegion('busan')">부산광역시</button>
+      <button class="rt-btn on" id="rt-gg" onclick="switchRegion('gg')">경기도</button>
+      <button class="rt-btn" id="rt-busan" onclick="switchRegion('busan')">부산광역시</button>
       <button class="rt-btn" id="rt-gn" onclick="switchRegion('gn')">경상남도</button>
-      <button class="rt-btn" id="rt-gg" onclick="switchRegion('gg')">경기도</button>
     </div>
 
     <!-- 필터 -->
@@ -330,7 +330,7 @@ const REGIONS = {
 const GG_KEY = '226eb1ceed0b4e1ebe1ddccb0008077c';
 
 const state = {
-  region: 'busan',
+  region: 'gg',
   cache: { busan: null, gn: null, gg: null },   // 정규화된 타입(row) 단위 데이터
   groups: [],                          // 필터 적용된 단지 그룹
   sortKey: 'unsold', sortDir: -1,
@@ -798,7 +798,7 @@ function downloadCSV() {
 }
 
 /* ---------- 시작 ---------- */
-loadRegion('busan');
+loadRegion('gg');
 </script>
 </body>
 </html>
