@@ -74,8 +74,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc,
-         updateDoc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, orderBy, query, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app  = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -83,10 +82,25 @@ const db   = getFirestore(app);
 const PAGE = 20;
 let allMembers = [], filtered = [], currentPage = 1, me = null;
 
+// 최초 관리자(ADMIN_EMAIL) 자동 권한 복구: users 문서가 없거나 role이 누락된 경우
+async function ensureAdminDoc(u){
+  let snap = await getDoc(doc(db,'users',u.uid));
+  let ud = snap.exists() ? snap.data() : null;
+  if (ud?.role !== 'admin' && (u.email||'').toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    await setDoc(doc(db,'users',u.uid), {
+      uid: u.uid, email: u.email,
+      displayName: ud?.displayName || u.email.split('@')[0],
+      role: 'admin', status: 'active', lastLoginAt: serverTimestamp()
+    }, { merge: true });
+    snap = await getDoc(doc(db,'users',u.uid));
+    ud = snap.data();
+  }
+  return ud;
+}
+
 onAuthStateChanged(auth, async u => {
   if(!u){ location.href='/subscription-competition-analysis/login.html'; return; }
-  const snap = await getDoc(doc(db,'users',u.uid));
-  const ud = snap.data();
+  const ud = await ensureAdminDoc(u);
   if(ud?.role !== 'admin'){ alert('관리자만 접근 가능합니다.'); location.href='/subscription-competition-analysis/'; return; }
   me = ud; me.uid = u.uid;
   loadMembers();
