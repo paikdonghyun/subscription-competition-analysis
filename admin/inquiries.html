@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>문의·수정요청 관리 · 청약랩</title>
+<link rel="stylesheet" href="/subscription-competition-analysis/css/common.css">
+<style>body{background:#f1f5f9}.admin-wrap{display:flex;min-height:100vh}.admin-sidebar{width:220px;background:#1e293b;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}.admin-sidebar-logo{padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.08)}.admin-sidebar-logo-kr{font-family:var(--serif);font-size:1.1rem;color:#f1f5f9;font-weight:600}.admin-sidebar-logo-sub{font-family:var(--mono);font-size:9px;color:#64748b;letter-spacing:.08em;margin-top:2px}.admin-nav{padding:.75rem}.admin-nav-section{font-family:var(--mono);font-size:9px;color:#475569;letter-spacing:.1em;text-transform:uppercase;padding:.5rem .75rem .25rem;margin-top:.5rem}.admin-nav-item{display:flex;align-items:center;gap:.625rem;padding:.55rem .75rem;border-radius:var(--r);font-size:13px;color:#94a3b8;cursor:pointer;transition:all .12s;margin-bottom:2px;text-decoration:none}.admin-nav-item:hover{background:rgba(255,255,255,.06);color:#e2e8f0}.admin-nav-item.active{background:rgba(29,78,216,.25);color:#93c5fd}.admin-main{flex:1;padding:2rem;min-width:0}.admin-page-title{font-family:var(--serif);font-size:1.4rem;font-weight:600;color:#1e293b;margin-bottom:.2rem}.admin-page-sub{font-size:12px;color:#64748b;font-family:var(--mono);margin-bottom:1.5rem}
+.stat-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat-mini>div{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.875rem 1rem;border-top:3px solid #e2e8f0}
+.stat-mini .v{font-family:var(--serif);font-size:1.4rem;font-weight:600;color:#0f172a}
+.stat-mini .l{font-size:10px;font-family:var(--mono);letter-spacing:.06em;color:#64748b;text-transform:uppercase;margin-bottom:.3rem}
+.badge-type{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;white-space:nowrap}
+.bt-data{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.bt-feature{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.bt-etc{background:#f3f4f6;color:#52525b;border:1px solid #e5e7eb}
+.bs-new{background:#fef9c3;color:#a16207;border:1px solid #fde68a}
+.bs-progress{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.bs-done{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.inq-row{cursor:pointer}.inq-row:hover td{background:#eff6ff}
+.detail-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:4rem 1rem;overflow-y:auto}
+.detail-bg.show{display:flex}
+.detail{background:#fff;border-radius:12px;max-width:640px;width:100%;padding:1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+<div class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-sidebar-logo-kr">청약랩 관리자</div><div class="admin-sidebar-logo-sub">ApplyLab Admin</div></div>
+  <div class="admin-nav">
+    <div class="admin-nav-section">대시보드</div>
+    <a href="/subscription-competition-analysis/admin/" class="admin-nav-item">📊 방문자 통계</a>
+    <div class="admin-nav-section">관리</div>
+    <a href="/subscription-competition-analysis/admin/members.html" class="admin-nav-item">👥 회원 관리</a>
+    <a href="/subscription-competition-analysis/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
+    <a href="/subscription-competition-analysis/admin/inquiries.html" class="admin-nav-item active">💬 문의·수정요청</a>
+    <a href="/subscription-competition-analysis/admin/accounts.html" class="admin-nav-item">🔑 관리자 계정</a>
+    <a href="/subscription-competition-analysis/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
+    <a href="#" class="admin-nav-item" onclick="doLogout();return false" style="color:#ef4444">🚪 로그아웃</a>
+  </div>
+</div>
+<div class="admin-main">
+  <div class="admin-page-title">문의 · 수정요청 관리</div>
+  <div class="admin-page-sub">사이트 푸터에서 접수된 문의와 수정요청을 확인하고 처리합니다</div>
+
+  <div class="stat-mini">
+    <div style="border-top-color:#eab308"><div class="l">신규</div><div class="v" id="cnt-new">–</div></div>
+    <div style="border-top-color:#1d4ed8"><div class="l">처리중</div><div class="v" id="cnt-progress">–</div></div>
+    <div style="border-top-color:#16a34a"><div class="l">완료</div><div class="v" id="cnt-done">–</div></div>
+    <div style="border-top-color:#64748b"><div class="l">전체</div><div class="v" id="cnt-all">–</div></div>
+  </div>
+
+  <div style="background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+    <input type="text" id="search-q" class="form-input" style="max-width:280px" placeholder="내용/연락처 검색">
+    <select id="filter-type" class="form-input" style="max-width:160px">
+      <option value="">전체 유형</option>
+      <option value="data">데이터 오류 신고</option>
+      <option value="feature">기능·수정 요청</option>
+      <option value="etc">일반 문의</option>
+    </select>
+    <select id="filter-status" class="form-input" style="max-width:130px">
+      <option value="">전체 상태</option>
+      <option value="new">신규</option>
+      <option value="progress">처리중</option>
+      <option value="done">완료</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="filterList()">검색</button>
+    <span style="font-family:var(--mono);font-size:12px;color:var(--ink3);margin-left:auto" id="result-count"></span>
+  </div>
+
+  <div style="background:var(--white);border:1px solid #e2e8f0;border-radius:var(--r-lg);overflow:hidden">
+    <table class="tbl">
+      <thead><tr><th>유형</th><th>내용</th><th>연락처</th><th>접수 페이지</th><th>상태</th><th class="num">접수일</th><th>관리</th></tr></thead>
+      <tbody id="inq-tbody"><tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--ink4)"><div class="spinner" style="margin:0 auto 1rem"></div></td></tr></tbody>
+    </table>
+  </div>
+  <div class="pager" id="pager" style="margin-top:1rem"></div>
+</div>
+</div>
+
+<!-- 상세 모달 -->
+<div class="detail-bg" id="detail-bg" onclick="if(event.target===this)closeDetail()">
+  <div class="detail">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.5rem">
+      <div style="font-family:var(--serif);font-size:1.05rem;font-weight:600;color:#0f172a" id="dt-title"></div>
+      <button onclick="closeDetail()" style="border:none;background:#f1f5f9;color:#64748b;width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:#94a3b8;margin-bottom:1rem;line-height:1.8" id="dt-meta"></div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-size:13.5px;color:#334155;white-space:pre-wrap;line-height:1.7;margin-bottom:1.25rem;max-height:320px;overflow-y:auto" id="dt-content"></div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <span style="font-size:11px;font-family:var(--mono);color:#94a3b8">상태 변경:</span>
+      <button class="btn btn-sm" style="background:#fef9c3;color:#a16207;border:1px solid #fde68a" onclick="setStatus('new')">신규</button>
+      <button class="btn btn-sm" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe" onclick="setStatus('progress')">처리중</button>
+      <button class="btn btn-sm" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0" onclick="setStatus('done')">완료</button>
+      <button class="btn btn-sm" style="margin-left:auto;background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="removeInq()">🗑 삭제</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc,
+         orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app=initializeApp(FIREBASE_CONFIG), auth=getAuth(app), db=getFirestore(app);
+const TYPE_NM={data:'데이터 오류',feature:'기능·수정 요청',etc:'일반 문의'};
+const TYPE_CLS={data:'bt-data',feature:'bt-feature',etc:'bt-etc'};
+const ST_NM={new:'신규',progress:'처리중',done:'완료'};
+const ST_CLS={new:'bs-new',progress:'bs-progress',done:'bs-done'};
+const PAGE=20;
+let all=[], filtered=[], currentPage=1, currentId=null;
+
+onAuthStateChanged(auth, async u => {
+  if(!u){location.href='/subscription-competition-analysis/login.html';return;}
+  const snap=await getDoc(doc(db,'users',u.uid));
+  if(snap.data()?.role!=='admin'){alert('관리자만 접근 가능합니다.');location.href='/subscription-competition-analysis/';return;}
+  loadList();
+});
+window.doLogout=async()=>{await signOut(auth);location.href='/subscription-competition-analysis/';};
+
+async function loadList(){
+  try{
+    const q=query(collection(db,'inquiries'),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    all=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){
+    document.getElementById('inq-tbody').innerHTML=
+      `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#dc2626;font-size:13px">목록을 불러오지 못했습니다 — Firestore 보안 규칙에 inquiries 권한이 등록되어 있는지 확인해 주세요.<br><span style="font-size:11px;color:#94a3b8;font-family:var(--mono)">${e.message}</span></td></tr>`;
+    return;
+  }
+  renderCounts();
+  filterList();
+}
+
+function renderCounts(){
+  const c=s=>all.filter(x=>x.status===s).length;
+  document.getElementById('cnt-new').textContent=c('new');
+  document.getElementById('cnt-progress').textContent=c('progress');
+  document.getElementById('cnt-done').textContent=c('done');
+  document.getElementById('cnt-all').textContent=all.length;
+}
+
+window.filterList=()=>{
+  const kw=document.getElementById('search-q').value.toLowerCase();
+  const tp=document.getElementById('filter-type').value;
+  const st=document.getElementById('filter-status').value;
+  filtered=all.filter(x=>{
+    const kwOk=!kw||(x.content||'').toLowerCase().includes(kw)||(x.contact||'').toLowerCase().includes(kw);
+    return kwOk&&(!tp||x.type===tp)&&(!st||x.status===st);
+  });
+  currentPage=1;
+  document.getElementById('result-count').textContent=`${filtered.length}건`;
+  render(); renderPager();
+};
+
+const fmtDt=ts=>{ if(!ts||!ts.toDate) return '-'; const d=ts.toDate();
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+const esc=s=>(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pageNm=p=>{ if(!p) return '-';
+  if(p.includes('bankbook')) return '청약통장';
+  if(p.includes('unsold')) return '미분양';
+  if(p.includes('price')) return '분양가격';
+  return '청약경쟁률'; };
+
+function render(){
+  const slice=filtered.slice((currentPage-1)*PAGE,currentPage*PAGE);
+  const $b=document.getElementById('inq-tbody');
+  if(!slice.length){$b.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--ink4)">접수된 문의가 없습니다</td></tr>';return;}
+  $b.innerHTML=slice.map(x=>`<tr class="inq-row" onclick="openDetail('${x.id}')">
+    <td><span class="badge-type ${TYPE_CLS[x.type]||'bt-etc'}">${TYPE_NM[x.type]||x.type||'-'}</span></td>
+    <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#334155">${esc(x.content)}</td>
+    <td style="font-family:var(--mono);font-size:11px">${esc(x.contact||'-')}</td>
+    <td><span style="font-size:11px;color:#64748b">${pageNm(x.page)}</span></td>
+    <td><span class="badge-type ${ST_CLS[x.status]||'bs-new'}">${ST_NM[x.status]||'신규'}</span></td>
+    <td class="num" style="font-size:11px">${fmtDt(x.createdAt)}</td>
+    <td onclick="event.stopPropagation()">
+      <button class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;font-size:11px" onclick="quickDelete('${x.id}')">삭제</button>
+    </td>
+  </tr>`).join('');
+}
+
+function renderPager(){
+  const max=Math.max(1,Math.ceil(filtered.length/PAGE));
+  const $p=document.getElementById('pager');
+  if(max<=1){$p.innerHTML='';return;}
+  let h='';
+  for(let i=1;i<=max;i++) h+=`<button class="filter-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  $p.innerHTML=h;
+}
+window.goPage=p=>{currentPage=p;render();renderPager();};
+
+window.openDetail=id=>{
+  const x=all.find(v=>v.id===id); if(!x) return;
+  currentId=id;
+  document.getElementById('dt-title').innerHTML=
+    `<span class="badge-type ${TYPE_CLS[x.type]||'bt-etc'}" style="font-size:11px;vertical-align:2px">${TYPE_NM[x.type]||'-'}</span> &nbsp;접수 상세`;
+  document.getElementById('dt-meta').innerHTML=
+    `접수일: ${fmtDt(x.createdAt)} · 페이지: ${pageNm(x.page)} (${esc(x.page||'-')})<br>`+
+    `연락처: ${esc(x.contact||'미기재')} · 상태: ${ST_NM[x.status]||'신규'}`;
+  document.getElementById('dt-content').textContent=x.content||'';
+  document.getElementById('detail-bg').classList.add('show');
+};
+window.closeDetail=()=>{document.getElementById('detail-bg').classList.remove('show');currentId=null;};
+
+window.setStatus=async st=>{
+  if(!currentId) return;
+  await updateDoc(doc(db,'inquiries',currentId),{status:st});
+  const x=all.find(v=>v.id===currentId); if(x) x.status=st;
+  renderCounts(); filterList(); closeDetail();
+};
+window.removeInq=async()=>{
+  if(!currentId||!confirm('이 문의를 삭제할까요? 되돌릴 수 없습니다.')) return;
+  await deleteDoc(doc(db,'inquiries',currentId));
+  all=all.filter(v=>v.id!==currentId);
+  renderCounts(); filterList(); closeDetail();
+};
+window.quickDelete=async id=>{
+  if(!confirm('이 문의를 삭제할까요? 되돌릴 수 없습니다.')) return;
+  await deleteDoc(doc(db,'inquiries',id));
+  all=all.filter(v=>v.id!==id);
+  renderCounts(); filterList();
+};
+</script>
+</body>
+</html>
