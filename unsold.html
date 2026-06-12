@@ -326,8 +326,8 @@ const REGIONS = {
   }
 };
 
-// 경기데이터드림 인증키 (data.gg.go.kr 발급) — 미입력 시 샘플 5건만 표시됨
-const GG_KEY = '';
+// 경기데이터드림 인증키 (data.gg.go.kr 발급)
+const GG_KEY = '226eb1ceed0b4e1ebe1ddccb0008077c';
 
 const state = {
   region: 'busan',
@@ -447,21 +447,37 @@ async function fetchGG() {
     head.forEach(h => { if (h.list_total_count != null) total = toInt(h.list_total_count); });
     const page = (body[1] && body[1].row) ? body[1].row : [];
     if (!page.length) break;
-    page.forEach(r => rows.push(normGG(r)));
+    page.forEach(r => rows.push(r));
     if (page.length < pSize) break;   // 샘플 모드(키 없음) 등 조기 종료
     pIndex++;
   }
-  return rows;
+
+  // 원천 데이터가 전 행 2중 수록(2·4·6·8회 짝수 출현)되어 있어 출현 횟수를 절반으로 보정
+  const counter = new Map();
+  rows.forEach(r => {
+    const sig = JSON.stringify(r, Object.keys(r).sort());
+    if (!counter.has(sig)) counter.set(sig, { row: r, n: 0 });
+    counter.get(sig).n++;
+  });
+  const allEven = [...counter.values()].every(v => v.n % 2 === 0);
+  const out = [];
+  counter.forEach(v => {
+    const keep = allEven ? v.n / 2 : v.n;   // 짝수 패턴이 깨지면(데이터 정비 시) 원본 그대로 사용
+    for (let i = 0; i < keep; i++) out.push(normGG(v.row));
+  });
+  return out;
 }
 
 /* ---------- 정규화: 경기도 ---------- */
 function normGG(r) {
   const ym = v => { const s = String(v || '').replace(/[^0-9]/g,''); return s.length >= 6 ? s.slice(0,4) + '-' + s.slice(4,6) : (v || ''); };
-  const addr = r.CNSTRCT_LOCPLC_ADDR || '';
+  const masked = !r.CNSTRCT_LOCPLC_ADDR;   // 단지 요청에 의한 위치 미공개 행
+  const addr = masked ? (r.RM || '단지 요청에 의한 미공개') : r.CNSTRCT_LOCPLC_ADDR;
+  const name = masked ? `비공개 단지 (${r.SIGUN_NM || ''} 합산)` : addr;
   return {
     sigungu: r.SIGUN_NM || '',
     dong: r.JURISD_EMD_NM || '',
-    addr, name: addr,
+    addr, name,
     contractor: r.CNSTRCT_BIZNES_INFO || '',
     developer: r.IMPLMTN_BIZNES_INFO || '',
     pubType: r.PRVATE_PUBL_DIV_NM || '',
@@ -475,7 +491,7 @@ function normGG(r) {
     moveIn: ym(r.MOVEIN_PREARNGE_DE),
     complete: r.COMPLTN_YN_DIV_NM || '',
     refDate: '',
-    key: norm((r.SIGUN_NM || '') + '|' + addr)
+    key: norm((r.SIGUN_NM || '') + '|' + (masked ? '※비공개' : addr))
   };
 }
 
@@ -713,8 +729,8 @@ function renderNote() {
     ref = dates.length ? ` · 기준일 ${dates.join(', ')}` : '';
   }
   let warn = '';
-  if (state.region === 'gg' && !GG_KEY)
-    warn = ' · ⚠ 인증키 미등록: 경기데이터드림 샘플 데이터만 표시 중 (data.gg.go.kr에서 인증키 발급 후 등록 필요)';
+  if (state.region === 'gg')
+    warn = ' · 원천 중복행 보정 적용 · 위치 미공개 단지는 시군별 "비공개 단지"로 합산 표시';
   document.getElementById('src-note').textContent =
     `※ 출처: ${REGIONS[state.region].source}${ref} · 전용면적(타입) 단위 데이터를 단지(주소) 기준으로 합산 · 단지 행 클릭 시 타입별 상세 표시${warn}`;
 }
