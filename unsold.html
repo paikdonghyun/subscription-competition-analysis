@@ -191,7 +191,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
           <option value="">전체</option><option value="준공">준공 후</option><option value="미준공">미준공</option>
         </select>
         <label class="chk-w"><input type="checkbox" id="chk-unsold" checked onchange="applyFilter()">미분양 잔여 단지만</label>
-        <button class="btn-ghost" style="margin-left:auto" onclick="downloadCSV()">⬇ CSV 다운로드</button>
       </div>
       <div class="chip-row" id="chip-row"></div>
     </div>
@@ -775,27 +774,6 @@ function closeModal() {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-/* ---------- CSV ---------- */
-function downloadCSV() {
-  if (!state.groups.length) return;
-  const isGN = state.region === 'gn';
-  const isGG = state.region === 'gg';
-  const head = ['시군구','읍면동','단지·위치','시공사','시행사','전용면적','분양구분','총분양가구', isGN?'전월미분양':'', '미분양가구','청약/승인일', isGG?'':'계약마감','입주예정','준공여부'].filter(Boolean);
-  const lines = [head.join(',')];
-  state.groups.forEach(g => g.types.forEach(t => {
-    const row = [t.sigungu,t.dong,t.name,t.contractor,t.developer,t.scale,t.leaseType,t.total, isGN?t.unsoldPrev:null, t.unsold,t.subscDt, isGG?null:t.deadline, t.moveIn,t.complete]
-      .filter(v=>v!==null)
-      .map(v => `"${String(v??'').replace(/"/g,'""')}"`);
-    lines.push(row.join(','));
-  }));
-  const blob = new Blob(['\uFEFF' + lines.join('\n')], { type:'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `미분양현황_${REGIONS[state.region].label}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
 
 /* ---------- 시작 ---------- */
 loadRegion('gg');
