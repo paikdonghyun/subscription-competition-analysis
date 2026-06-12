@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청약통장 현황 · 청약랩 ApplyLab</title>
+<meta name="description" content="청약홈 청약통장 통계: 전국 가입계좌 추이, 권역·시도별 가입현황, 가입기간별 분포. 종합저축·청약예금·부금·저축 데이터를 제공합니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
+  --bg:#f9fafb;--bg2:#f3f4f6;--bg3:#e5e7eb;--white:#fff;
+  --accent:#1d4ed8;--accent-l:#eff6ff;--accent-h:#1e40af;
+  --red:#dc2626;--red-l:#fef2f2;--green:#16a34a;--orange:#ea580c;--gold:#b45309;
+  --serif:'Noto Serif KR',serif;
+  --sans:'Noto Sans KR',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --r:6px;--rl:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
+
+/* NAV */
+.nav{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--sh);position:sticky;top:0;z-index:100}
+.nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.5rem;gap:1.25rem}
+.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none}
+.logo-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
+.logo-en{font-family:var(--mono);font-size:.68rem;color:var(--ink3);letter-spacing:.05em}
+.nav-div{width:1px;height:16px;background:var(--bg3)}
+.nav-menu{display:flex;gap:.125rem;flex:1}
+.nav-a{font-size:13px;color:var(--ink3);padding:.38rem .8rem;border-radius:var(--r);transition:all .12s;text-decoration:none}
+.nav-a:hover{color:var(--ink);background:var(--bg2)}
+.nav-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
+.nav-r{margin-left:auto}
+.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none}
+
+/* LAYOUT */
+.wrap{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start}
+.main{padding:0 1.25rem;min-width:0}
+.ad-col{padding-top:0}
+.ad-sticky{position:sticky;top:66px}
+@media(max-width:1200px){.wrap{grid-template-columns:1fr}.ad-col{display:none}.main{padding:0}}
+@media(max-width:600px){.stat-row{grid-template-columns:1fr 1fr!important}}
+
+/* AD */
+.ad-box{background:var(--bg2);border:1px dashed var(--bg3);border-radius:var(--rl);text-align:center;overflow:hidden;margin-bottom:.65rem}
+.ad-lbl{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;padding:.3rem;border-bottom:1px solid var(--bg3);text-transform:uppercase}
+
+/* REGION TOGGLE */
+.region-toggle{display:flex;background:var(--bg2);border-radius:var(--rl);padding:.25rem;margin-bottom:1rem;gap:.25rem;max-width:420px}
+.rt-btn{flex:1;text-align:center;padding:.55rem;border-radius:var(--r);font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:var(--sans)}
+.rt-btn.on{background:var(--white);color:var(--accent);box-shadow:var(--sh)}
+
+/* FILTER */
+.filter{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:var(--sh)}
+.filter-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.filter-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink4);text-transform:uppercase;white-space:nowrap}
+.sel{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:.45rem .8rem;border-radius:var(--r);font-size:13px;cursor:pointer;outline:none;font-family:var(--sans);transition:border-color .15s}
+.sel:focus{border-color:var(--accent)}
+.inp{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:.45rem .8rem;border-radius:var(--r);font-size:13px;outline:none;font-family:var(--sans);transition:border-color .15s;min-width:200px;flex:1;max-width:320px}
+.inp:focus{border-color:var(--accent);background:var(--white)}
+.btn-q{font-size:12px;font-weight:500;padding:.45rem 1rem;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:#fff;transition:all .12s;font-family:var(--sans)}
+.btn-q:hover{background:var(--accent-h)}
+.btn-ghost{font-size:12px;font-weight:500;padding:.45rem 1rem;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--bg3);background:var(--white);color:var(--ink3);transition:all .12s;font-family:var(--sans)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.chk-w{display:flex;align-items:center;gap:.4rem;font-size:12.5px;color:var(--ink2);cursor:pointer;user-select:none}
+.chk-w input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+.chip-row{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.65rem}
+.chip{font-size:11px;padding:3px 10px;border:1.5px solid var(--bg3);border-radius:20px;cursor:pointer;color:var(--ink3);background:var(--white);transition:all .12s;font-family:var(--mono)}
+.chip:hover,.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* STAT */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.625rem;margin-bottom:1rem}
+.sc{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:.875rem 1rem;border-top:3px solid var(--bg3);box-shadow:var(--sh)}
+.sc.bl{border-top-color:var(--accent)}.sc.re{border-top-color:var(--red)}
+.sc.gr{border-top-color:var(--green)}.sc.or{border-top-color:var(--orange)}
+.sc-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.06em;color:var(--ink3);margin-bottom:.35rem;text-transform:uppercase}
+.sc-v{font-family:var(--serif);font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1}
+.sc-u{font-size:.75rem;font-weight:300;color:var(--ink3)}
+.sc-sub{font-size:10px;color:var(--ink4);margin-top:.3rem;font-family:var(--mono)}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh);margin-bottom:.75rem}
+.card-title{font-family:var(--serif);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:.875rem;display:flex;align-items:center;gap:.4rem}
+.card-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
+.card-sub{font-size:11px;color:var(--ink4);font-family:var(--mono);margin-left:.375rem;font-weight:400}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+
+/* TABLE */
+.tbl-scroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;font-weight:500;color:var(--ink3);padding:.5rem .75rem;border-bottom:2px solid var(--bg3);background:var(--bg2);text-transform:uppercase;white-space:nowrap;text-align:left}
+.tbl th.sortable{cursor:pointer;user-select:none}
+.tbl th.sortable:hover{color:var(--accent)}
+.tbl td{padding:.55rem .75rem;border-bottom:1px solid var(--bg2);color:var(--ink2)}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover td{background:var(--accent-l)}
+.tbl tr:last-child td{border-bottom:none}
+.num{font-family:var(--mono);text-align:right;font-size:12px}
+.badge{display:inline-block;font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;border:1px solid var(--bg3);color:var(--ink3);white-space:nowrap}
+.badge.red{background:var(--red-l);border-color:#fecaca;color:var(--red)}
+.badge.green{background:#f0fdf4;border-color:#bbf7d0;color:var(--green)}
+.bar-w{display:flex;align-items:center;gap:.4rem}
+.bar{height:5px;border-radius:3px;background:var(--red);min-width:2px}
+.pager{display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:.875rem}
+.pg-btn{font-size:12px;padding:.35rem .9rem;border-radius:var(--r);border:1.5px solid var(--bg3);background:var(--white);color:var(--ink3);cursor:pointer;font-family:var(--sans)}
+.pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pg-btn:disabled{opacity:.4;cursor:default}
+.pg-info{font-family:var(--mono);font-size:11px;color:var(--ink4)}
+
+/* LOADING / EMPTY */
+.loading{text-align:center;padding:3rem;color:var(--ink4);font-family:var(--mono);font-size:12px}
+.spin{width:26px;height:26px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .875rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:3rem 1rem;color:var(--ink4)}
+.empty-icon{font-family:var(--serif);font-size:2rem;color:var(--bg3);margin-bottom:.5rem}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(24,24,27,.45);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:4rem 1rem 2rem;overflow-y:auto}
+.modal-bg.show{display:flex}
+.modal{background:var(--white);border-radius:var(--rl);max-width:860px;width:100%;padding:1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.25rem}
+.modal-title{font-family:var(--serif);font-size:1.05rem;font-weight:600;color:var(--ink);line-height:1.4}
+.modal-close{border:none;background:var(--bg2);color:var(--ink3);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0}
+.modal-close:hover{background:var(--bg3);color:var(--ink)}
+.modal-meta{font-family:var(--mono);font-size:11px;color:var(--ink4);margin-bottom:1rem;line-height:1.8}
+
+/* NOTE */
+.note{background:var(--bg2);border-left:3px solid var(--bg3);padding:.55rem .875rem;border-radius:0 var(--r) var(--r) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6;margin-top:.75rem}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-in">
+    <a href="/subscription-competition-analysis/" class="logo">
+      <span class="logo-kr">청약랩</span><span class="logo-en">ApplyLab</span>
+    </a>
+    <div class="nav-div"></div>
+    <nav class="nav-menu">
+      <a href="/subscription-competition-analysis/" class="nav-a">청약경쟁률</a>
+      <a href="/subscription-competition-analysis/price.html" class="nav-a">분양가격</a>
+      <a href="/subscription-competition-analysis/unsold.html" class="nav-a">미분양 현황</a>
+      <a href="/subscription-competition-analysis/bankbook.html" class="nav-a on">청약통장 현황</a>
+    </nav>
+    <div class="nav-r" id="gnav-right">
+      <a href="/subscription-competition-analysis/login.html" class="nav-btn">관리자 로그인</a>
+    </div>
+  </div>
+</nav>
+<div class="wrap">
+  <div class="ad-col"><div class="ad-sticky">
+    <div class="ad-box"><div class="ad-lbl">Ad</div>
+      <ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+    </div>
+  </div></div>
+
+  <div class="main">
+
+    <!-- 기준월 필터 -->
+    <div class="filter">
+      <div class="filter-row">
+        <span class="filter-lbl">기준월</span>
+        <select class="sel" id="sel-ym" onchange="onMonthChange()"></select>
+        <span style="font-size:11px;color:var(--ink4);font-family:var(--mono)" id="ym-range"></span>
+      </div>
+    </div>
+
+    <div class="loading" id="loading"><div class="spin"></div>청약홈 통장 통계 조회 중...</div>
+    <div class="card" id="error-box" style="display:none;border-left:3px solid var(--red)">
+      <div style="font-size:13px;color:var(--red);font-weight:500;margin-bottom:.4rem">데이터를 불러오지 못했습니다</div>
+      <div style="font-size:12px;color:var(--ink3)" id="error-msg"></div>
+      <button class="btn-q" style="margin-top:.75rem" onclick="init()">다시 시도</button>
+    </div>
+
+    <div id="content" style="display:none">
+
+      <!-- 통계 카드 -->
+      <div class="stat-row">
+        <div class="sc bl"><div class="sc-lbl">총 가입계좌</div><div class="sc-v" id="st-total">–</div><div class="sc-sub" id="st-total-sub"></div></div>
+        <div class="sc gr"><div class="sc-lbl">1순위 계좌</div><div class="sc-v" id="st-rnk1">–</div><div class="sc-sub" id="st-rnk1-sub"></div></div>
+        <div class="sc or"><div class="sc-lbl">주택청약종합저축</div><div class="sc-v" id="st-total-sv">–</div><div class="sc-sub" id="st-total-sv-sub"></div></div>
+        <div class="sc re"><div class="sc-lbl">구통장 (예금·부금·저축)</div><div class="sc-v" id="st-old">–</div><div class="sc-sub" id="st-old-sub"></div></div>
+      </div>
+
+      <!-- 추이 + 권역 차트 -->
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-title">가입계좌 추이<span class="card-sub">최근 36개월 · 전국</span></div>
+          <div style="height:260px"><canvas id="chart-trend"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">권역별 통장 구성<span class="card-sub" id="chart-area-sub"></span></div>
+          <div style="height:260px"><canvas id="chart-area"></canvas></div>
+        </div>
+      </div>
+
+      <!-- 시도별 -->
+      <div class="card">
+        <div class="card-title">시도별 가입현황<span class="card-sub" id="sido-sub"></span></div>
+        <div class="filter-row" style="margin-bottom:.875rem">
+          <span class="filter-lbl">통장종류</span>
+          <select class="sel" id="sel-item" onchange="renderSido()">
+            <option value="">전체</option>
+            <option value="04">주택청약종합저축</option>
+            <option value="01">청약예금</option>
+            <option value="02">청약부금</option>
+            <option value="03">청약저축</option>
+          </select>
+        </div>
+        <div style="height:240px;margin-bottom:1rem"><canvas id="chart-sido"></canvas></div>
+        <div class="tbl-scroll">
+          <table class="tbl">
+            <thead><tr><th>시도</th><th class="num">종합저축</th><th class="num">청약예금</th><th class="num">청약부금</th><th class="num">청약저축</th><th class="num">합계</th><th>1순위 비중</th></tr></thead>
+            <tbody id="sido-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 중간 광고 -->
+      <div class="ad-box" style="margin:.75rem 0"><div class="ad-lbl">Advertisement</div>
+        <ins class="adsbygoogle" style="display:block;width:100%;height:90px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      </div>
+
+      <!-- 가입기간별 -->
+      <div class="card">
+        <div class="card-title">가입기간별 분포<span class="card-sub">청약 가점(가입기간) 분석용</span></div>
+        <div class="filter-row" style="margin-bottom:.875rem">
+          <span class="filter-lbl">지역</span>
+          <select class="sel" id="sel-region" onchange="loadSbscrb()"></select>
+          <span class="filter-lbl">통장종류</span>
+          <select class="sel" id="sel-item2" onchange="loadSbscrb()">
+            <option value="04">주택청약종합저축</option>
+            <option value="01">청약예금</option>
+            <option value="02">청약부금</option>
+            <option value="03">청약저축</option>
+          </select>
+          <span id="pd-loading" style="display:none;font-size:11px;color:var(--ink4);font-family:var(--mono)">조회 중…</span>
+        </div>
+        <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="sc bl"><div class="sc-lbl">지역 가입계좌</div><div class="sc-v" id="pd-total">–</div><div class="sc-sub">선택 지역·통장 기준</div></div>
+          <div class="sc gr"><div class="sc-lbl">2년 이상</div><div class="sc-v" id="pd-2y">–</div><div class="sc-sub">규제지역 1순위 기간요건 충족</div></div>
+          <div class="sc or"><div class="sc-lbl">10년 이상</div><div class="sc-v" id="pd-10y">–</div><div class="sc-sub">고가점 장기 가입자</div></div>
+        </div>
+        <div style="height:300px"><canvas id="chart-period"></canvas></div>
+        <div class="note" id="src-note">※ 출처: 한국부동산원 청약홈_청약통장 통계 조회 서비스 (공공데이터포털) · 1순위/2순위 요건은 지역·통장종류별로 상이하며 통계는 청약홈 집계 기준</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="ad-col"><div class="ad-sticky">
+    <div class="ad-box"><div class="ad-lbl">Ad</div>
+      <ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+    </div>
+  </div></div>
+</div>
+<footer style="background:#18181b;padding:1.5rem;margin-top:2rem">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <span style="font-family:var(--serif);font-size:13px;color:#e4e4e7;font-weight:600">청약랩</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#52525b">·</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#71717a">ApplyLab</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#52525b">·</span>
+      <span style="font-family:var(--mono);font-size:10px;color:#71717a">데이터 출처: 한국부동산원 청약홈 (공공데이터포털)</span>
+    </div>
+    <div style="text-align:center;font-family:var(--mono);font-size:10px;color:#52525b">
+      <a href="/subscription-competition-analysis/privacy.html" style="color:#71717a">개인정보취급방침</a> &nbsp;|&nbsp;
+      <a href="mailto:shake100@gmail.com" style="color:#71717a">문의: shake100@gmail.com</a><br>
+      © 2026 청약랩 ApplyLab. All rights reserved.
+    </div>
+  </div>
+</footer>
+<script>
+/* ============================================================
+   청약통장 현황 — 청약홈 청약통장 통계 (공공데이터포털 odcloud)
+   ============================================================ */
+const SERVICE_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+const BASE = 'https://api.odcloud.kr/api/ApplyhomeBnkbStatSvc/v1';
+const ITEM_NM = { '01':'청약예금', '02':'청약부금', '03':'청약저축', '04':'종합저축' };
+const ITEM_COLOR = { '04':'#1d4ed8', '01':'#16a34a', '02':'#ea580c', '03':'#b45309' };
+
+const state = {
+  all: null,            // AllStat 전체(196개월)
+  months: [],
+  ym: '',
+  dpst: {},             // 월별 캐시
+  sbscrb: {},           // 월|지역|종목 캐시
+  regions: [],          // [{code,name,sido}]
+  charts: {}
+};
+
+const fmt = n => (n==null||isNaN(n)) ? '–' : Number(n).toLocaleString('ko-KR');
+const fmtMan = n => n >= 100000000 ? (n/100000000).toFixed(2)+'억' : n >= 10000 ? (n/10000).toFixed(1)+'만' : fmt(n);
+const ymLabel = ym => ym.slice(0,4) + '년 ' + ym.slice(4,6) + '월';
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+async function apiGet(path, params) {
+  const qs = new URLSearchParams({ serviceKey: SERVICE_KEY, ...params });
+  const res = await fetch(`${BASE}/${path}?${qs}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const d = await res.json();
+  if (d.code && d.code < 0) throw new Error(d.msg || 'API 오류');
+  return d;
+}
+
+/* ---------- 초기화: AllStat 전량 수집 ---------- */
+async function init() {
+  const $load = document.getElementById('loading');
+  const $err = document.getElementById('error-box');
+  const $content = document.getElementById('content');
+  $err.style.display = 'none'; $load.style.display = 'block'; $content.style.display = 'none';
+  try {
+    if (!state.all) {
+      const rows = [];
+      let page = 1, total = Infinity;
+      while (rows.length < total && page <= 5) {
+        const d = await apiGet('getBnkbAcnutAllStat', { page, perPage: 3000 });
+        total = d.totalCount;
+        rows.push(...d.data);
+        if (!d.data.length) break;
+        page++;
+      }
+      state.all = rows;
+      state.months = [...new Set(rows.map(r => r.DELNG_OCCRRNC_YM))].sort().reverse();
+      state.ym = state.months[0];
+      const sel = document.getElementById('sel-ym');
+      sel.innerHTML = state.months.map(m => `<option value="${m}">${ymLabel(m)}</option>`).join('');
+      sel.value = state.ym;
+      document.getElementById('ym-range').textContent =
+        `통계 제공범위: ${ymLabel(state.months[state.months.length-1])} ~ ${ymLabel(state.months[0])}`;
+    }
+    renderCards();
+    renderTrend();
+    renderAreaChart();
+    $load.style.display = 'none'; $content.style.display = 'block';
+    await loadDpst();        // 시도별
+    buildRegionOptions();
+    await loadSbscrb();      // 가입기간별
+  } catch (e) {
+    $load.style.display = 'none';
+    document.getElementById('error-msg').textContent = `청약홈 통계 API 응답에 실패했습니다. (${e.message})`;
+    $err.style.display = 'block';
+  }
+}
+
+function onMonthChange() {
+  state.ym = document.getElementById('sel-ym').value;
+  renderCards(); renderAreaChart();
+  loadDpst().then(() => loadSbscrb());
+}
+
+/* ---------- 월 데이터 헬퍼 ---------- */
+const rowsOf = ym => state.all.filter(r => r.DELNG_OCCRRNC_YM === ym);
+const sumAcnt = rows => rows.reduce((s,r)=>s + (r.RNK1_ACNUT_CO||0) + (r.RNK2_ACNUT_CO||0), 0);
+const sumRnk1 = rows => rows.reduce((s,r)=>s + (r.RNK1_ACNUT_CO||0), 0);
+
+/* ---------- 통계 카드 ---------- */
+function renderCards() {
+  const cur = rowsOf(state.ym);
+  const idx = state.months.indexOf(state.ym);
+  const prevYm = state.months[idx+1];
+  const prev = prevYm ? rowsOf(prevYm) : [];
+
+  const total = sumAcnt(cur), rnk1 = sumRnk1(cur);
+  const sv = sumAcnt(cur.filter(r=>r.DPST_ITEM==='04'));
+  const old = total - sv;
+  const diff = prev.length ? total - sumAcnt(prev) : null;
+
+  const set = (id,v,sub) => { document.getElementById(id).innerHTML = v; if(sub!=null) document.getElementById(id+'-sub').innerHTML = sub; };
+  set('st-total', fmtMan(total)+'<span class="sc-u"> 좌</span>',
+      diff==null ? ymLabel(state.ym)+' 기준' :
+      `전월 대비 <span style="color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'▲':'▼'} ${fmt(Math.abs(diff))}좌</span>`);
+  set('st-rnk1', fmtMan(rnk1)+'<span class="sc-u"> 좌</span>', `전체의 ${(rnk1/total*100).toFixed(1)}%`);
+  set('st-total-sv', fmtMan(sv)+'<span class="sc-u"> 좌</span>', `전체의 ${(sv/total*100).toFixed(1)}%`);
+  set('st-old', fmtMan(old)+'<span class="sc-u"> 좌</span>', `신규가입 중단된 구통장 ${(old/total*100).toFixed(1)}%`);
+}
+
+/* ---------- 추이 차트 (36개월) ---------- */
+function renderTrend() {
+  const months = [...state.months].slice(0, 36).reverse();
+  const tot = months.map(m => sumAcnt(rowsOf(m)));
+  const r1 = months.map(m => sumRnk1(rowsOf(m)));
+  Chart.defaults.font.family = css('--sans');
+  Chart.defaults.font.size = 10;
+  Chart.defaults.color = css('--ink3');
+  if (state.charts.trend) state.charts.trend.destroy();
+  state.charts.trend = new Chart(document.getElementById('chart-trend'), {
+    type: 'line',
+    data: { labels: months.map(m => m.slice(2,4)+'.'+m.slice(4,6)),
+      datasets: [
+        { label:'총 가입계좌', data: tot, borderColor: css('--accent'), backgroundColor:'rgba(29,78,216,.08)', fill:true, tension:.3, pointRadius:0, borderWidth:2 },
+        { label:'1순위 계좌', data: r1, borderColor: css('--green'), tension:.3, pointRadius:0, borderWidth:1.5, borderDash:[4,3] }
+      ]},
+    options: { responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins: { legend:{position:'top',labels:{boxWidth:10,font:{size:10}}},
+        tooltip:{ callbacks:{ label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y)}좌` } } },
+      scales: { y:{ ticks:{ callback:v=>fmtMan(v) }, grid:{color:css('--bg2')} }, x:{ grid:{display:false}, ticks:{maxTicksLimit:12} } } }
+  });
+}
+
+/* ---------- 권역별 stacked bar ---------- */
+function renderAreaChart() {
+  const cur = rowsOf(state.ym);
+  const areas = [...new Set(cur.map(r=>r.SUBSCRPT_AREA_CODE_NM))];
+  document.getElementById('chart-area-sub').textContent = ymLabel(state.ym)+' 기준';
+  const datasets = ['04','01','02','03'].map(code => ({
+    label: ITEM_NM[code],
+    data: areas.map(a => sumAcnt(cur.filter(r=>r.SUBSCRPT_AREA_CODE_NM===a && r.DPST_ITEM===code))),
+    backgroundColor: ITEM_COLOR[code], borderRadius: 2, maxBarThickness: 60
+  }));
+  if (state.charts.area) state.charts.area.destroy();
+  state.charts.area = new Chart(document.getElementById('chart-area'), {
+    type: 'bar',
+    data: { labels: areas, datasets },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{position:'top',labels:{boxWidth:10,font:{size:10}}},
+        tooltip:{ callbacks:{ label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y)}좌` } } },
+      scales: { x:{ stacked:true, grid:{display:false} }, y:{ stacked:true, ticks:{callback:v=>fmtMan(v)}, grid:{color:css('--bg2')} } } }
+  });
+}
+
+/* ---------- 시도별 (Dpst) ---------- */
+async function loadDpst() {
+  const ym = state.ym;
+  if (!state.dpst[ym]) {
+    const d = await apiGet('getBnkbAcnutDpstStat', {
+      page:1, perPage:1000,
+      'cond[DELNG_OCCRRNC_YM::GTE]': ym, 'cond[DELNG_OCCRRNC_YM::LTE]': ym
+    });
+    state.dpst[ym] = d.data;
+  }
+  renderSido();
+}
+
+function renderSido() {
+  const rows = state.dpst[state.ym] || [];
+  const item = document.getElementById('sel-item').value;
+  document.getElementById('sido-sub').textContent = ymLabel(state.ym)+' · '+(item?ITEM_NM[item]:'전체 통장');
+
+  const bySido = new Map();
+  rows.forEach(r => {
+    if (!bySido.has(r.SIDO_NM)) bySido.set(r.SIDO_NM, { sido:r.SIDO_NM, i01:0,i02:0,i03:0,i04:0, total:0, rnk1:0, fTotal:0 });
+    const g = bySido.get(r.SIDO_NM);
+    const v = (r.RNK1_ACNUT_CO||0)+(r.RNK2_ACNUT_CO||0);
+    g['i'+r.DPST_ITEM] += v; g.total += v; 
+    if (!item || r.DPST_ITEM === item) { g.fTotal += v; g.rnk1 += (r.RNK1_ACNUT_CO||0); }
+  });
+  const list = [...bySido.values()].sort((a,b)=>b.fTotal-a.fTotal);
+
+  // 차트
+  if (state.charts.sido) state.charts.sido.destroy();
+  state.charts.sido = new Chart(document.getElementById('chart-sido'), {
+    type:'bar',
+    data:{ labels:list.map(g=>g.sido),
+      datasets:[{ data:list.map(g=>g.fTotal), backgroundColor: item?ITEM_COLOR[item]:css('--accent'), borderRadius:3, maxBarThickness:34 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>` ${fmt(c.parsed.y)}좌` } } },
+      scales:{ y:{ beginAtZero:true, ticks:{callback:v=>fmtMan(v)}, grid:{color:css('--bg2')} }, x:{ grid:{display:false} } } }
+  });
+
+  // 테이블
+  document.getElementById('sido-body').innerHTML = list.map(g => {
+    const denom = item ? g.fTotal : g.total;
+    const r1pct = denom ? (g.rnk1/(item?g.fTotal:g.total)*100) : 0;
+    return `<tr style="cursor:default">
+      <td style="font-weight:400;color:var(--ink)">${g.sido}</td>
+      <td class="num">${fmt(g.i04)}</td><td class="num">${fmt(g.i01)}</td>
+      <td class="num">${fmt(g.i02)}</td><td class="num">${fmt(g.i03)}</td>
+      <td class="num" style="font-weight:500">${fmt(g.total)}</td>
+      <td><div class="bar-w"><div class="bar" style="background:var(--green);width:${Math.max(2,r1pct*0.7)}px"></div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${r1pct.toFixed(1)}%</span></div></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------- 가입기간별 (Sbscrb) ---------- */
+function buildRegionOptions() {
+  const rows = state.dpst[state.ym] || [];
+  const seen = new Map();
+  rows.forEach(r => { if(!seen.has(r.SUBSCRPT_AREA_CODE)) seen.set(r.SUBSCRPT_AREA_CODE, { code:r.SUBSCRPT_AREA_CODE, name:r.SUBSCRPT_AREA_CODE_NM, sido:r.SIDO_NM }); });
+  state.regions = [...seen.values()].sort((a,b)=> a.sido===b.sido ? a.name.localeCompare(b.name,'ko') : a.sido.localeCompare(b.sido,'ko'));
+  const sel = document.getElementById('sel-region');
+  const cur = sel.value;
+  sel.innerHTML = state.regions.map(r =>
+    `<option value="${r.code}">${r.sido === r.name ? r.sido : r.sido+' · '+r.name}</option>`).join('');
+  sel.value = state.regions.some(r=>r.code===cur) ? cur : '100';
+}
+
+async function loadSbscrb() {
+  const ym = state.ym;
+  const code = document.getElementById('sel-region').value || '100';
+  const item = document.getElementById('sel-item2').value;
+  const key = `${ym}|${code}|${item}`;
+  document.getElementById('pd-loading').style.display = 'inline';
+  try {
+    if (!state.sbscrb[key]) {
+      const d = await apiGet('getBnkbAcnutSbscrbStat', {
+        page:1, perPage:300,
+        'cond[DELNG_OCCRRNC_YM::GTE]': ym, 'cond[DELNG_OCCRRNC_YM::LTE]': ym,
+        'cond[SUBSCRPT_AREA_CODE::EQ]': code, 'cond[DPST_ITEM::EQ]': item
+      });
+      state.sbscrb[key] = d.data;
+    }
+    renderPeriod(state.sbscrb[key]);
+  } catch(e) {
+    renderPeriod([]);
+  } finally {
+    document.getElementById('pd-loading').style.display = 'none';
+  }
+}
+
+function renderPeriod(rows) {
+  // 기간코드별 합산 (평형 통합)
+  const byPd = new Map();
+  rows.forEach(r => {
+    const k = r.SBSCRB_PD_CODE;
+    if (!byPd.has(k)) byPd.set(k, { code:k, name:r.SBSCRB_PD_CODE_NM, v:0 });
+    byPd.get(k).v += (r.ACNUT_CO||0);
+  });
+  const list = [...byPd.values()].sort((a,b)=> a.code.localeCompare(b.code));
+  const total = list.reduce((s,x)=>s+x.v,0);
+  const over2y = list.filter(x=>parseInt(x.code,10) >= 4).reduce((s,x)=>s+x.v,0);   // 04: 2년이상~
+  const over10y = list.filter(x=>parseInt(x.code,10) >= 12).reduce((s,x)=>s+x.v,0); // 12: 10년이상~
+
+  document.getElementById('pd-total').innerHTML = fmtMan(total)+'<span class="sc-u"> 좌</span>';
+  document.getElementById('pd-2y').innerHTML = total? (over2y/total*100).toFixed(1)+'<span class="sc-u"> %</span>' : '–';
+  document.getElementById('pd-10y').innerHTML = total? (over10y/total*100).toFixed(1)+'<span class="sc-u"> %</span>' : '–';
+
+  if (state.charts.period) state.charts.period.destroy();
+  state.charts.period = new Chart(document.getElementById('chart-period'), {
+    type:'bar',
+    data:{ labels:list.map(x=>x.name),
+      datasets:[{ data:list.map(x=>x.v),
+        backgroundColor:list.map(x=> parseInt(x.code,10)>=12 ? css('--gold') : parseInt(x.code,10)>=4 ? css('--green') : css('--accent')),
+        borderRadius:3, maxBarThickness:18 }]},
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:c=>` ${fmt(c.parsed.x)}좌 (${total?(c.parsed.x/total*100).toFixed(1):0}%)` } } },
+      scales:{ x:{ beginAtZero:true, ticks:{callback:v=>fmtMan(v)}, grid:{color:css('--bg2')} }, y:{ grid:{display:false}, ticks:{font:{size:9.5}} } } }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
