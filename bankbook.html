@@ -219,6 +219,19 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
             <tbody id="sido-body"></tbody>
           </table>
         </div>
+        <div class="note">※ 시도 행을 클릭하면 시·군별 세부현황이 표시됩니다 (경기 31개 시군 등 · 서울/광역시는 구 단위 미제공)</div>
+
+        <!-- 시군별 드릴다운 -->
+        <div id="sub-region" style="display:none;margin-top:1.25rem;padding-top:1.25rem;border-top:2px solid var(--bg2)">
+          <div class="card-title" style="margin-bottom:.875rem"><span id="sub-title"></span><span class="card-sub" id="sub-sub"></span></div>
+          <div style="height:240px;margin-bottom:1rem"><canvas id="chart-sub"></canvas></div>
+          <div class="tbl-scroll">
+            <table class="tbl">
+              <thead><tr><th>시·군</th><th class="num">종합저축</th><th class="num">청약예금</th><th class="num">청약부금</th><th class="num">청약저축</th><th class="num">합계</th><th>1순위 비중</th></tr></thead>
+              <tbody id="sub-body"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- 중간 광고 -->
@@ -291,6 +304,7 @@ const state = {
   dpst: {},             // 월별 캐시
   sbscrb: {},           // 월|지역|종목 캐시
   regions: [],          // [{code,name,sido}]
+  subSido: null,        // 드릴다운 중인 시도
   charts: {}
 };
 
@@ -463,12 +477,12 @@ function renderSido() {
       scales:{ y:{ beginAtZero:true, ticks:{callback:v=>fmtMan(v)}, grid:{color:css('--bg2')} }, x:{ grid:{display:false} } } }
   });
 
-  // 테이블
+  // 테이블 (행 클릭 → 시군별 드릴다운)
   document.getElementById('sido-body').innerHTML = list.map(g => {
     const denom = item ? g.fTotal : g.total;
     const r1pct = denom ? (g.rnk1/(item?g.fTotal:g.total)*100) : 0;
-    return `<tr style="cursor:default">
-      <td style="font-weight:400;color:var(--ink)">${g.sido}</td>
+    return `<tr onclick="showSubRegion('${g.sido}')" title="클릭하면 시·군별 현황 표시">
+      <td style="font-weight:400;color:var(--ink)">${g.sido} <span style="font-size:10px;color:var(--ink4)">▸</span></td>
       <td class="num">${fmt(g.i04)}</td><td class="num">${fmt(g.i01)}</td>
       <td class="num">${fmt(g.i02)}</td><td class="num">${fmt(g.i03)}</td>
       <td class="num" style="font-weight:500">${fmt(g.total)}</td>
@@ -476,6 +490,58 @@ function renderSido() {
         <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${r1pct.toFixed(1)}%</span></div></td>
     </tr>`;
   }).join('');
+
+  if (state.subSido) showSubRegion(state.subSido);
+}
+
+/* ---------- 시군별 드릴다운 ---------- */
+function showSubRegion(sido) {
+  state.subSido = sido;
+  const rows = (state.dpst[state.ym] || []).filter(r => r.SIDO_NM === sido);
+  const item = document.getElementById('sel-item').value;
+
+  const byRg = new Map();
+  rows.forEach(r => {
+    const k = r.SUBSCRPT_AREA_CODE;
+    if (!byRg.has(k)) byRg.set(k, { name:r.SUBSCRPT_AREA_CODE_NM, i01:0,i02:0,i03:0,i04:0, total:0, rnk1:0, fTotal:0 });
+    const g = byRg.get(k);
+    const v = (r.RNK1_ACNUT_CO||0)+(r.RNK2_ACNUT_CO||0);
+    g['i'+r.DPST_ITEM] += v; g.total += v;
+    if (!item || r.DPST_ITEM === item) { g.fTotal += v; g.rnk1 += (r.RNK1_ACNUT_CO||0); }
+  });
+  const list = [...byRg.values()].sort((a,b)=>b.fTotal-a.fTotal);
+
+  document.getElementById('sub-region').style.display = 'block';
+  document.getElementById('sub-title').textContent = `${sido} 시·군별 가입현황`;
+  document.getElementById('sub-sub').textContent =
+    list.length > 1 ? `${ymLabel(state.ym)} · ${item?ITEM_NM[item]:'전체 통장'} · ${list.length}개 지역`
+                    : `${sido}는 단일 지역으로 집계 제공 (구 단위 미제공)`;
+
+  if (state.charts.sub) state.charts.sub.destroy();
+  state.charts.sub = new Chart(document.getElementById('chart-sub'), {
+    type:'bar',
+    data:{ labels:list.map(g=>g.name),
+      datasets:[{ data:list.map(g=>g.fTotal), backgroundColor: css('--orange'), borderRadius:3, maxBarThickness:26 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>` ${fmt(c.parsed.y)}좌` } } },
+      scales:{ y:{ beginAtZero:true, ticks:{callback:v=>fmtMan(v)}, grid:{color:css('--bg2')} },
+               x:{ grid:{display:false}, ticks:{font:{size:9.5},autoSkip:false,maxRotation:60,minRotation:list.length>12?45:0} } } }
+  });
+
+  document.getElementById('sub-body').innerHTML = list.map(g => {
+    const r1pct = (item?g.fTotal:g.total) ? (g.rnk1/(item?g.fTotal:g.total)*100) : 0;
+    return `<tr style="cursor:default">
+      <td style="font-weight:400;color:var(--ink)">${g.name}</td>
+      <td class="num">${fmt(g.i04)}</td><td class="num">${fmt(g.i01)}</td>
+      <td class="num">${fmt(g.i02)}</td><td class="num">${fmt(g.i03)}</td>
+      <td class="num" style="font-weight:500">${fmt(g.total)}</td>
+      <td><div class="bar-w"><div class="bar" style="background:var(--green);width:${Math.max(2,r1pct*0.7)}px"></div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${r1pct.toFixed(1)}%</span></div></td>
+    </tr>`;
+  }).join('');
+
+  if (event && event.type === 'click')
+    document.getElementById('sub-region').scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 /* ---------- 가입기간별 (Sbscrb) ---------- */
