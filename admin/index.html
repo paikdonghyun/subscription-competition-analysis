@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관리자 대시보드 · 청약랩</title>
-<link rel="stylesheet" href="/subscription-competition-analysis/css/common.css">
+<link rel="stylesheet" href="/css/common.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 body{background:#f1f5f9}
@@ -45,14 +45,14 @@ body{background:#f1f5f9}
   </div>
   <div class="admin-nav">
     <div class="admin-nav-section">대시보드</div>
-    <a href="/subscription-competition-analysis/admin/" class="admin-nav-item active">📊 방문자 통계</a>
+    <a href="/admin/" class="admin-nav-item active">📊 방문자 통계</a>
     <div class="admin-nav-section">관리</div>
-    <a href="/subscription-competition-analysis/admin/members.html" class="admin-nav-item">👥 회원 관리</a>
-    <a href="/subscription-competition-analysis/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
-    <a href="/subscription-competition-analysis/admin/inquiries.html" class="admin-nav-item">💬 문의·수정요청</a>
-    <a href="/subscription-competition-analysis/admin/accounts.html" class="admin-nav-item">🔑 관리자 계정</a>
+    <a href="/admin/members.html" class="admin-nav-item">👥 회원 관리</a>
+    <a href="/admin/board.html" class="admin-nav-item">📋 게시판 관리</a>
+    <a href="/admin/inquiries.html" class="admin-nav-item">💬 문의·수정요청</a>
+    <a href="/admin/accounts.html" class="admin-nav-item">🔑 관리자 계정</a>
     <div class="admin-nav-section" style="margin-top:auto"></div>
-    <a href="/subscription-competition-analysis/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
+    <a href="/" class="admin-nav-item" style="margin-top:2rem">🏠 사이트로 이동</a>
     <a href="#" class="admin-nav-item" onclick="doLogout();return false" style="color:#ef4444">🚪 로그아웃</a>
   </div>
 </div>
@@ -161,15 +161,15 @@ async function ensureAdminDoc(u){
 }
 
 onAuthStateChanged(auth, async u => {
-  if(!u){ location.href='/subscription-competition-analysis/login.html'; return; }
+  if(!u){ location.href='/login.html'; return; }
   const ud = await ensureAdminDoc(u);
-  if(ud?.role !== 'admin'){ alert('관리자만 접근할 수 있습니다.'); location.href='/subscription-competition-analysis/'; return; }
+  if(ud?.role !== 'admin'){ alert('관리자만 접근할 수 있습니다.'); location.href='/'; return; }
   document.getElementById('admin-user-info').textContent = `로그인: ${ud.displayName||u.email} (${ud.role})`;
   loadStats();
   loadSummary();
 });
 
-window.doLogout = async () => { await signOut(auth); location.href='/subscription-competition-analysis/'; };
+window.doLogout = async () => { await signOut(auth); location.href='/'; };
 window.loadStats = loadStats;
 
 window.setPeriod = (days) => {

@@ -181,14 +181,14 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
       </a>
       <div style="width:1px;height:18px;background:var(--bg3,#e5e7eb);flex-shrink:0"></div>
       <nav style="display:flex;align-items:center;gap:.125rem;flex:1" id="top-nav">
-        <a href="/subscription-competition-analysis/home.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">HOME</a>
-        <a href="/subscription-competition-analysis/" class="top-nav-btn active" style="font-size:13px;font-weight:500;color:var(--accent,#1d4ed8);padding:.4rem .9rem;border-radius:6px;background:var(--accent-l,#eff6ff)">청약경쟁률</a>
-        <a href="/subscription-competition-analysis/price.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">분양가격</a>
-        <a href="/subscription-competition-analysis/unsold.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">미분양 현황</a>
-        <a href="/subscription-competition-analysis/bankbook.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">청약통장 현황</a>
+        <a href="/home.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">HOME</a>
+        <a href="/" class="top-nav-btn active" style="font-size:13px;font-weight:500;color:var(--accent,#1d4ed8);padding:.4rem .9rem;border-radius:6px;background:var(--accent-l,#eff6ff)">청약경쟁률</a>
+        <a href="/price.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">분양가격</a>
+        <a href="/unsold.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">미분양 현황</a>
+        <a href="/bankbook.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">청약통장 현황</a>
       </nav>
       <div style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-shrink:0" id="gnav-right">
-        <a href="/subscription-competition-analysis/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">관리자 로그인</a>
+        <a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">관리자 로그인</a>
       </div>
     </div>
   </div>
@@ -459,7 +459,7 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
       <span style="font-family:var(--mono,monospace);font-size:10px;color:#71717a">데이터 출처: 한국부동산원</span>
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:1.25rem;flex-wrap:wrap">
-      <a href="/subscription-competition-analysis/privacy.html"
+      <a href="/privacy.html"
         style="font-family:var(--mono,monospace);font-size:11px;color:#a1a1aa;text-decoration:none;border-bottom:1px solid #3f3f46;padding-bottom:1px;transition:color .12s"
         onmouseover="this.style.color='#e4e4e7'" onmouseout="this.style.color='#a1a1aa'">
         개인정보취급방침
@@ -1331,12 +1331,12 @@ onAuthStateChanged(_auth, async u => {
         <span>${name}</span>${isAdmin?'<span style="background:#fef2f2;color:#dc2626;font-size:9px;padding:1px 5px;border-radius:3px;font-family:monospace">관리자</span>':''}▾
       </div>
       <div class="dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--bg3,#e5e7eb);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,.08);min-width:150px;padding:.375rem;z-index:300">
-        ${isAdmin?'<a href="/subscription-competition-analysis/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px;font-weight:500">⚙ 관리자 대시보드</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
-        <a href="#" onclick="signOut(_auth).then(()=>{location.href='/subscription-competition-analysis/';});return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
+        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px;font-weight:500">⚙ 관리자 대시보드</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
+        <a href="#" onclick="signOut(_auth).then(()=>{location.href='/';});return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
       </div>
     </div>`;
   } else {
-    right.innerHTML = `<a href="/subscription-competition-analysis/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff;border:1px solid #1d4ed8">관리자 로그인</a>`;
+    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff;border:1px solid #1d4ed8">관리자 로그인</a>`;
   }
   // 방문자 추적
   try {

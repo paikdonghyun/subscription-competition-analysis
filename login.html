@@ -80,7 +80,7 @@ body{font-family:var(--sans);background:linear-gradient(135deg,var(--accent-l) 0
 <body>
 
 <div class="hd">
-  <a href="/subscription-competition-analysis/">
+  <a href="/">
     <span class="hd-kr">청약랩</span>
     <span class="hd-en">ApplyLab</span>
   </a>
@@ -153,7 +153,7 @@ body{font-family:var(--sans);background:linear-gradient(135deg,var(--accent-l) 0
       <label class="check-row">
         <input type="checkbox" id="r-agree">
         <span>
-          <a href="/subscription-competition-analysis/privacy.html" target="_blank" style="color:var(--accent)">개인정보취급방침</a>에 동의합니다
+          <a href="/privacy.html" target="_blank" style="color:var(--accent)">개인정보취급방침</a>에 동의합니다
         </span>
       </label>
       <button class="btn btn-primary" id="r-btn" onclick="doRegister()">회원가입</button>
@@ -176,7 +176,7 @@ import { getAuth, onAuthStateChanged,
 import { getFirestore, doc, setDoc,
          getDoc, serverTimestamp }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const BASE  = '/subscription-competition-analysis/';
+const BASE  = '/';
 const app   = initializeApp(FIREBASE_CONFIG);
 const auth  = getAuth(app);
 const db    = getFirestore(app);
