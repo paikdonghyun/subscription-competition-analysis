@@ -312,6 +312,23 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
 
   <!-- ── API 탭 ── -->
   <div class="panel" id="panel-api">
+    <div id="api-notice" style="
+      background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;
+      padding:.875rem 1.125rem;margin-bottom:.875rem;display:flex;align-items:flex-start;gap:.75rem">
+      <span style="font-size:1.1rem;flex-shrink:0">⚠</span>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#92400e;margin-bottom:.25rem">
+          청약홈 분양정보 API 임시 점검 중
+        </div>
+        <div style="font-size:12px;color:#a16207;line-height:1.6">
+          공공데이터포털의 <b>청약홈 분양정보 상세 서비스</b>가 현재 데이터를 반환하지 않고 있습니다.
+          공급자(한국부동산원) 측의 서버 점검으로 추정되며, 복구 시 자동으로 정상화됩니다.<br>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;opacity:.8">
+            ※ 검색 기능은 API 복구 후 이용 가능합니다 · 경쟁률 분석(시도별 탭)은 정상 운영 중
+          </span>
+        </div>
+      </div>
+    </div>
     <div class="placeholder" id="api-placeholder">
       <div class="placeholder-icon">⬡</div>
       <p class="placeholder-title">단지명, 시도, 시군구를 입력해 실시간 조회하세요</p>
@@ -744,6 +761,7 @@ async function fetchApi(q, page) {
       } catch(e) { if(e.message.includes('API 오류')) throw e; }
     }
     if (!firstData) throw new Error('분양정보 API 연결 실패');
+    if (totalCount1 === 0) throw new Error('API_MAINTENANCE');
 
     // 나머지 페이지 병렬 로드
     const totalPages = Math.ceil(totalCount1 / 1000);
@@ -875,10 +893,27 @@ async function fetchApi(q, page) {
   } catch(err) {
     document.getElementById('api-loading').style.display = 'none';
     document.getElementById('api-error').style.display = 'block';
-    const isNoResult = err.message.includes('없음');
-    document.getElementById('api-error').innerHTML =
-      '<b>⚠ ' + err.message.replace(/\n/g, '<br>') + '</b>' +
-      (isNoResult ? '' : '<br><br>확인: data.go.kr 마이페이지 → 인증키 활성 상태, 두 서비스 활용신청 완료 여부');
+    if (err.message === 'API_MAINTENANCE') {
+      document.getElementById('api-error').innerHTML =
+        '<div style="display:flex;align-items:flex-start;gap:.625rem">' +
+        '<span style="font-size:1.1rem;flex-shrink:0">⚠</span>' +
+        '<div>' +
+        '<div style="font-weight:500;margin-bottom:.3rem">청약홈 분양정보 API 임시 점검 중</div>' +
+        '<div style="font-size:12.5px;line-height:1.7;color:#92400e">' +
+        '공공데이터포털의 청약홈 분양정보 상세 서비스가 현재 데이터를 반환하지 않고 있습니다.<br>' +
+        '공급자(한국부동산원) 측 서버 점검으로 추정되며, 복구 시 자동으로 정상화됩니다.<br>' +
+        '<span style="font-family:var(--mono);font-size:11px;opacity:.75">' +
+        '※ 경쟁률 분석(시도별 탭)은 정상 운영 중입니다</span>' +
+        '</div></div></div>';
+      document.getElementById('api-error').style.background = '#fef9c3';
+      document.getElementById('api-error').style.borderColor = '#fde68a';
+      document.getElementById('api-error').style.color = '#92400e';
+    } else {
+      const isNoResult = err.message.includes('없음');
+      document.getElementById('api-error').innerHTML =
+        '<b>⚠ ' + err.message.replace(/\n/g, '<br>') + '</b>' +
+        (isNoResult ? '' : '<br><br>확인: data.go.kr 마이페이지 → 인증키 활성 상태, 두 서비스 활용신청 완료 여부');
+    }
   }
 }
 

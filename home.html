@@ -364,10 +364,25 @@ async function loadData() {
     updateStats();
     renderCal();
     renderList();
+    if (!state.raw.length) throw new Error('API_MAINTENANCE');
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
   } catch(e) {
-    document.getElementById('loading').innerHTML = `<div style="color:var(--red)">데이터 조회 실패 (${e.message})</div>`;
+    if (e.message === 'API_MAINTENANCE') {
+      document.getElementById('loading').innerHTML = `
+        <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;max-width:540px;margin:0 auto;text-align:left;display:flex;gap:.75rem;align-items:flex-start">
+          <span style="font-size:1.2rem;flex-shrink:0">⚠</span>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#92400e;margin-bottom:.3rem">청약홈 분양정보 API 임시 점검 중</div>
+            <div style="font-size:12px;color:#a16207;line-height:1.7">
+              공공데이터포털의 청약홈 분양정보 상세 서비스가 현재 데이터를 반환하지 않고 있습니다.<br>
+              공급자(한국부동산원) 측 서버 점검으로 추정되며, 복구 시 캘린더가 자동으로 정상화됩니다.
+            </div>
+          </div>
+        </div>`;
+    } else {
+      document.getElementById('loading').innerHTML = `<div style="color:var(--red)">데이터 조회 실패 (${e.message})</div>`;
+    }
   }
 }
 
