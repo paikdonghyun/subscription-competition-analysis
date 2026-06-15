@@ -146,9 +146,7 @@ function renderVisitorBadge(todayRaw, totalRaw) {
   if (!el) return;
   const today = todayRaw;
   const total = totalRaw + VISITOR_BASE.total;
-  const fmt = n => n >= 10000
-    ? (n / 10000).toFixed(1).replace(/\.0$/, '') + '만'
-    : n.toLocaleString('ko-KR');
+  const fmt = n => n.toLocaleString('ko-KR');
   el.innerHTML =
     `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
     `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em;text-transform:uppercase">Today</span>` +
