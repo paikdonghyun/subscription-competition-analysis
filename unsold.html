@@ -70,7 +70,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
 .nav-mobile-a:hover{background:var(--bg2)}
 .nav-mobile-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
 .nav-mobile-divider{height:1px;background:var(--bg2);margin:.35rem 0}
-.nav-mobile-btn{font-size:13px;font-weight:500;padding:.65rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none;text-align:center;margin-top:.25rem}
+.nav-mobile-btn{display:none}
 /* 방문자 카운터 */
 #visitor-counter{flex-shrink:0}
 /* 반응형 분기 */
@@ -85,6 +85,63 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
 @media(max-width:480px){
   .logo-en{display:none}
 }
+
+/* ── 모바일 최적화 ── */
+@media(max-width:768px){
+  *{-webkit-text-size-adjust:100%}
+  body{overflow-x:hidden}
+  /* 레이아웃 */
+  .wrap{padding:.625rem .75rem}
+  .main{padding:0}
+  /* 통계 카드 */
+  .stat-row{grid-template-columns:1fr 1fr;gap:.5rem}
+  .sc{padding:.75rem}
+  .sc-v{font-size:1.25rem}
+  /* 필터 */
+  .filter{padding:.75rem}
+  .filter-row{gap:.5rem}
+  .sel,.inp{font-size:15px}
+  .inp{min-width:0;width:100%}
+  /* 테이블: 가로 스크롤 */
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rl)}
+  .tbl{font-size:12px;min-width:560px}
+  .tbl th,.tbl td{padding:.4rem .5rem;white-space:nowrap}
+  /* 카드 */
+  .card{padding:.875rem}
+  .card-title{font-size:.85rem}
+  /* 차트 그리드 */
+  .chart-grid{grid-template-columns:1fr}
+  /* 페이저 */
+  .pager{gap:.5rem}
+  .pg-btn{padding:.3rem .7rem;font-size:11px}
+  /* region toggle (미분양) */
+  .region-toggle{max-width:100%!important}
+  .rt-btn{font-size:12px;padding:.45rem .5rem}
+  /* 칩 */
+  .chip-row{gap:.3rem}
+  .chip{font-size:10px;padding:2px 8px}
+  /* 캘린더 */
+  .cal-grid{gap:1px}
+  .cal-cell{min-height:60px;padding:.25rem .2rem}
+  .cal-evt{font-size:8.5px;padding:1px 3px}
+  .cal-date{font-size:11px;width:18px;height:18px}
+  .cal-nav{gap:.5rem}
+  .cal-ym{font-size:1rem}
+  .cal-legend{gap:.35rem}
+  .leg-item{font-size:10px}
+  /* 모달 */
+  .modal{padding:1rem;margin:.5rem}
+  .modal-bg{padding:1.5rem .75rem 1rem}
+}
+@media(max-width:480px){
+  .stat-row{grid-template-columns:1fr 1fr}
+  .tbl{min-width:480px}
+  .wrap{padding:.5rem}
+  .filter-row{flex-direction:column;align-items:stretch}
+  .sel{width:100%}
+  .btn-q,.btn-ghost{width:100%;text-align:center}
+}
+
 
 /* LAYOUT */
 .wrap{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start}
@@ -223,8 +280,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
     <a href="/price.html" class="nav-mobile-a">분양가격</a>
     <a href="/unsold.html" class="nav-mobile-a on">미분양 현황</a>
     <a href="/bankbook.html" class="nav-mobile-a">청약통장 현황</a>
-    <div class="nav-mobile-divider"></div>
-    <a href="/login.html" class="nav-mobile-btn">관리자 로그인</a>
+
   </div>
 </div>
 <script>
