@@ -5,6 +5,14 @@
 // ══════════════════════════════════════════════════
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm';
+
+
+// ── EmailJS 설정 (https://www.emailjs.com 에서 발급) ──
+const EMAILJS_SERVICE_ID  = 'EMAILJS_SERVICE_ID_HERE';   // 예: service_abc123
+const EMAILJS_TEMPLATE_ID = 'EMAILJS_TEMPLATE_ID_HERE';  // 예: template_xyz789
+const EMAILJS_PUBLIC_KEY  = 'EMAILJS_PUBLIC_KEY_HERE';   // Public Key
+
 
 // index.html 등 기본 앱이 이미 초기화된 페이지와 충돌하지 않도록 별도 이름의 앱 사용
 const app = getApps().find(a => a.name === 'inquiryApp')
@@ -16,6 +24,44 @@ const TYPES = [
   { v: 'feature', label: '기능 · 수정 요청' },
   { v: 'etc',     label: '일반 문의' },
 ];
+
+/* ── 이메일 발송 헬퍼 ── */
+function pageNm(p) {
+  if (!p) return '알 수 없음';
+  if (p.includes('bankbook'))    return '청약통장 현황';
+  if (p.includes('unsold'))      return '미분양 현황';
+  if (p.includes('price'))       return '분양가격';
+  if (p.includes('competition')) return '청약경쟁률';
+  if (p.includes('home'))        return 'HOME (분양캘린더)';
+  return p;
+}
+
+async function sendInquiryEmail({ type, content, contact, page, createdAt }) {
+  try {
+    const TYPE_NM = { data: '데이터 오류 신고', feature: '기능·수정 요청', etc: '일반 문의' };
+    const now = createdAt ? createdAt.toDate ? createdAt.toDate() : new Date(createdAt) : new Date();
+    const fmtDate = d => `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+    await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      {
+        to_email:    'shake100@gmail.com',
+        type_label:  TYPE_NM[type] || type || '일반 문의',
+        content:     content,
+        contact:     contact || '미기재',
+        page_name:   pageNm(page),
+        page_url:    'https://applylab.kr' + (page || ''),
+        status:      '신규 접수',
+        received_at: fmtDate(now),
+      },
+      EMAILJS_PUBLIC_KEY
+    );
+  } catch (e) {
+    // 이메일 발송 실패는 무시 (Firestore 저장은 이미 완료)
+    console.warn('EmailJS 발송 실패:', e);
+  }
+}
 
 /* ── 푸터 CTA + 모달 주입 ── */
 function inject() {
@@ -117,6 +163,13 @@ function inject() {
         ua: navigator.userAgent.slice(0, 200)
       });
       $msg.style.color = '#16a34a'; $msg.textContent = '✓ 접수되었습니다. 감사합니다!';
+      // Firestore 저장 완료 후 이메일 발송 (비동기, 실패해도 무시)
+      sendInquiryEmail({
+        type: selType, content,
+        contact: contact || null,
+        page: location.pathname + location.search,
+        createdAt: new Date()
+      });
       wrap.querySelector('#inq-content').value = '';
       wrap.querySelector('#inq-contact').value = '';
       setTimeout(close, 1400);
