@@ -4,4 +4,7 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
+User-agent: Yeti
+Allow: /
+
 Sitemap: https://applylab.kr/sitemap.xml
