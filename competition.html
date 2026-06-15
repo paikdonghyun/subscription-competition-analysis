@@ -28,6 +28,45 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
+/* ── NAV (반응형) ── */
+.nav{background:var(--white,#fff);border-bottom:1px solid var(--bg3,#e5e7eb);box-shadow:0 1px 3px rgba(0,0,0,.07);position:sticky;top:0;z-index:100}
+.nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
+.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0}
+.logo-kr{font-family:var(--serif,serif);font-size:1.1rem;font-weight:600;color:var(--ink,#18181b)}
+.logo-en{font-family:var(--mono,monospace);font-size:.68rem;color:var(--ink3,#71717a);letter-spacing:.05em}
+.nav-div{width:1px;height:16px;background:var(--bg3,#e5e7eb);flex-shrink:0}
+.nav-menu{display:flex;gap:.125rem;flex:1}
+.nav-a{font-size:13px;color:var(--ink3,#71717a);padding:.38rem .75rem;border-radius:6px;transition:all .12s;text-decoration:none;white-space:nowrap}
+.nav-a:hover{color:var(--ink,#18181b);background:var(--bg2,#f3f4f6)}
+.nav-a.on{color:var(--accent,#1d4ed8);font-weight:500;background:var(--accent-l,#eff6ff)}
+.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
+.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;text-decoration:none;white-space:nowrap}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-shrink:0}
+.nav-hamburger span{display:block;height:2px;background:var(--ink2,#3f3f46);border-radius:2px;transition:all .25s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav-mobile{display:none;flex-direction:column;background:var(--white,#fff);border-bottom:1px solid var(--bg3,#e5e7eb);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
+.nav-mobile.open{display:flex}
+.nav-mobile-inner{max-width:1400px;margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
+.nav-mobile-a{font-size:14px;color:var(--ink2,#3f3f46);padding:.65rem .875rem;border-radius:6px;text-decoration:none;transition:background .12s;font-weight:300}
+.nav-mobile-a:hover{background:var(--bg2,#f3f4f6)}
+.nav-mobile-a.on{color:var(--accent,#1d4ed8);font-weight:500;background:var(--accent-l,#eff6ff)}
+.nav-mobile-divider{height:1px;background:var(--bg2,#f3f4f6);margin:.35rem 0}
+.nav-mobile-btn{font-size:13px;font-weight:500;padding:.65rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;text-decoration:none;text-align:center;margin-top:.25rem}
+#visitor-counter{flex-shrink:0}
+@media(max-width:900px){
+  .nav-menu,.nav-div,.nav-right{display:none}
+  .nav-hamburger{display:flex}
+  .nav-in{padding:0 1rem}
+}
+@media(min-width:901px){
+  .nav-mobile{display:none!important}
+}
+@media(max-width:480px){
+  .logo-en{display:none}
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -201,62 +240,61 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
 </script>
 </head>
 <body>
-
-<header>
-  <!-- 공통 CSS -->
-  <link rel="stylesheet" href="/css/common.css" id="common-css">
-  <div class="top-bar" style="background:#fff;border-bottom:1px solid var(--bg3)">
-    <div class="top-bar-inner">
-      <a href="/" class="gnav-logo" style="display:flex;align-items:baseline;gap:.4rem;text-decoration:none">
-        <span class="gnav-logo-kr" style="font-family:var(--serif,serif);font-size:1.15rem;font-weight:600;color:var(--ink,#18181b)">청약랩</span>
-        <span class="gnav-logo-en" style="font-family:var(--mono,monospace);font-size:.7rem;color:var(--ink3,#71717a);letter-spacing:.05em">ApplyLab</span>
-      </a>
-      <div style="width:1px;height:18px;background:var(--bg3,#e5e7eb);flex-shrink:0"></div>
-      <nav style="display:flex;align-items:center;gap:.125rem;flex:1" id="top-nav">
-        <a href="/home.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">HOME</a>
-        <a href="/competition.html" class="top-nav-btn" style="font-size:13px;font-weight:500;color:var(--accent,#1d4ed8);padding:.4rem .9rem;border-radius:6px;background:var(--accent-l,#eff6ff)">청약경쟁률</a>
-        <a href="/price.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">분양가격</a>
-        <a href="/unsold.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">미분양 현황</a>
-        <a href="/bankbook.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">청약통장 현황</a>
-      </nav>
-      <span id="visitor-counter" style="display:none;margin-left:auto"></span>
-      <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0" id="gnav-right">
-        <a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">관리자 로그인</a>
+<nav class="nav">
+  <div class="nav-in">
+    <a href="/home.html" class="logo">
+      <span class="logo-kr">청약랩</span><span class="logo-en">ApplyLab</span>
+    </a>
+    <div class="nav-div"></div>
+    <nav class="nav-menu">
+      <a href="/home.html" class="nav-a">HOME</a>
+      <a href="/competition.html" class="nav-a on">청약경쟁률</a>
+      <a href="/price.html" class="nav-a">분양가격</a>
+      <a href="/unsold.html" class="nav-a">미분양 현황</a>
+      <a href="/bankbook.html" class="nav-a">청약통장 현황</a>
+    </nav>
+    <div class="nav-right">
+      <span id="visitor-counter" style="display:none"></span>
+      <div id="gnav-right">
+        <a href="/login.html" class="nav-btn">관리자 로그인</a>
       </div>
     </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="메뉴 열기">
+      <span></span><span></span><span></span>
+    </button>
   </div>
-  <!-- ── 내부 탭바: 시도통계 / 단지별 실시간조회 ── -->
-  <div style="background:#f8fafc;border-bottom:1px solid var(--bg3,#e5e7eb)">
-    <div style="max-width:1400px;margin:0 auto;padding:0 1.5rem;display:flex;gap:.375rem">
-      <button id="tab-sido" onclick="switchTab('sido')"
-        style="font-size:13px;font-weight:500;padding:.75rem 1.125rem;border:none;border-bottom:2px solid var(--accent,#1d4ed8);background:transparent;color:var(--accent,#1d4ed8);cursor:pointer;transition:all .15s;white-space:nowrap">
-        📊 시도 통계
-      </button>
-      <button id="tab-api" onclick="switchTab('api')"
-        style="font-size:13px;font-weight:400;padding:.75rem 1.125rem;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--ink3,#71717a);cursor:pointer;transition:all .15s;white-space:nowrap">
-        🔍 시군구 · 브랜드 · 단지명 검색
-      </button>
-    </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile">
+  <div class="nav-mobile-inner">
+    <a href="/home.html" class="nav-mobile-a">HOME</a>
+    <a href="/competition.html" class="nav-mobile-a on">청약경쟁률</a>
+    <a href="/price.html" class="nav-mobile-a">분양가격</a>
+    <a href="/unsold.html" class="nav-mobile-a">미분양 현황</a>
+    <a href="/bankbook.html" class="nav-mobile-a">청약통장 현황</a>
+    <div class="nav-mobile-divider"></div>
+    <a href="/login.html" class="nav-mobile-btn">관리자 로그인</a>
   </div>
-  <div class="search-bar" style="background:#fff;border-bottom:1px solid var(--bg3,#e5e7eb);padding:.875rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.07)">
-    <div class="search-bar-inner" style="max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-      <span style="font-size:11px;font-family:monospace;letter-spacing:.08em;color:var(--ink4,#a1a1aa);white-space:nowrap;text-transform:uppercase" id="search-lbl-text">시도명</span>
-      <div style="display:flex;gap:0;flex:1;max-width:480px;min-width:200px">
-        <input class="search-input" style="flex:1;background:var(--bg2,#f3f4f6);border:1.5px solid var(--bg3,#e5e7eb);border-right:none;color:var(--ink,#18181b);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:6px 0 0 6px;transition:border-color .15s" id="searchInput" type="text" placeholder="예: 경기, 서울, 충남..." autocomplete="off">
-        <button style="background:var(--accent,#1d4ed8);color:#fff;border:none;padding:.55rem 1.1rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:0 6px 6px 0;white-space:nowrap" id="searchBtn" onclick="doSearch()">조회</button>
-      </div>
-      <div style="display:none;align-items:center;gap:.4rem;font-size:11px;color:var(--ink4,#a1a1aa);font-family:monospace" id="period-filter">
-        <span>기간</span>
-        <select id="startYear" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024" selected>2024</option><option value="2025">2025</option><option value="2026">2026</option></select>
-        <select id="startMonth" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06">06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12" selected>12월</option></select>
-        <span style="color:var(--ink4)">~</span>
-        <select id="endYear" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option></select>
-        <select id="endMonth" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06" selected>06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-      </div>
-      <div style="display:flex;gap:.375rem;flex-wrap:wrap;align-items:center" id="chipRow"></div>
-    </div>
-  </div>
-</header>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('nav-hamburger');
+  var mob=document.getElementById('nav-mobile');
+  if(!btn||!mob) return;
+  btn.addEventListener('click',function(){
+    var open=mob.classList.toggle('open');
+    btn.classList.toggle('open',open);
+    btn.setAttribute('aria-label',open?'메뉴 닫기':'메뉴 열기');
+  });
+  document.addEventListener('click',function(e){
+    if(!btn.contains(e.target)&&!mob.contains(e.target)){
+      mob.classList.remove('open');btn.classList.remove('open');
+    }
+  });
+  window.addEventListener('resize',function(){
+    if(window.innerWidth>900){mob.classList.remove('open');btn.classList.remove('open');}
+  });
+})();
+</script>
 
 <main>
   <div class="page-layout">
