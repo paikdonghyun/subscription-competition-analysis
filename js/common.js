@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, increment,
-         serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+         serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ── Firebase 초기화 ──
 const app = initializeApp(FIREBASE_CONFIG);
@@ -124,7 +124,43 @@ window.AL.login = async (email, password) => {
   return cred.user;
 };
 
+// ── 방문자 카운터 표시 ──
+const VISITOR_BASE = { total: 50000, today: 0 }; // 5만 시작 오프셋
+
+async function loadVisitorCount() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    // 오늘 방문자
+    const todaySnap = await getDoc(doc(db, 'analytics_daily', today));
+    const todayCount = todaySnap.exists() ? (todaySnap.data().views || 0) : 0;
+    // 전체 누적: 모든 일별 문서 합산
+    const allSnap = await getDocs(collection(db, 'analytics_daily'));
+    let totalCount = 0;
+    allSnap.forEach(d => { totalCount += (d.data().views || 0); });
+    renderVisitorBadge(todayCount, totalCount);
+  } catch(e) { /* 카운터 오류는 무시 */ }
+}
+
+function renderVisitorBadge(todayRaw, totalRaw) {
+  const el = document.getElementById('visitor-counter');
+  if (!el) return;
+  const today = todayRaw;
+  const total = totalRaw + VISITOR_BASE.total;
+  const fmt = n => n >= 10000
+    ? (n / 10000).toFixed(1).replace(/\.0$/, '') + '만'
+    : n.toLocaleString('ko-KR');
+  el.innerHTML =
+    `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
+    `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em;text-transform:uppercase">Today</span>` +
+    `<span style="color:var(--accent);font-weight:500">${fmt(today)}</span>` +
+    `<span style="color:var(--bg3)">|</span>` +
+    `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em;text-transform:uppercase">Total</span>` +
+    `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
+    `</span>`;
+  el.style.display = 'flex';
+}
+
 // ── 방문자 추적 실행 ──
-trackVisit();
+trackVisit().then(() => loadVisitorCount());
 
 export { auth, db };
