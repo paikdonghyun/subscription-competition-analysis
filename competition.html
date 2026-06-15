@@ -57,25 +57,41 @@ body{font-family:var(--sans);background:var(--bg2);color:var(--ink);min-height:1
 .top-nav-btn.active{color:var(--accent);background:var(--accent-light);border-color:rgba(29,78,216,.2)}
 .top-nav-btn:hover:not(.active){color:var(--ink);background:var(--bg3)}
 
-/* ── SEARCH BAR ── */
-.search-bar{background:#fff;border-bottom:1px solid var(--bg4);padding:.875rem 1.5rem;box-shadow:var(--shadow-sm)}
-.search-bar-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.search-lbl{font-size:11px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink4);white-space:nowrap;text-transform:uppercase}
-.search-row{display:flex;gap:0;flex:1;max-width:480px;min-width:200px}
-.search-input{flex:1;background:var(--bg2);border:1.5px solid var(--bg4);border-right:none;color:var(--ink);font-family:var(--sans);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:var(--radius) 0 0 var(--radius);transition:border-color .15s}
 .search-input:focus{border-color:var(--accent);background:#fff}
-.search-input::placeholder{color:var(--ink4)}
-.search-btn{background:var(--accent);color:#fff;border:none;padding:.55rem 1.1rem;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border-radius:0 var(--radius) var(--radius) 0;transition:background .12s;white-space:nowrap}
-.search-btn:hover{background:var(--accent-hover)}
-.chip-row{display:flex;gap:.375rem;flex-wrap:wrap;align-items:center}
-.chip{background:var(--bg3);border:1px solid var(--bg4);color:var(--ink3);font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;cursor:pointer;letter-spacing:.04em;transition:all .12s;white-space:nowrap}
-.chip:hover,.chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
-.period-wrap{display:none;align-items:center;gap:.4rem;font-size:11px;color:var(--ink4);font-family:var(--mono)}
-.period-wrap select{background:var(--bg2);border:1.5px solid var(--bg4);color:var(--ink2);padding:4px 6px;border-radius:var(--radius);font-family:var(--mono);font-size:11px;cursor:pointer;outline:none}
 .period-wrap select:focus{border-color:var(--accent)}
 
 /* ── LAYOUT: 3-COLUMN (left-ad | content | right-ad) ── */
 .page-layout{max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:160px 1fr 160px;gap:0;padding:1.25rem 1rem;align-items:start}
+
+/* ══ 검색바 (신규) ══ */
+.search-bar{background:#fff;border-bottom:1px solid var(--bg4,#e5e7eb);box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:54px;z-index:90;width:100%}
+.search-bar-inner{max-width:var(--max-w,1400px);margin:0 auto;padding:.875rem 1.5rem;display:flex;align-items:center;gap:.875rem;flex-wrap:wrap}
+.tab-list{display:flex;gap:0;border-bottom:2px solid var(--bg4,#e5e7eb);flex-shrink:0}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:.55rem 1.1rem;font-size:13px;font-weight:400;color:var(--ink3,#71717a);cursor:pointer;font-family:var(--sans,'Noto Sans KR',sans-serif);white-space:nowrap;transition:all .15s}
+.tab-btn.active,.tab-btn:hover{color:var(--accent,#1d4ed8);border-bottom-color:var(--accent,#1d4ed8);font-weight:500}
+.search-lbl{font-size:11px;font-family:var(--mono,'IBM Plex Mono',monospace);letter-spacing:.08em;color:var(--ink4,#a1a1aa);white-space:nowrap;text-transform:uppercase;flex-shrink:0}
+.search-row{display:flex;align-items:center;gap:.5rem;flex:1;min-width:0;max-width:520px}
+.search-input{flex:1;min-width:0;background:var(--bg2,#f9fafb);border:1.5px solid var(--bg4,#e5e7eb);border-right:none;color:var(--ink,#18181b);font-family:var(--sans,'Noto Sans KR',sans-serif);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:var(--radius,6px) 0 0 var(--radius,6px);transition:border-color .15s}
+.search-input:focus{border-color:var(--accent,#1d4ed8);background:#fff}
+.search-input::placeholder{color:var(--ink4,#a1a1aa)}
+.search-btn{background:var(--accent,#1d4ed8);color:#fff;border:none;padding:.57rem 1.2rem;font-family:var(--sans,'Noto Sans KR',sans-serif);font-size:13px;font-weight:500;cursor:pointer;border-radius:0 var(--radius,6px) var(--radius,6px) 0;white-space:nowrap;flex-shrink:0;transition:background .12s}
+.search-btn:hover{background:var(--accent-hover,#1e40af)}
+.period-wrap{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.period-select{background:var(--bg2,#f9fafb);border:1.5px solid var(--bg4,#e5e7eb);color:var(--ink2,#3f3f46);padding:.4rem .6rem;border-radius:var(--radius,6px);font-family:var(--mono,'IBM Plex Mono',monospace);font-size:12px;cursor:pointer;outline:none}
+.chip-row{display:flex;gap:.375rem;flex-wrap:wrap;width:100%}
+.chip{background:var(--bg3,#f3f4f6);border:1px solid var(--bg4,#e5e7eb);color:var(--ink3,#71717a);font-family:var(--mono,'IBM Plex Mono',monospace);font-size:10px;padding:3px 9px;border-radius:20px;cursor:pointer;letter-spacing:.04em;transition:all .12s;white-space:nowrap}
+.chip:hover,.chip.active{background:var(--accent,#1d4ed8);color:#fff;border-color:var(--accent,#1d4ed8)}
+/* 검색바 반응형 */
+@media(max-width:600px){
+  .search-bar-inner{padding:.625rem .75rem;flex-direction:column;align-items:stretch;gap:.5rem}
+  .tab-list{width:100%}
+  .tab-btn{flex:1;text-align:center;font-size:13px;padding:.55rem .5rem}
+  .search-row{max-width:100%;width:100%}
+  .search-lbl{display:none}
+  .search-input{font-size:16px}
+  .period-wrap{width:100%}
+}
+
 @media(max-width:1200px){.page-layout{grid-template-columns:0 1fr 0;padding:1rem .75rem}}
 @media(max-width:768px){.page-layout{padding:.75rem .5rem}}
 
@@ -263,20 +279,7 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
   }
 
   /* 탭 */
-  .tab-list{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-    flex-wrap:nowrap;
-    gap:.25rem;
-  }
   .tab-list::-webkit-scrollbar{display:none}
-  .tab-btn{
-    white-space:nowrap;
-    flex-shrink:0;
-    font-size:12px;
-    padding:.45rem .75rem;
-  }
 
   /* 통계 카드 */
   .stat-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}
@@ -413,6 +416,40 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
   });
 })();
 </script>
+
+
+<!-- ── 검색바 ── -->
+<div class="search-bar" id="search-bar-wrap">
+  <div class="search-bar-inner">
+    <div class="tab-list">
+      <button class="tab-btn active" id="tab-sido" onclick="switchTab('sido')">시도별 분석</button>
+      <button class="tab-btn" id="tab-api" onclick="switchTab('api')">단지·지역 검색</button>
+    </div>
+    <div class="search-row">
+      <span class="search-lbl" id="search-lbl-text">시도명</span>
+      <div style="display:flex;flex:1;min-width:0">
+        <input type="search" id="searchInput" class="search-input"
+          placeholder="예: 경기, 서울, 충남..."
+          autocomplete="off" inputmode="search">
+        <button class="search-btn" onclick="doSearch()">검색</button>
+      </div>
+    </div>
+    <div class="period-wrap" id="period-filter" style="display:none">
+      <span class="search-lbl">기간</span>
+      <select id="yearFrom" class="period-select">
+        <option value="">전체</option>
+        <option value="2020">2020년~</option>
+        <option value="2021">2021년~</option>
+        <option value="2022">2022년~</option>
+        <option value="2023">2023년~</option>
+        <option value="2024">2024년~</option>
+        <option value="2025">2025년~</option>
+        <option value="2026">2026년~</option>
+      </select>
+    </div>
+    <div class="chip-row" id="chipRow"></div>
+  </div>
+</div>
 
 <main>
   <div class="page-layout">
