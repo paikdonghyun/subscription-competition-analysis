@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/favicon-180.png">
+  <link rel="manifest" href="/manifest.json">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청약랩 · ApplyLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
+  --bg:#ffffff;--bg2:#f9fafb;--bg3:#f3f4f6;--bg4:#e5e7eb;
+  --accent:#1d4ed8;--accent-light:#eff6ff;--accent-hover:#1e40af;
+  --red:#dc2626;--green:#16a34a;--gold:#b45309;--orange:#ea580c;
+  --serif:'Noto Serif KR',serif;--sans:'Noto Sans KR',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.04);
+  --radius:6px;--radius-lg:10px;--radius-xl:14px;
+  --max-w:1400px;--content-w:860px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg2);color:var(--ink);min-height:100vh;font-weight:300;font-size:14px;line-height:1.6}
+
+/* ── TOP BAR ── */
+.top-bar{background:#fff;border-bottom:1px solid var(--bg4);padding:0 1.5rem}
+.top-bar-inner{max-width:var(--max-w);margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo-area{display:flex;align-items:baseline;gap:.5rem}
+.logo-title{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.logo-badge{font-family:var(--mono);font-size:9px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:3px;letter-spacing:.06em;vertical-align:middle}
+.top-nav{display:flex;align-items:center;gap:.25rem}
+.top-nav-btn{font-size:13px;font-weight:500;color:var(--ink3);padding:.4rem .9rem;border:1px solid transparent;border-radius:var(--radius);cursor:pointer;background:transparent;transition:all .12s;white-space:nowrap}
+.top-nav-btn.active{color:var(--accent);background:var(--accent-light);border-color:rgba(29,78,216,.2)}
+.top-nav-btn:hover:not(.active){color:var(--ink);background:var(--bg3)}
+
+/* ── SEARCH BAR ── */
+.search-bar{background:#fff;border-bottom:1px solid var(--bg4);padding:.875rem 1.5rem;box-shadow:var(--shadow-sm)}
+.search-bar-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.search-lbl{font-size:11px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink4);white-space:nowrap;text-transform:uppercase}
+.search-row{display:flex;gap:0;flex:1;max-width:480px;min-width:200px}
+.search-input{flex:1;background:var(--bg2);border:1.5px solid var(--bg4);border-right:none;color:var(--ink);font-family:var(--sans);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:var(--radius) 0 0 var(--radius);transition:border-color .15s}
+.search-input:focus{border-color:var(--accent);background:#fff}
+.search-input::placeholder{color:var(--ink4)}
+.search-btn{background:var(--accent);color:#fff;border:none;padding:.55rem 1.1rem;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;border-radius:0 var(--radius) var(--radius) 0;transition:background .12s;white-space:nowrap}
+.search-btn:hover{background:var(--accent-hover)}
+.chip-row{display:flex;gap:.375rem;flex-wrap:wrap;align-items:center}
+.chip{background:var(--bg3);border:1px solid var(--bg4);color:var(--ink3);font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:20px;cursor:pointer;letter-spacing:.04em;transition:all .12s;white-space:nowrap}
+.chip:hover,.chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.period-wrap{display:none;align-items:center;gap:.4rem;font-size:11px;color:var(--ink4);font-family:var(--mono)}
+.period-wrap select{background:var(--bg2);border:1.5px solid var(--bg4);color:var(--ink2);padding:4px 6px;border-radius:var(--radius);font-family:var(--mono);font-size:11px;cursor:pointer;outline:none}
+.period-wrap select:focus{border-color:var(--accent)}
+
+/* ── LAYOUT: 3-COLUMN (left-ad | content | right-ad) ── */
+.page-layout{max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:160px 1fr 160px;gap:0;padding:1.25rem 1rem;align-items:start}
+@media(max-width:1200px){.page-layout{grid-template-columns:0 1fr 0;padding:1rem .75rem}}
+@media(max-width:768px){.page-layout{padding:.75rem .5rem}}
+
+/* ── AD SLOTS ── */
+.ad-slot{background:#fff;border:1px solid var(--bg4);border-radius:var(--radius-lg);overflow:hidden;text-align:center}
+.ad-slot-side{position:sticky;top:1.25rem;display:flex;flex-direction:column;gap:.75rem}
+.ad-label{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;padding:.35rem 0;border-bottom:1px solid var(--bg3);background:var(--bg2)}
+.ad-slot-160x600{width:160px;height:600px;background:var(--bg2);display:flex;align-items:center;justify-content:center}
+.ad-slot-160x600 span{font-family:var(--mono);font-size:9px;color:var(--ink4);writing-mode:vertical-rl}
+.ad-slot-inline{width:100%;background:var(--bg2);display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
+.ad-slot-inline span{font-family:var(--mono);font-size:9px;color:var(--ink4)}
+@media(max-width:1200px){.ad-col{display:none}}
+
+/* ── CONTENT AREA ── */
+.content-area{min-width:0;display:flex;flex-direction:column;gap:1rem}
+
+/* ── PANEL ── */
+.panel{display:none}.panel.visible{display:flex;flex-direction:column;gap:1rem}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1px solid var(--bg4);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm)}
+.card-title{font-family:var(--serif);font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--bg3);display:flex;align-items:center;gap:.4rem}
+.card-title::before{content:'';display:inline-block;width:3px;height:.9em;background:var(--accent);border-radius:2px;flex-shrink:0}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.625rem}
+.sc{background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-lg);padding:.875rem 1rem;border-top:3px solid var(--bg4)}
+.sc.b{border-top-color:var(--accent)}.sc.r{border-top-color:var(--red)}
+.sc.g{border-top-color:var(--green)}.sc.o{border-top-color:var(--orange)}
+.sc-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.07em;color:var(--ink3);margin-bottom:.4rem;text-transform:uppercase}
+.sc-val{font-family:var(--serif);font-size:1.55rem;font-weight:600;color:var(--ink);line-height:1}
+.sc-unit{font-size:.8rem;font-weight:300;color:var(--ink3)}
+.sc-sub{font-size:10px;color:var(--ink4);margin-top:.3rem;font-family:var(--mono)}
+
+/* ── REGION HEADER ── */
+.rh{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.rh-left .region-name{font-family:var(--serif);font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:600;color:var(--ink)}
+.rh-left .region-meta{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:.3rem;line-height:1.6}
+.rank-badge{display:flex;flex-direction:column;align-items:center;background:var(--accent);color:#fff;padding:.6rem 1rem;border-radius:var(--radius-lg);min-width:68px;flex-shrink:0;box-shadow:var(--shadow)}
+.rank-num{font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1}
+.rank-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;opacity:.75;margin-top:3px}
+
+/* ── CHARTS ── */
+.chart-box{background:#fff;border:1px solid var(--bg4);border-radius:var(--radius-lg);padding:1rem 1.125rem}
+.chart-box.full{width:100%}
+.chart-lbl{font-size:11px;font-family:var(--mono);color:var(--ink4);margin-bottom:.65rem;line-height:1.5}
+.chart-wrap{position:relative;height:210px}
+.chart-wrap.tall{height:255px}
+.chart-wrap.sm{height:165px}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:640px){.chart-grid-2{grid-template-columns:1fr}}
+.legend-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.6rem;font-size:11px;color:var(--ink3);font-family:var(--mono)}
+.legend-row span{display:flex;align-items:center;gap:4px}
+.leg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.leg-dash{width:14px;height:0;border-top:2px dashed;flex-shrink:0}
+
+/* ── TABLE ── */
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;font-weight:500;color:var(--ink3);text-align:left;padding:.55rem .75rem;border-bottom:2px solid var(--bg3);text-transform:uppercase;background:var(--bg2);white-space:nowrap}
+.dt td{padding:.55rem .75rem;border-bottom:1px solid var(--bg3);color:var(--ink2);font-size:12.5px;background:#fff}
+.dt tr:last-child td{border-bottom:none}
+.dt tbody tr:hover td{background:var(--accent-light)!important;transition:background .1s}
+.dt tbody tr[style*='cursor:pointer']:hover td{background:var(--accent-light)!important}
+.dt tbody tr.selected td{background:rgba(29,78,216,.06)!important}
+.dt .num{font-family:var(--mono);text-align:right;font-size:12px}
+.dt .hi{color:var(--red);font-weight:500}
+.dt .lo{color:var(--ink4)}
+.dt .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;font-family:var(--mono)}
+.tag-a{background:#dcfce7;color:#166534}.tag-b{background:#dbeafe;color:#1e40af}
+.tag-c{background:#fee2e2;color:#991b1b}.tag-d{background:var(--bg3);color:var(--ink3)}
+.bar-cell{display:flex;align-items:center;gap:.4rem}
+.mini-bar{height:5px;border-radius:3px;background:var(--accent);min-width:2px;flex-shrink:0}
+
+/* ── PAGINATION ── */
+.pager{display:flex;align-items:center;gap:.375rem;justify-content:center;margin-top:1.125rem;font-family:var(--mono);font-size:12px;flex-wrap:wrap}
+.pager-btn{background:#fff;border:1px solid var(--bg4);color:var(--ink2);padding:.375rem .8rem;border-radius:var(--radius);cursor:pointer;transition:all .12s;font-size:12px}
+.pager-btn:hover:not(:disabled){background:var(--bg3)}
+.pager-btn:disabled{opacity:.35;cursor:not-allowed}
+.pager-num{background:#fff;border:1px solid var(--bg4);color:var(--ink2);padding:.35rem .6rem;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-size:11px;transition:all .12s;min-width:30px;text-align:center}
+.pager-num:hover{background:var(--bg3)}
+.pager-num.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pager-info{color:var(--ink4);font-size:11px;font-family:var(--mono)}
+
+/* ── PLACEHOLDER ── */
+.placeholder{text-align:center;padding:3.5rem 1.5rem;color:var(--ink3)}
+.placeholder-icon{font-size:2.5rem;margin-bottom:.875rem;opacity:.2}
+.placeholder-title{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:.4rem;color:var(--ink2)}
+.placeholder-desc{font-size:13px;line-height:1.75;color:var(--ink3)}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:2.5rem;font-family:var(--mono);font-size:12px;color:var(--ink4)}
+.spinner{width:28px;height:28px;border:2px solid var(--bg4);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── ERROR ── */
+.error-box{background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius-lg);padding:.875rem 1.125rem;font-size:13px;color:#991b1b;font-family:var(--mono);line-height:1.6}
+
+/* ── NOTE ── */
+.note{background:var(--bg2);border-left:3px solid var(--bg4);padding:.6rem .875rem;border-radius:0 var(--radius) var(--radius) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6}
+
+/* ── HEADER ── */
+header{background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+
+/* ── FOOTER ── */
+footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);text-align:center;padding:1.5rem;font-family:var(--mono);font-size:10px;letter-spacing:.07em;margin-top:2rem}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-family:var(--serif);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:.875rem;padding-bottom:.5rem;border-bottom:1px solid var(--bg3);display:flex;align-items:center;gap:.4rem}
+.sec-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
+/* ── DETAIL PANEL ── */
+#apt-detail-panel .sec-title{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <!-- 공통 CSS -->
+  <link rel="stylesheet" href="/css/common.css" id="common-css">
+  <div class="top-bar" style="background:#fff;border-bottom:1px solid var(--bg3)">
+    <div class="top-bar-inner">
+      <a href="/" class="gnav-logo" style="display:flex;align-items:baseline;gap:.4rem;text-decoration:none">
+        <span class="gnav-logo-kr" style="font-family:var(--serif,serif);font-size:1.15rem;font-weight:600;color:var(--ink,#18181b)">청약랩</span>
+        <span class="gnav-logo-en" style="font-family:var(--mono,monospace);font-size:.7rem;color:var(--ink3,#71717a);letter-spacing:.05em">ApplyLab</span>
+      </a>
+      <div style="width:1px;height:18px;background:var(--bg3,#e5e7eb);flex-shrink:0"></div>
+      <nav style="display:flex;align-items:center;gap:.125rem;flex:1" id="top-nav">
+        <a href="/home.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">HOME</a>
+        <a href="/competition.html" class="top-nav-btn" style="font-size:13px;font-weight:500;color:var(--accent,#1d4ed8);padding:.4rem .9rem;border-radius:6px;background:var(--accent-l,#eff6ff)">청약경쟁률</a>
+        <a href="/price.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">분양가격</a>
+        <a href="/unsold.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">미분양 현황</a>
+        <a href="/bankbook.html" class="top-nav-btn" style="font-size:13px;font-weight:400;color:var(--ink3,#71717a);padding:.4rem .9rem;border-radius:6px;transition:all .12s;text-decoration:none">청약통장 현황</a>
+      </nav>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-shrink:0" id="gnav-right">
+        <a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:var(--accent,#1d4ed8);color:#fff;border:1px solid var(--accent,#1d4ed8)">관리자 로그인</a>
+      </div>
+    </div>
+  </div>
+  <!-- ── 내부 탭바: 시도통계 / 단지별 실시간조회 ── -->
+  <div style="background:#f8fafc;border-bottom:1px solid var(--bg3,#e5e7eb)">
+    <div style="max-width:1400px;margin:0 auto;padding:0 1.5rem;display:flex;gap:.375rem">
+      <button id="tab-sido" onclick="switchTab('sido')"
+        style="font-size:13px;font-weight:500;padding:.75rem 1.125rem;border:none;border-bottom:2px solid var(--accent,#1d4ed8);background:transparent;color:var(--accent,#1d4ed8);cursor:pointer;transition:all .15s;white-space:nowrap">
+        📊 시도 통계
+      </button>
+      <button id="tab-api" onclick="switchTab('api')"
+        style="font-size:13px;font-weight:400;padding:.75rem 1.125rem;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--ink3,#71717a);cursor:pointer;transition:all .15s;white-space:nowrap">
+        🔍 시군구 · 브랜드 · 단지명 검색
+      </button>
+    </div>
+  </div>
+  <div class="search-bar" style="background:#fff;border-bottom:1px solid var(--bg3,#e5e7eb);padding:.875rem 1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+    <div class="search-bar-inner" style="max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+      <span style="font-size:11px;font-family:monospace;letter-spacing:.08em;color:var(--ink4,#a1a1aa);white-space:nowrap;text-transform:uppercase" id="search-lbl-text">시도명</span>
+      <div style="display:flex;gap:0;flex:1;max-width:480px;min-width:200px">
+        <input class="search-input" style="flex:1;background:var(--bg2,#f3f4f6);border:1.5px solid var(--bg3,#e5e7eb);border-right:none;color:var(--ink,#18181b);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:6px 0 0 6px;transition:border-color .15s" id="searchInput" type="text" placeholder="예: 경기, 서울, 충남..." autocomplete="off">
+        <button style="background:var(--accent,#1d4ed8);color:#fff;border:none;padding:.55rem 1.1rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:0 6px 6px 0;white-space:nowrap" id="searchBtn" onclick="doSearch()">조회</button>
+      </div>
+      <div style="display:none;align-items:center;gap:.4rem;font-size:11px;color:var(--ink4,#a1a1aa);font-family:monospace" id="period-filter">
+        <span>기간</span>
+        <select id="startYear" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024" selected>2024</option><option value="2025">2025</option><option value="2026">2026</option></select>
+        <select id="startMonth" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06">06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12" selected>12월</option></select>
+        <span style="color:var(--ink4)">~</span>
+        <select id="endYear" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option></select>
+        <select id="endMonth" style="background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:4px 6px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;outline:none"><option value="01">01월</option><option value="02">02월</option><option value="03">03월</option><option value="04">04월</option><option value="05">05월</option><option value="06" selected>06월</option><option value="07">07월</option><option value="08">08월</option><option value="09">09월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+      </div>
+      <div style="display:flex;gap:.375rem;flex-wrap:wrap;align-items:center" id="chipRow"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-layout">
+
+        <div class="ad-col" style="padding-top:0">
+      <div class="ad-slot-side">
+        <div class="ad-slot" style="width:160px">
+          <div class="ad-label">Ad</div>
+          <!-- Google AdSense: 160x600 wide skyscraper -->
+          <ins class="adsbygoogle" style="display:block;width:160px;height:600px;background:var(--bg2);line-height:600px;text-align:center;color:var(--ink4);font-family:var(--mono);font-size:9px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <div class="ad-slot" style="width:160px;margin-top:.75rem">
+          <div class="ad-label">Ad</div>
+          <ins class="adsbygoogle" style="display:block;width:160px;height:250px;background:var(--bg2);line-height:250px;text-align:center;color:var(--ink4);font-family:var(--mono);font-size:9px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-area" style="padding:0 1rem">
+<div class="panel visible" id="panel-sido">
+    <div class="placeholder" id="sido-placeholder">
+      <div class="placeholder-icon">◎</div>
+      <p class="placeholder-title">시도명을 입력해 청약 경쟁률을 분석하세요</p>
+      <p class="placeholder-desc">한국부동산원 공공데이터 기반 · 17개 시도 · 2020~2026<br>연도별 추이, 월별 상세, 전국 비교를 제공합니다</p>
+    </div>
+    <div id="sido-result" style="display:none">
+      <div class="rh">
+        <div class="rh-left">
+          <h2 class="region-name" id="sido-name"></h2>
+          <p class="region-meta" id="sido-meta"></p>
+        </div>
+        <div class="rank-badge"><span class="rank-num" id="sido-rank"></span><span class="rank-lbl">전국순위</span></div>
+      </div>
+      <div class="stat-grid">
+        <div class="sc b"><p class="sc-lbl">전기간 평균 경쟁률</p><p class="sc-val" id="s-avg"></p><p class="sc-sub" id="s-avg-sub"></p></div>
+        <div class="sc r"><p class="sc-lbl">역대 최고 경쟁률</p><p class="sc-val" id="s-max"></p><p class="sc-sub" id="s-max-sub"></p></div>
+        <div class="sc g"><p class="sc-lbl">총 공급 세대</p><p class="sc-val" id="s-sd"></p><p class="sc-sub" id="s-sd-sub"></p></div>
+        <div class="sc o"><p class="sc-lbl">총 청약 접수</p><p class="sc-val" id="s-ap"></p><p class="sc-sub" id="s-ap-sub"></p></div>
+      </div>
+      <div class="sec">
+        <h3 class="sec-title">연도별 경쟁률 추이</h3>
+        <div class="chart-box full">
+          <div class="leg">
+            <span><span class="leg-sq" style="background:#1a3a5c"></span>일반공급</span>
+            <span><span class="leg-sq" style="background:#2d6a4f88"></span>특별공급</span>
+            <span id="leg-compare"></span>
+          </div>
+          <p class="chart-lbl">연평균 경쟁률 (:1) · 막대 = 선택 시도, 점선 = 서울 비교</p>
+          <div class="chart-wrap tall"><canvas id="yearlyChart" role="img" aria-label="연도별 경쟁률"></canvas></div>
+        </div>
+      </div>
+      <div class="sec">
+        <h3 class="sec-title">월별 상세 경쟁률</h3>
+        <div class="chart-box full">
+          <p class="chart-lbl">일반공급 월별 경쟁률 (:1) · 미달(△) 및 데이터 없는 달 제외</p>
+          <div class="chart-wrap tall"><canvas id="monthlyChart" role="img" aria-label="월별 경쟁률"></canvas></div>
+        </div>
+      </div>
+      <div class="card" style="padding:.75rem 1rem;text-align:center;border-style:dashed">
+        <p style="font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Advertisement</p>
+        <ins class="adsbygoogle" style="display:block;min-height:90px;background:var(--bg3)" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+      <div class="sec">
+        <h3 class="sec-title">연도별 상세 데이터</h3>
+        <table class="dt" id="sido-table">
+          <thead><tr>
+            <th>연도</th><th class="num">일반경쟁률</th><th class="num">특별경쟁률</th>
+            <th class="num">공급세대</th><th class="num">청약접수</th><th>시각화</th>
+          </tr></thead>
+          <tbody id="sido-tbody"></tbody>
+        </table>
+      </div>
+      <div class="sec">
+        <h3 class="sec-title">전국 17개 시도 비교</h3>
+        <div class="chart-box full">
+          <p class="chart-lbl">전기간 일반공급 평균 경쟁률 순위 · 짙은 색 = 현재 조회 지역</p>
+          <div class="chart-wrap tall"><canvas id="rankChart" role="img" aria-label="전국 순위 차트"></canvas></div>
+        </div>
+      </div>
+      <p class="note">※ 출처: 한국부동산원_지역별_청약_경쟁률_정보 (공공데이터포털) · 시도 단위 집계 · △ 표기(미달) 월은 경쟁률에서 제외</p>
+    </div>
+  </div>
+
+  <!-- ── API 탭 ── -->
+  <div class="panel" id="panel-api">
+    <div id="api-notice" style="
+      background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;
+      padding:.875rem 1.125rem;margin-bottom:.875rem;display:flex;align-items:flex-start;gap:.75rem">
+      <span style="font-size:1.1rem;flex-shrink:0">⚠</span>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#92400e;margin-bottom:.25rem">
+          청약홈 분양정보 API 임시 점검 중
+        </div>
+        <div style="font-size:12px;color:#a16207;line-height:1.6">
+          공공데이터포털의 <b>청약홈 분양정보 상세 서비스</b>가 현재 데이터를 반환하지 않고 있습니다.
+          공급자(한국부동산원) 측의 서버 점검으로 추정되며, 복구 시 자동으로 정상화됩니다.<br>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;opacity:.8">
+            ※ 검색 기능은 API 복구 후 이용 가능합니다 · 경쟁률 분석(시도별 탭)은 정상 운영 중
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="placeholder" id="api-placeholder">
+      <div class="placeholder-icon">⬡</div>
+      <p class="placeholder-title">단지명, 시도, 시군구를 입력해 실시간 조회하세요</p>
+      <p class="placeholder-desc">분양정보 + 경쟁률 통합 실시간 검색<br>단지명 · 주소 · 지역명으로 전체 분양 단지(약 2,800건) 검색 후<br>1순위 경쟁률과 총 청약 접수건수를 바로 확인합니다<br><br>검색 예시: 용인 · 수원 · 성남 · 판교 · 동탄 · 힐스테이트 · 래미안</p>
+    </div>
+    <div id="api-loading" class="loading" style="display:none">
+      <div class="spinner"></div>
+      <p id="api-loading-msg">API 조회 중...</p>
+    </div>
+    <div id="api-error" class="error-box" style="display:none"></div>
+    <div id="api-result" style="display:none">
+      <div class="rh">
+        <div class="rh-left">
+          <h2 class="region-name" id="api-title"></h2>
+          <p class="region-meta" id="api-meta"></p>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <div class="sc b" style="min-width:110px;flex-shrink:0"><p class="sc-lbl">조회 단지</p><p class="sc-val" id="api-total-cnt" style="font-size:1.4rem"></p></div>
+          <div class="sc r" style="min-width:110px;flex-shrink:0"><p class="sc-lbl">평균 경쟁률</p><p class="sc-val" id="api-avg-rate" style="font-size:1.4rem"></p></div>
+          <div class="sc g" style="min-width:110px;flex-shrink:0"><p class="sc-lbl">최고 경쟁률</p><p class="sc-val" id="api-max-rate" style="font-size:1.4rem"></p></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3 class="sec-title">경쟁률 추이 (조회된 단지 기준)</h3>
+        <div class="chart-grid-2">
+          <div class="chart-box">
+            <p class="chart-lbl">공고월별 일반공급 경쟁률</p>
+            <div class="chart-wrap sm"><canvas id="apiTimeChart" role="img" aria-label="단지별 경쟁률 시계열"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <p class="chart-lbl">단지별 경쟁률 순위 (상위 10)</p>
+            <div class="chart-wrap sm"><canvas id="apiRankChart" role="img" aria-label="단지별 경쟁률 순위"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:.75rem 1rem;text-align:center;border-style:dashed">
+        <p style="font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Advertisement</p>
+        <ins class="adsbygoogle" style="display:block;min-height:90px;background:var(--bg3)" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+      <div class="sec">
+        <h3 class="sec-title">단지별 상세 목록</h3>
+        <div style="overflow-x:auto">
+          <table class="dt" id="api-table">
+            <thead><tr>
+              <th>청약접수일</th><th>단지명</th><th>지역</th><th>공급위치</th>
+              <th class="num">총공급</th><th class="num">총접수</th>
+              <th class="num">1순위 경쟁률</th><th></th>
+            </tr></thead>
+            <tbody id="api-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="pager-wrap">
+          <button class="pager-btn" id="prev-btn" onclick="changePage(-1)" disabled>← 이전</button>
+          <div id="pager-numbers" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center"></div>
+          <button class="pager-btn" id="next-btn" onclick="changePage(1)">다음 →</button>
+        </div>
+        <p class="pager-info" id="pager-info" style="text-align:center;margin-top:.5rem"></p>
+      </div>
+      <p class="note" id="api-note"></p>
+
+      <!-- ── 단지 상세 패널 ── -->
+      <div id="apt-detail-panel" style="display:none;margin-top:1.5rem">
+        <div class="sec">
+          <h3 class="sec-title" id="apt-detail-title">단지 상세 경쟁률</h3>
+          <div id="apt-detail-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.65rem;margin-bottom:1.25rem"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+            <div class="chart-box">
+              <p class="chart-lbl">주택형별 1순위 경쟁률 비교</p>
+              <div class="chart-wrap" style="height:220px"><canvas id="apt-type-chart" role="img" aria-label="주택형별 경쟁률"></canvas></div>
+            </div>
+            <div class="chart-box">
+              <p class="chart-lbl">거주구분별 접수 현황 (1순위)</p>
+              <div class="chart-wrap" style="height:220px"><canvas id="apt-reside-chart" role="img" aria-label="거주구분별 접수"></canvas></div>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="dt" id="apt-detail-table">
+              <thead><tr>
+                <th>주택형</th><th>모델</th><th>공급세대</th>
+                <th>거주구분</th><th class="num">순위</th>
+                <th class="num">접수건수</th><th class="num">경쟁률</th>
+              </tr></thead>
+              <tbody id="apt-detail-tbody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:.75rem">
+            <button onclick="document.getElementById('apt-detail-panel').style.display='none'" 
+              style="font-family:var(--mono);font-size:11px;background:var(--bg2);border:1px solid var(--bg3);
+              color:var(--ink3);padding:.4rem 1rem;border-radius:4px;cursor:pointer">
+              ✕ 닫기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+
+        <div class="ad-col right-ad" style="padding-top:0">
+      <div class="ad-slot-side">
+        <div class="ad-slot" style="width:160px">
+          <div class="ad-label">Ad</div>
+          <!-- Google AdSense: 160x600 wide skyscraper -->
+          <ins class="adsbygoogle" style="display:block;width:160px;height:600px;background:var(--bg2);line-height:600px;text-align:center;color:var(--ink4);font-family:var(--mono);font-size:9px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <div class="ad-slot" style="width:160px;margin-top:.75rem">
+          <div class="ad-label">Ad</div>
+          <ins class="adsbygoogle" style="display:block;width:160px;height:250px;background:var(--bg2);line-height:250px;text-align:center;color:var(--ink4);font-family:var(--mono);font-size:9px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer style="background:var(--ink,#18181b);padding:1.5rem;margin-top:3rem">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <span style="font-family:var(--serif,serif);font-size:13px;color:#e4e4e7;font-weight:600;letter-spacing:-.01em">청약랩</span>
+      <span style="font-family:var(--mono,monospace);font-size:11px;color:#52525b">·</span>
+      <span style="font-family:var(--mono,monospace);font-size:11px;color:#71717a">ApplyLab</span>
+      <span style="font-family:var(--mono,monospace);font-size:11px;color:#52525b">·</span>
+      <span style="font-family:var(--mono,monospace);font-size:10px;color:#71717a">데이터 출처: 한국부동산원</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:1.25rem;flex-wrap:wrap">
+      <a href="/privacy.html"
+        style="font-family:var(--mono,monospace);font-size:11px;color:#a1a1aa;text-decoration:none;border-bottom:1px solid #3f3f46;padding-bottom:1px;transition:color .12s"
+        onmouseover="this.style.color='#e4e4e7'" onmouseout="this.style.color='#a1a1aa'">
+        개인정보취급방침
+      </a>
+      <span style="font-family:var(--mono,monospace);font-size:10px;color:#52525b">|</span>
+      <a href="mailto:shake100@gmail.com"
+        style="font-family:var(--mono,monospace);font-size:11px;color:#a1a1aa;text-decoration:none;transition:color .12s"
+        onmouseover="this.style.color='#e4e4e7'" onmouseout="this.style.color='#a1a1aa'">
+        문의: shake100@gmail.com
+      </a>
+    </div>
+    <div style="text-align:center;margin-top:.75rem">
+      <span style="font-family:var(--mono,monospace);font-size:10px;color:#3f3f46">© 2026 청약랩 ApplyLab. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── 임베드 데이터 (시도 통계) ──
+const SIDO_DB = {"강원":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":491,"gAp":497,"gR":1.01,"sSd":237,"sAp":29,"sR":null},{"ym":"2020-03","yr":2020,"gSd":129,"gAp":6,"gR":null,"sSd":220,"sAp":0,"sR":null},{"ym":"2020-04","yr":2020,"gSd":51,"gAp":13,"gR":null,"sSd":20,"sAp":0,"sR":null},{"ym":"2020-05","yr":2020,"gSd":266,"gAp":6127,"gR":23.03,"sSd":188,"sAp":158,"sR":null},{"ym":"2020-06","yr":2020,"gSd":74,"gAp":8,"gR":null,"sSd":18,"sAp":0,"sR":null},{"ym":"2020-07","yr":2020,"gSd":1400,"gAp":7967,"gR":5.69,"sSd":383,"sAp":152,"sR":null},{"ym":"2020-08","yr":2020,"gSd":106,"gAp":210,"gR":1.98,"sSd":70,"sAp":5,"sR":null},{"ym":"2020-11","yr":2020,"gSd":381,"gAp":71,"gR":null,"sSd":526,"sAp":6,"sR":null},{"ym":"2020-12","yr":2020,"gSd":487,"gAp":7260,"gR":14.91,"sSd":431,"sAp":547,"sR":1.27},{"ym":"2021-03","yr":2021,"gSd":954,"gAp":2596,"gR":2.72,"sSd":752,"sAp":138,"sR":null},{"ym":"2021-04","yr":2021,"gSd":80,"gAp":87,"gR":1.09,"sSd":81,"sAp":7,"sR":null},{"ym":"2021-05","yr":2021,"gSd":227,"gAp":455,"gR":2.0,"sSd":204,"sAp":26,"sR":null},{"ym":"2021-06","yr":2021,"gSd":460,"gAp":3715,"gR":8.08,"sSd":379,"sAp":186,"sR":null},{"ym":"2021-07","yr":2021,"gSd":757,"gAp":35625,"gR":47.06,"sSd":548,"sAp":2486,"sR":4.54},{"ym":"2021-09","yr":2021,"gSd":980,"gAp":32085,"gR":32.74,"sSd":1224,"sAp":2068,"sR":1.69},{"ym":"2021-10","yr":2021,"gSd":896,"gAp":9835,"gR":10.98,"sSd":817,"sAp":553,"sR":null},{"ym":"2021-11","yr":2021,"gSd":483,"gAp":21163,"gR":43.82,"sSd":482,"sAp":1726,"sR":3.58},{"ym":"2021-12","yr":2021,"gSd":153,"gAp":3362,"gR":21.97,"sSd":173,"sAp":267,"sR":1.54},{"ym":"2022-03","yr":2022,"gSd":117,"gAp":560,"gR":4.79,"sSd":117,"sAp":27,"sR":null},{"ym":"2022-04","yr":2022,"gSd":253,"gAp":7077,"gR":27.97,"sSd":223,"sAp":629,"sR":2.82},{"ym":"2022-06","yr":2022,"gSd":149,"gAp":3252,"gR":21.83,"sSd":48,"sAp":113,"sR":2.35},{"ym":"2022-07","yr":2022,"gSd":948,"gAp":29053,"gR":30.65,"sSd":277,"sAp":238,"sR":null},{"ym":"2022-08","yr":2022,"gSd":1080,"gAp":6495,"gR":6.01,"sSd":847,"sAp":457,"sR":null},{"ym":"2022-09","yr":2022,"gSd":337,"gAp":1201,"gR":3.56,"sSd":215,"sAp":45,"sR":null},{"ym":"2022-10","yr":2022,"gSd":417,"gAp":2936,"gR":7.04,"sSd":394,"sAp":99,"sR":null},{"ym":"2022-11","yr":2022,"gSd":841,"gAp":1425,"gR":1.69,"sSd":467,"sAp":33,"sR":null},{"ym":"2022-12","yr":2022,"gSd":348,"gAp":2265,"gR":6.51,"sSd":262,"sAp":147,"sR":null},{"ym":"2023-06","yr":2023,"gSd":623,"gAp":458,"gR":null,"sSd":529,"sAp":43,"sR":null},{"ym":"2023-07","yr":2023,"gSd":1646,"gAp":19219,"gR":11.68,"sSd":1473,"sAp":1005,"sR":null},{"ym":"2023-09","yr":2023,"gSd":144,"gAp":2317,"gR":16.09,"sSd":84,"sAp":117,"sR":1.39},{"ym":"2023-10","yr":2023,"gSd":891,"gAp":24477,"gR":27.47,"sSd":758,"sAp":1652,"sR":2.18},{"ym":"2023-11","yr":2023,"gSd":598,"gAp":6494,"gR":10.86,"sSd":506,"sAp":414,"sR":null},{"ym":"2023-12","yr":2023,"gSd":128,"gAp":1269,"gR":9.91,"sSd":100,"sAp":41,"sR":null},{"ym":"2024-01","yr":2024,"gSd":394,"gAp":331,"gR":null,"sSd":206,"sAp":26,"sR":null},{"ym":"2024-02","yr":2024,"gSd":82,"gAp":7,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-04","yr":2024,"gSd":673,"gAp":187,"gR":null,"sSd":600,"sAp":48,"sR":null},{"ym":"2024-05","yr":2024,"gSd":574,"gAp":3071,"gR":5.35,"sSd":450,"sAp":114,"sR":null},{"ym":"2024-06","yr":2024,"gSd":546,"gAp":354,"gR":null,"sSd":303,"sAp":23,"sR":null},{"ym":"2024-07","yr":2024,"gSd":413,"gAp":884,"gR":2.14,"sSd":345,"sAp":173,"sR":null},{"ym":"2024-09","yr":2024,"gSd":522,"gAp":6608,"gR":12.66,"sSd":499,"sAp":377,"sR":null},{"ym":"2024-10","yr":2024,"gSd":232,"gAp":384,"gR":1.66,"sSd":255,"sAp":49,"sR":null},{"ym":"2025-03","yr":2025,"gSd":328,"gAp":3239,"gR":9.88,"sSd":328,"sAp":152,"sR":null},{"ym":"2025-07","yr":2025,"gSd":469,"gAp":698,"gR":1.49,"sSd":518,"sAp":69,"sR":null},{"ym":"2025-08","yr":2025,"gSd":538,"gAp":13677,"gR":25.42,"sSd":607,"sAp":861,"sR":1.42},{"ym":"2025-12","yr":2025,"gSd":16,"gAp":25,"gR":1.56,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-04","yr":2026,"gSd":580,"gAp":619,"gR":1.07,"sSd":455,"sAp":40,"sR":null}],"yearly":{"2020":{"gR":9.32,"sR":1.27,"gSd":3385,"gAp":22159,"months":9},"2021":{"gR":18.94,"sR":2.84,"gSd":4990,"gAp":108923,"months":9},"2022":{"gR":12.23,"sR":2.58,"gSd":4490,"gAp":54264,"months":9},"2023":{"gR":15.2,"sR":1.78,"gSd":4030,"gAp":54234,"months":6},"2024":{"gR":5.45,"sR":0.0,"gSd":3436,"gAp":11826,"months":8},"2025":{"gR":9.59,"sR":0.71,"gSd":1351,"gAp":17639,"months":4},"2026":{"gR":1.07,"sR":null,"gSd":580,"gAp":619,"months":1}},"summary":{"avgGR":12.55,"maxGR":47.06,"maxGRym":"2021-07","totalGSd":22262,"totalGAp":269664,"dataFrom":"2020-02","dataTo":"2026-04"}},"경기":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":2733,"gAp":234575,"gR":85.83,"sSd":2102,"sAp":27350,"sR":13.01},{"ym":"2020-03","yr":2020,"gSd":1371,"gAp":37160,"gR":27.1,"sSd":819,"sAp":4519,"sR":5.52},{"ym":"2020-04","yr":2020,"gSd":3118,"gAp":85342,"gR":27.37,"sSd":2160,"sAp":9680,"sR":4.48},{"ym":"2020-05","yr":2020,"gSd":5005,"gAp":170421,"gR":34.05,"sSd":2430,"sAp":17864,"sR":7.35},{"ym":"2020-06","yr":2020,"gSd":3720,"gAp":48953,"gR":13.16,"sSd":2477,"sAp":11297,"sR":4.56},{"ym":"2020-07","yr":2020,"gSd":5135,"gAp":108536,"gR":21.14,"sSd":4711,"sAp":27645,"sR":5.87},{"ym":"2020-08","yr":2020,"gSd":4829,"gAp":40174,"gR":8.32,"sSd":3273,"sAp":5174,"sR":1.58},{"ym":"2020-09","yr":2020,"gSd":2850,"gAp":35136,"gR":12.33,"sSd":2242,"sAp":6496,"sR":2.9},{"ym":"2020-10","yr":2020,"gSd":5348,"gAp":718747,"gR":134.4,"sSd":4336,"sAp":147566,"sR":34.03},{"ym":"2020-11","yr":2020,"gSd":5788,"gAp":68795,"gR":11.89,"sSd":5260,"sAp":26499,"sR":5.04},{"ym":"2020-12","yr":2020,"gSd":1876,"gAp":98575,"gR":52.55,"sSd":1688,"sAp":40185,"sR":23.81},{"ym":"2021-01","yr":2021,"gSd":2141,"gAp":41424,"gR":19.35,"sSd":2220,"sAp":7733,"sR":3.48},{"ym":"2021-02","yr":2021,"gSd":3904,"gAp":51326,"gR":13.15,"sSd":3750,"sAp":11240,"sR":3.0},{"ym":"2021-03","yr":2021,"gSd":2513,"gAp":58243,"gR":23.18,"sSd":2038,"sAp":13744,"sR":6.74},{"ym":"2021-04","yr":2021,"gSd":2348,"gAp":273396,"gR":116.44,"sSd":3780,"sAp":50235,"sR":13.29},{"ym":"2021-05","yr":2021,"gSd":2053,"gAp":46109,"gR":22.46,"sSd":1896,"sAp":20735,"sR":10.94},{"ym":"2021-06","yr":2021,"gSd":2951,"gAp":45785,"gR":15.52,"sSd":2840,"sAp":16590,"sR":5.84},{"ym":"2021-07","yr":2021,"gSd":2343,"gAp":44093,"gR":18.82,"sSd":2238,"sAp":15483,"sR":6.92},{"ym":"2021-08","yr":2021,"gSd":1356,"gAp":60908,"gR":44.92,"sSd":1503,"sAp":24946,"sR":16.6},{"ym":"2021-09","yr":2021,"gSd":3181,"gAp":74106,"gR":23.3,"sSd":2948,"sAp":39825,"sR":13.51},{"ym":"2021-10","yr":2021,"gSd":2766,"gAp":100197,"gR":36.22,"sSd":3134,"sAp":18579,"sR":5.93},{"ym":"2021-11","yr":2021,"gSd":2058,"gAp":87849,"gR":42.69,"sSd":1828,"sAp":27916,"sR":15.27},{"ym":"2021-12","yr":2021,"gSd":4174,"gAp":81279,"gR":19.47,"sSd":4195,"sAp":20955,"sR":5.0},{"ym":"2022-01","yr":2022,"gSd":3010,"gAp":55811,"gR":18.54,"sSd":3664,"sAp":12103,"sR":3.3},{"ym":"2022-02","yr":2022,"gSd":3239,"gAp":27697,"gR":8.55,"sSd":3051,"sAp":15839,"sR":5.19},{"ym":"2022-03","yr":2022,"gSd":2352,"gAp":33650,"gR":14.31,"sSd":2894,"sAp":12017,"sR":4.15},{"ym":"2022-04","yr":2022,"gSd":1353,"gAp":18685,"gR":13.81,"sSd":1499,"sAp":10457,"sR":6.98},{"ym":"2022-05","yr":2022,"gSd":2062,"gAp":23438,"gR":11.37,"sSd":1523,"sAp":9121,"sR":5.99},{"ym":"2022-06","yr":2022,"gSd":1275,"gAp":24397,"gR":19.13,"sSd":1444,"sAp":16521,"sR":11.44},{"ym":"2022-07","yr":2022,"gSd":1162,"gAp":1191,"gR":1.02,"sSd":1131,"sAp":323,"sR":null},{"ym":"2022-08","yr":2022,"gSd":1601,"gAp":7122,"gR":4.45,"sSd":1789,"sAp":2623,"sR":1.47},{"ym":"2022-09","yr":2022,"gSd":673,"gAp":6402,"gR":9.51,"sSd":574,"sAp":1703,"sR":2.97},{"ym":"2022-10","yr":2022,"gSd":4068,"gAp":20838,"gR":5.12,"sSd":4020,"sAp":5685,"sR":1.41},{"ym":"2022-11","yr":2022,"gSd":3223,"gAp":15354,"gR":4.76,"sSd":3021,"sAp":1568,"sR":null},{"ym":"2022-12","yr":2022,"gSd":2424,"gAp":4751,"gR":1.96,"sSd":2334,"sAp":1644,"sR":null},{"ym":"2023-01","yr":2023,"gSd":110,"gAp":213,"gR":1.94,"sSd":189,"sAp":33,"sR":null},{"ym":"2023-02","yr":2023,"gSd":1414,"gAp":3674,"gR":2.6,"sSd":1437,"sAp":1086,"sR":null},{"ym":"2023-03","yr":2023,"gSd":1346,"gAp":8630,"gR":6.41,"sSd":1363,"sAp":1246,"sR":null},{"ym":"2023-04","yr":2023,"gSd":2960,"gAp":16802,"gR":5.68,"sSd":2557,"sAp":2463,"sR":null},{"ym":"2023-05","yr":2023,"gSd":1076,"gAp":45499,"gR":42.29,"sSd":688,"sAp":4416,"sR":6.42},{"ym":"2023-06","yr":2023,"gSd":2943,"gAp":12711,"gR":4.32,"sSd":2630,"sAp":935,"sR":null},{"ym":"2023-07","yr":2023,"gSd":821,"gAp":20914,"gR":25.47,"sSd":880,"sAp":2615,"sR":2.97},{"ym":"2023-08","yr":2023,"gSd":700,"gAp":1305,"gR":1.86,"sSd":560,"sAp":450,"sR":null},{"ym":"2023-09","yr":2023,"gSd":627,"gAp":6378,"gR":10.17,"sSd":671,"sAp":704,"sR":1.05},{"ym":"2023-10","yr":2023,"gSd":5664,"gAp":163412,"gR":28.85,"sSd":4592,"sAp":13592,"sR":2.96},{"ym":"2023-11","yr":2023,"gSd":1674,"gAp":43786,"gR":26.16,"sSd":2049,"sAp":4976,"sR":2.43},{"ym":"2023-12","yr":2023,"gSd":4883,"gAp":22072,"gR":4.52,"sSd":5067,"sAp":3579,"sR":null},{"ym":"2024-01","yr":2024,"gSd":983,"gAp":1790,"gR":1.82,"sSd":1116,"sAp":423,"sR":null},{"ym":"2024-02","yr":2024,"gSd":3270,"gAp":12805,"gR":3.92,"sSd":2915,"sAp":2462,"sR":null},{"ym":"2024-04","yr":2024,"gSd":1306,"gAp":10698,"gR":8.19,"sSd":1505,"sAp":2964,"sR":1.97},{"ym":"2024-05","yr":2024,"gSd":2892,"gAp":11639,"gR":4.02,"sSd":2686,"sAp":1762,"sR":null},{"ym":"2024-06","yr":2024,"gSd":3952,"gAp":296236,"gR":74.96,"sSd":2824,"sAp":76803,"sR":27.2},{"ym":"2024-07","yr":2024,"gSd":661,"gAp":36433,"gR":55.12,"sSd":861,"sAp":7745,"sR":9.0},{"ym":"2024-08","yr":2024,"gSd":2743,"gAp":6093,"gR":2.22,"sSd":2282,"sAp":1195,"sR":null},{"ym":"2024-09","yr":2024,"gSd":3296,"gAp":39966,"gR":12.13,"sSd":3050,"sAp":12141,"sR":3.98},{"ym":"2024-10","yr":2024,"gSd":4087,"gAp":12505,"gR":3.06,"sSd":4216,"sAp":2678,"sR":null},{"ym":"2024-11","yr":2024,"gSd":2381,"gAp":9867,"gR":4.14,"sSd":2348,"sAp":2603,"sR":1.11},{"ym":"2024-12","yr":2024,"gSd":2335,"gAp":4206,"gR":1.8,"sSd":2494,"sAp":970,"sR":null},{"ym":"2025-01","yr":2025,"gSd":178,"gAp":133,"gR":null,"sSd":147,"sAp":50,"sR":null},{"ym":"2025-02","yr":2025,"gSd":109,"gAp":516,"gR":4.73,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-03","yr":2025,"gSd":395,"gAp":755,"gR":1.91,"sSd":393,"sAp":149,"sR":null},{"ym":"2025-04","yr":2025,"gSd":3608,"gAp":10079,"gR":2.79,"sSd":4135,"sAp":2832,"sR":null},{"ym":"2025-05","yr":2025,"gSd":1696,"gAp":59525,"gR":35.1,"sSd":3275,"sAp":15089,"sR":4.61},{"ym":"2025-06","yr":2025,"gSd":2641,"gAp":5921,"gR":2.24,"sSd":2986,"sAp":1376,"sR":null},{"ym":"2025-07","yr":2025,"gSd":1685,"gAp":2777,"gR":1.65,"sSd":2011,"sAp":795,"sR":null},{"ym":"2025-08","yr":2025,"gSd":2215,"gAp":14794,"gR":6.68,"sSd":1945,"sAp":4753,"sR":2.44},{"ym":"2025-09","yr":2025,"gSd":1661,"gAp":14181,"gR":8.54,"sSd":1760,"sAp":7129,"sR":4.05},{"ym":"2025-10","yr":2025,"gSd":4581,"gAp":22202,"gR":4.85,"sSd":4855,"sAp":5028,"sR":1.04},{"ym":"2025-11","yr":2025,"gSd":3217,"gAp":27354,"gR":8.5,"sSd":4167,"sAp":18163,"sR":4.36},{"ym":"2025-12","yr":2025,"gSd":1314,"gAp":4397,"gR":3.35,"sSd":1753,"sAp":1346,"sR":null},{"ym":"2026-01","yr":2026,"gSd":1076,"gAp":3272,"gR":3.04,"sSd":1038,"sAp":1138,"sR":1.1},{"ym":"2026-02","yr":2026,"gSd":1001,"gAp":6715,"gR":6.71,"sSd":1155,"sAp":3749,"sR":3.25},{"ym":"2026-03","yr":2026,"gSd":1068,"gAp":1319,"gR":1.24,"sSd":1067,"sAp":383,"sR":null},{"ym":"2026-04","yr":2026,"gSd":4411,"gAp":15371,"gR":3.48,"sSd":4848,"sAp":6821,"sR":1.41}],"yearly":{"2020":{"gR":38.92,"sR":9.83,"gSd":41773,"gAp":1646414,"months":11},"2021":{"gR":32.96,"sR":8.88,"gSd":31788,"gAp":964715,"months":12},"2022":{"gR":9.38,"sR":4.77,"gSd":26442,"gAp":239336,"months":12},"2023":{"gR":13.36,"sR":3.17,"gSd":24218,"gAp":345396,"months":12},"2024":{"gR":15.58,"sR":8.65,"gSd":27906,"gAp":442238,"months":11},"2025":{"gR":7.3,"sR":2.75,"gSd":23300,"gAp":162634,"months":12},"2026":{"gR":3.62,"sR":1.92,"gSd":7556,"gAp":26677,"months":4}},"summary":{"avgGR":18.67,"maxGR":134.4,"maxGRym":"2020-10","totalGSd":182983,"totalGAp":3827410,"dataFrom":"2020-02","dataTo":"2026-04"}},"경남":{"monthly":[{"ym":"2020-04","yr":2020,"gSd":63,"gAp":78,"gR":1.24,"sSd":34,"sAp":0,"sR":null},{"ym":"2020-05","yr":2020,"gSd":920,"gAp":5659,"gR":6.15,"sSd":645,"sAp":237,"sR":null},{"ym":"2020-06","yr":2020,"gSd":1188,"gAp":9830,"gR":8.27,"sSd":896,"sAp":222,"sR":null},{"ym":"2020-07","yr":2020,"gSd":1290,"gAp":9484,"gR":7.35,"sSd":914,"sAp":341,"sR":null},{"ym":"2020-08","yr":2020,"gSd":56,"gAp":29,"gR":null,"sSd":28,"sAp":1,"sR":null},{"ym":"2020-09","yr":2020,"gSd":58,"gAp":52,"gR":null,"sSd":119,"sAp":4,"sR":null},{"ym":"2020-10","yr":2020,"gSd":757,"gAp":1581,"gR":2.09,"sSd":649,"sAp":79,"sR":null},{"ym":"2020-12","yr":2020,"gSd":55,"gAp":34,"gR":null,"sSd":23,"sAp":0,"sR":null},{"ym":"2021-01","yr":2021,"gSd":130,"gAp":35,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-03","yr":2021,"gSd":1788,"gAp":25732,"gR":14.39,"sSd":1883,"sAp":2001,"sR":1.06},{"ym":"2021-04","yr":2021,"gSd":2145,"gAp":35224,"gR":16.42,"sSd":1278,"sAp":1599,"sR":1.25},{"ym":"2021-05","yr":2021,"gSd":1497,"gAp":11391,"gR":7.61,"sSd":1377,"sAp":351,"sR":null},{"ym":"2021-06","yr":2021,"gSd":67,"gAp":60,"gR":null,"sSd":27,"sAp":2,"sR":null},{"ym":"2021-07","yr":2021,"gSd":656,"gAp":37096,"gR":56.55,"sSd":660,"sAp":3181,"sR":4.82},{"ym":"2021-08","yr":2021,"gSd":873,"gAp":10161,"gR":11.64,"sSd":821,"sAp":451,"sR":null},{"ym":"2021-09","yr":2021,"gSd":695,"gAp":37798,"gR":54.39,"sSd":745,"sAp":2153,"sR":2.89},{"ym":"2021-10","yr":2021,"gSd":1138,"gAp":36480,"gR":32.06,"sSd":1236,"sAp":2465,"sR":1.99},{"ym":"2021-11","yr":2021,"gSd":1494,"gAp":26557,"gR":17.78,"sSd":1769,"sAp":1895,"sR":1.07},{"ym":"2021-12","yr":2021,"gSd":638,"gAp":20627,"gR":32.33,"sSd":660,"sAp":2610,"sR":3.95},{"ym":"2022-01","yr":2022,"gSd":711,"gAp":13592,"gR":19.12,"sSd":771,"sAp":842,"sR":1.09},{"ym":"2022-02","yr":2022,"gSd":478,"gAp":7689,"gR":16.09,"sSd":345,"sAp":76,"sR":null},{"ym":"2022-03","yr":2022,"gSd":654,"gAp":9672,"gR":14.79,"sSd":439,"sAp":554,"sR":1.26},{"ym":"2022-04","yr":2022,"gSd":1410,"gAp":29900,"gR":21.21,"sSd":903,"sAp":5352,"sR":5.93},{"ym":"2022-06","yr":2022,"gSd":402,"gAp":3305,"gR":8.22,"sSd":363,"sAp":156,"sR":null},{"ym":"2022-07","yr":2022,"gSd":1001,"gAp":15813,"gR":15.8,"sSd":861,"sAp":4024,"sR":4.67},{"ym":"2022-08","yr":2022,"gSd":790,"gAp":1603,"gR":2.03,"sSd":704,"sAp":49,"sR":null},{"ym":"2022-09","yr":2022,"gSd":1552,"gAp":11944,"gR":7.7,"sSd":1311,"sAp":1359,"sR":1.04},{"ym":"2022-10","yr":2022,"gSd":55,"gAp":7,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-11","yr":2022,"gSd":701,"gAp":20646,"gR":29.45,"sSd":572,"sAp":2204,"sR":3.85},{"ym":"2022-12","yr":2022,"gSd":1001,"gAp":27178,"gR":27.15,"sSd":1270,"sAp":2259,"sR":1.78},{"ym":"2023-03","yr":2023,"gSd":14,"gAp":1,"gR":null,"sSd":32,"sAp":0,"sR":null},{"ym":"2023-05","yr":2023,"gSd":25,"gAp":0,"gR":null,"sSd":20,"sAp":0,"sR":null},{"ym":"2023-07","yr":2023,"gSd":899,"gAp":2799,"gR":3.11,"sSd":450,"sAp":132,"sR":null},{"ym":"2023-08","yr":2023,"gSd":243,"gAp":92,"gR":null,"sSd":280,"sAp":25,"sR":null},{"ym":"2023-09","yr":2023,"gSd":25,"gAp":2,"gR":null,"sSd":20,"sAp":1,"sR":null},{"ym":"2023-11","yr":2023,"gSd":111,"gAp":10,"gR":null,"sSd":110,"sAp":1,"sR":null},{"ym":"2023-12","yr":2023,"gSd":439,"gAp":660,"gR":1.5,"sSd":268,"sAp":21,"sR":null},{"ym":"2024-02","yr":2024,"gSd":115,"gAp":139,"gR":1.21,"sSd":117,"sAp":4,"sR":null},{"ym":"2024-04","yr":2024,"gSd":34,"gAp":1,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-05","yr":2024,"gSd":895,"gAp":11678,"gR":13.05,"sSd":659,"sAp":760,"sR":1.15},{"ym":"2024-07","yr":2024,"gSd":38,"gAp":5,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-08","yr":2024,"gSd":399,"gAp":75,"gR":null,"sSd":345,"sAp":14,"sR":null},{"ym":"2025-02","yr":2025,"gSd":17,"gAp":16,"gR":null,"sSd":4,"sAp":1,"sR":null},{"ym":"2025-03","yr":2025,"gSd":1056,"gAp":4011,"gR":3.8,"sSd":985,"sAp":513,"sR":null},{"ym":"2025-04","yr":2025,"gSd":23,"gAp":24,"gR":1.04,"sSd":11,"sAp":8,"sR":null},{"ym":"2025-06","yr":2025,"gSd":454,"gAp":416,"gR":null,"sSd":388,"sAp":22,"sR":null},{"ym":"2025-07","yr":2025,"gSd":235,"gAp":208,"gR":null,"sSd":199,"sAp":24,"sR":null},{"ym":"2025-08","yr":2025,"gSd":473,"gAp":487,"gR":1.03,"sSd":521,"sAp":46,"sR":null},{"ym":"2025-11","yr":2025,"gSd":588,"gAp":13046,"gR":22.19,"sSd":383,"sAp":3383,"sR":8.83},{"ym":"2025-12","yr":2025,"gSd":79,"gAp":240,"gR":3.04,"sSd":83,"sAp":13,"sR":null},{"ym":"2026-03","yr":2026,"gSd":260,"gAp":2277,"gR":8.76,"sSd":249,"sAp":317,"sR":1.27},{"ym":"2026-04","yr":2026,"gSd":1015,"gAp":12665,"gR":12.48,"sSd":710,"sAp":1999,"sR":2.82}],"yearly":{"2020":{"gR":5.02,"sR":null,"gSd":4387,"gAp":26747,"months":8},"2021":{"gR":27.02,"sR":2.13,"gSd":11121,"gAp":241161,"months":11},"2022":{"gR":16.16,"sR":2.45,"gSd":8755,"gAp":141349,"months":11},"2023":{"gR":2.3,"sR":null,"gSd":1756,"gAp":3564,"months":7},"2024":{"gR":7.13,"sR":0.38,"gSd":1481,"gAp":11898,"months":5},"2025":{"gR":6.22,"sR":8.83,"gSd":2925,"gAp":18448,"months":8},"2026":{"gR":10.62,"sR":2.04,"gSd":1275,"gAp":14942,"months":2}},"summary":{"avgGR":14.32,"maxGR":56.55,"maxGRym":"2021-07","totalGSd":31700,"totalGAp":458109,"dataFrom":"2020-04","dataTo":"2026-04"}},"경북":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":125,"gAp":1120,"gR":8.96,"sSd":61,"sAp":33,"sR":null},{"ym":"2020-04","yr":2020,"gSd":68,"gAp":7,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-05","yr":2020,"gSd":106,"gAp":291,"gR":2.75,"sSd":60,"sAp":13,"sR":null},{"ym":"2020-07","yr":2020,"gSd":811,"gAp":2174,"gR":2.68,"sSd":593,"sAp":136,"sR":null},{"ym":"2020-08","yr":2020,"gSd":128,"gAp":96,"gR":null,"sSd":498,"sAp":11,"sR":null},{"ym":"2020-09","yr":2020,"gSd":73,"gAp":29,"gR":null,"sSd":41,"sAp":0,"sR":null},{"ym":"2020-10","yr":2020,"gSd":671,"gAp":18568,"gR":27.67,"sSd":643,"sAp":1111,"sR":1.73},{"ym":"2020-11","yr":2020,"gSd":2031,"gAp":97422,"gR":47.97,"sSd":1424,"sAp":2966,"sR":2.08},{"ym":"2020-12","yr":2020,"gSd":2408,"gAp":18859,"gR":7.83,"sSd":2591,"sAp":862,"sR":null},{"ym":"2021-02","yr":2021,"gSd":394,"gAp":1524,"gR":3.87,"sSd":413,"sAp":92,"sR":null},{"ym":"2021-04","yr":2021,"gSd":1207,"gAp":10915,"gR":9.04,"sSd":985,"sAp":394,"sR":null},{"ym":"2021-05","yr":2021,"gSd":260,"gAp":668,"gR":2.57,"sSd":354,"sAp":34,"sR":null},{"ym":"2021-06","yr":2021,"gSd":1473,"gAp":17297,"gR":11.74,"sSd":1370,"sAp":561,"sR":null},{"ym":"2021-07","yr":2021,"gSd":697,"gAp":10444,"gR":14.98,"sSd":608,"sAp":367,"sR":null},{"ym":"2021-09","yr":2021,"gSd":1130,"gAp":4043,"gR":3.58,"sSd":1150,"sAp":149,"sR":null},{"ym":"2021-10","yr":2021,"gSd":991,"gAp":3956,"gR":3.99,"sSd":917,"sAp":174,"sR":null},{"ym":"2021-11","yr":2021,"gSd":2755,"gAp":12820,"gR":4.65,"sSd":2981,"sAp":412,"sR":null},{"ym":"2021-12","yr":2021,"gSd":2850,"gAp":39313,"gR":13.79,"sSd":2775,"sAp":2128,"sR":null},{"ym":"2022-01","yr":2022,"gSd":165,"gAp":627,"gR":3.8,"sSd":185,"sAp":27,"sR":null},{"ym":"2022-02","yr":2022,"gSd":305,"gAp":12546,"gR":41.13,"sSd":456,"sAp":490,"sR":1.07},{"ym":"2022-03","yr":2022,"gSd":123,"gAp":29,"gR":null,"sSd":132,"sAp":4,"sR":null},{"ym":"2022-05","yr":2022,"gSd":1960,"gAp":32611,"gR":16.64,"sSd":1642,"sAp":1419,"sR":null},{"ym":"2022-06","yr":2022,"gSd":1432,"gAp":34218,"gR":23.9,"sSd":1249,"sAp":1221,"sR":null},{"ym":"2022-07","yr":2022,"gSd":378,"gAp":352,"gR":null,"sSd":398,"sAp":28,"sR":null},{"ym":"2022-08","yr":2022,"gSd":143,"gAp":36,"gR":null,"sSd":167,"sAp":5,"sR":null},{"ym":"2022-09","yr":2022,"gSd":754,"gAp":798,"gR":1.06,"sSd":544,"sAp":24,"sR":null},{"ym":"2022-10","yr":2022,"gSd":420,"gAp":196,"gR":null,"sSd":325,"sAp":13,"sR":null},{"ym":"2022-11","yr":2022,"gSd":231,"gAp":909,"gR":3.94,"sSd":197,"sAp":53,"sR":null},{"ym":"2022-12","yr":2022,"gSd":829,"gAp":983,"gR":1.19,"sSd":626,"sAp":18,"sR":null},{"ym":"2023-02","yr":2023,"gSd":33,"gAp":5,"gR":null,"sSd":31,"sAp":0,"sR":null},{"ym":"2023-07","yr":2023,"gSd":38,"gAp":1,"gR":null,"sSd":29,"sAp":0,"sR":null},{"ym":"2023-08","yr":2023,"gSd":19,"gAp":10,"gR":null,"sSd":16,"sAp":1,"sR":null},{"ym":"2023-10","yr":2023,"gSd":972,"gAp":1395,"gR":1.44,"sSd":413,"sAp":23,"sR":null},{"ym":"2023-11","yr":2023,"gSd":561,"gAp":3644,"gR":6.5,"sSd":259,"sAp":142,"sR":null},{"ym":"2023-12","yr":2023,"gSd":503,"gAp":1895,"gR":3.77,"sSd":320,"sAp":74,"sR":null},{"ym":"2024-01","yr":2024,"gSd":986,"gAp":9166,"gR":9.3,"sSd":682,"sAp":326,"sR":null},{"ym":"2024-02","yr":2024,"gSd":123,"gAp":25,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-07","yr":2024,"gSd":367,"gAp":891,"gR":2.43,"sSd":264,"sAp":34,"sR":null},{"ym":"2025-02","yr":2025,"gSd":364,"gAp":498,"gR":1.37,"sSd":184,"sAp":18,"sR":null},{"ym":"2025-03","yr":2025,"gSd":654,"gAp":2227,"gR":3.41,"sSd":345,"sAp":66,"sR":null},{"ym":"2025-04","yr":2025,"gSd":247,"gAp":524,"gR":2.12,"sSd":171,"sAp":22,"sR":null},{"ym":"2025-05","yr":2025,"gSd":36,"gAp":1,"gR":null,"sSd":54,"sAp":0,"sR":null},{"ym":"2025-09","yr":2025,"gSd":222,"gAp":4,"gR":null,"sSd":241,"sAp":2,"sR":null},{"ym":"2025-10","yr":2025,"gSd":648,"gAp":3278,"gR":5.06,"sSd":549,"sAp":220,"sR":null},{"ym":"2025-11","yr":2025,"gSd":30,"gAp":2,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-12","yr":2025,"gSd":154,"gAp":171,"gR":1.11,"sSd":110,"sAp":9,"sR":null},{"ym":"2026-02","yr":2026,"gSd":577,"gAp":221,"gR":null,"sSd":427,"sAp":21,"sR":null},{"ym":"2026-03","yr":2026,"gSd":434,"gAp":880,"gR":2.03,"sSd":339,"sAp":53,"sR":null},{"ym":"2026-04","yr":2026,"gSd":545,"gAp":5877,"gR":10.78,"sSd":477,"sAp":381,"sR":null}],"yearly":{"2020":{"gR":16.31,"sR":1.27,"gSd":6421,"gAp":138566,"months":9},"2021":{"gR":7.58,"sR":null,"gSd":11757,"gAp":100980,"months":9},"2022":{"gR":13.09,"sR":1.07,"gSd":6740,"gAp":83305,"months":11},"2023":{"gR":3.9,"sR":null,"gSd":2126,"gAp":6950,"months":6},"2024":{"gR":5.86,"sR":0.0,"gSd":1476,"gAp":10082,"months":3},"2025":{"gR":2.61,"sR":0.0,"gSd":2355,"gAp":6705,"months":8},"2026":{"gR":6.4,"sR":null,"gSd":1556,"gAp":6978,"months":3}},"summary":{"avgGR":9.03,"maxGR":47.97,"maxGRym":"2020-11","totalGSd":32431,"totalGAp":353566,"dataFrom":"2020-02","dataTo":"2026-04"}},"광주":{"monthly":[{"ym":"2020-05","yr":2020,"gSd":832,"gAp":36047,"gR":43.33,"sSd":490,"sAp":1849,"sR":3.77},{"ym":"2020-06","yr":2020,"gSd":244,"gAp":12793,"gR":52.43,"sSd":184,"sAp":636,"sR":3.46},{"ym":"2020-08","yr":2020,"gSd":154,"gAp":363,"gR":2.36,"sSd":116,"sAp":15,"sR":null},{"ym":"2020-09","yr":2020,"gSd":1014,"gAp":16899,"gR":16.67,"sSd":765,"sAp":917,"sR":1.2},{"ym":"2020-12","yr":2020,"gSd":672,"gAp":50754,"gR":75.53,"sSd":637,"sAp":2815,"sR":4.42},{"ym":"2021-01","yr":2021,"gSd":62,"gAp":886,"gR":14.29,"sSd":24,"sAp":98,"sR":4.08},{"ym":"2021-03","yr":2021,"gSd":321,"gAp":7263,"gR":22.63,"sSd":267,"sAp":1074,"sR":4.02},{"ym":"2021-05","yr":2021,"gSd":53,"gAp":781,"gR":14.74,"sSd":50,"sAp":116,"sR":2.32},{"ym":"2021-07","yr":2021,"gSd":24,"gAp":324,"gR":13.5,"sSd":25,"sAp":49,"sR":1.96},{"ym":"2021-08","yr":2021,"gSd":425,"gAp":9705,"gR":22.84,"sSd":239,"sAp":1306,"sR":5.46},{"ym":"2021-10","yr":2021,"gSd":172,"gAp":3843,"gR":22.34,"sSd":148,"sAp":669,"sR":4.52},{"ym":"2021-11","yr":2021,"gSd":197,"gAp":3656,"gR":18.56,"sSd":106,"sAp":530,"sR":5.0},{"ym":"2021-12","yr":2021,"gSd":104,"gAp":346,"gR":3.33,"sSd":50,"sAp":24,"sR":null},{"ym":"2022-01","yr":2022,"gSd":311,"gAp":2078,"gR":6.68,"sSd":199,"sAp":228,"sR":1.15},{"ym":"2022-02","yr":2022,"gSd":142,"gAp":2207,"gR":15.54,"sSd":96,"sAp":527,"sR":5.49},{"ym":"2022-05","yr":2022,"gSd":71,"gAp":94,"gR":1.32,"sSd":28,"sAp":16,"sR":null},{"ym":"2022-06","yr":2022,"gSd":33,"gAp":287,"gR":8.7,"sSd":45,"sAp":47,"sR":1.04},{"ym":"2022-07","yr":2022,"gSd":79,"gAp":118,"gR":1.49,"sSd":49,"sAp":6,"sR":null},{"ym":"2022-08","yr":2022,"gSd":77,"gAp":522,"gR":6.78,"sSd":84,"sAp":123,"sR":1.46},{"ym":"2022-10","yr":2022,"gSd":68,"gAp":75,"gR":1.1,"sSd":63,"sAp":31,"sR":null},{"ym":"2022-11","yr":2022,"gSd":252,"gAp":120,"gR":null,"sSd":130,"sAp":12,"sR":null},{"ym":"2023-02","yr":2023,"gSd":166,"gAp":43,"gR":null,"sSd":25,"sAp":0,"sR":null},{"ym":"2023-03","yr":2023,"gSd":639,"gAp":6821,"gR":10.67,"sSd":454,"sAp":406,"sR":null},{"ym":"2023-04","yr":2023,"gSd":49,"gAp":17,"gR":null,"sSd":8,"sAp":0,"sR":null},{"ym":"2023-05","yr":2023,"gSd":621,"gAp":8400,"gR":13.53,"sSd":282,"sAp":290,"sR":1.03},{"ym":"2023-06","yr":2023,"gSd":440,"gAp":4792,"gR":10.89,"sSd":337,"sAp":198,"sR":null},{"ym":"2023-08","yr":2023,"gSd":613,"gAp":3977,"gR":6.49,"sSd":335,"sAp":142,"sR":null},{"ym":"2023-09","yr":2023,"gSd":1137,"gAp":7110,"gR":6.25,"sSd":502,"sAp":198,"sR":null},{"ym":"2023-12","yr":2023,"gSd":191,"gAp":55,"gR":null,"sSd":189,"sAp":13,"sR":null},{"ym":"2024-01","yr":2024,"gSd":1010,"gAp":1944,"gR":1.92,"sSd":598,"sAp":81,"sR":null},{"ym":"2024-02","yr":2024,"gSd":2047,"gAp":5071,"gR":2.48,"sSd":1436,"sAp":270,"sR":null},{"ym":"2024-04","yr":2024,"gSd":2582,"gAp":8986,"gR":3.48,"sSd":974,"sAp":376,"sR":null},{"ym":"2024-06","yr":2024,"gSd":136,"gAp":136,"gR":1.0,"sSd":90,"sAp":9,"sR":null},{"ym":"2024-08","yr":2024,"gSd":70,"gAp":87,"gR":1.24,"sSd":39,"sAp":10,"sR":null},{"ym":"2025-01","yr":2025,"gSd":97,"gAp":19,"gR":null,"sSd":21,"sAp":8,"sR":null},{"ym":"2025-02","yr":2025,"gSd":245,"gAp":195,"gR":null,"sSd":42,"sAp":5,"sR":null},{"ym":"2025-05","yr":2025,"gSd":32,"gAp":88,"gR":2.75,"sSd":49,"sAp":7,"sR":null},{"ym":"2025-06","yr":2025,"gSd":77,"gAp":149,"gR":1.94,"sSd":7,"sAp":2,"sR":null},{"ym":"2025-07","yr":2025,"gSd":144,"gAp":114,"gR":null,"sSd":164,"sAp":2,"sR":null},{"ym":"2025-09","yr":2025,"gSd":60,"gAp":18,"gR":null,"sSd":64,"sAp":6,"sR":null},{"ym":"2025-10","yr":2025,"gSd":37,"gAp":27,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-02","yr":2026,"gSd":9,"gAp":17,"gR":1.89,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-03","yr":2026,"gSd":60,"gAp":72,"gR":1.2,"sSd":0,"sAp":0,"sR":0.0}],"yearly":{"2020":{"gR":38.06,"sR":3.21,"gSd":2916,"gAp":116856,"months":5},"2021":{"gR":16.53,"sR":3.91,"gSd":1358,"gAp":26804,"months":8},"2022":{"gR":5.94,"sR":2.28,"gSd":1033,"gAp":5501,"months":8},"2023":{"gR":9.57,"sR":1.03,"gSd":3856,"gAp":31215,"months":8},"2024":{"gR":2.02,"sR":null,"gSd":5845,"gAp":16224,"months":5},"2025":{"gR":2.34,"sR":0.0,"gSd":692,"gAp":610,"months":7},"2026":{"gR":1.54,"sR":0.0,"gSd":69,"gAp":89,"months":2}},"summary":{"avgGR":12.64,"maxGR":75.53,"maxGRym":"2020-12","totalGSd":15769,"totalGAp":197299,"dataFrom":"2020-05","dataTo":"2026-03"}},"대구":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":394,"gAp":55710,"gR":141.4,"sSd":262,"sAp":2710,"sR":10.34},{"ym":"2020-03","yr":2020,"gSd":522,"gAp":22703,"gR":43.49,"sSd":360,"sAp":918,"sR":2.55},{"ym":"2020-04","yr":2020,"gSd":1456,"gAp":30840,"gR":21.18,"sSd":610,"sAp":1274,"sR":2.09},{"ym":"2020-05","yr":2020,"gSd":2006,"gAp":61641,"gR":30.73,"sSd":1347,"sAp":1858,"sR":1.38},{"ym":"2020-06","yr":2020,"gSd":183,"gAp":1438,"gR":7.86,"sSd":137,"sAp":21,"sR":null},{"ym":"2020-07","yr":2020,"gSd":5205,"gAp":139740,"gR":26.85,"sSd":3724,"sAp":4767,"sR":1.28},{"ym":"2020-08","yr":2020,"gSd":1020,"gAp":26907,"gR":26.38,"sSd":746,"sAp":672,"sR":null},{"ym":"2020-09","yr":2020,"gSd":701,"gAp":4807,"gR":6.86,"sSd":423,"sAp":115,"sR":null},{"ym":"2020-10","yr":2020,"gSd":510,"gAp":6872,"gR":13.47,"sSd":506,"sAp":236,"sR":null},{"ym":"2020-11","yr":2020,"gSd":1092,"gAp":20909,"gR":19.15,"sSd":521,"sAp":518,"sR":null},{"ym":"2020-12","yr":2020,"gSd":1158,"gAp":28420,"gR":24.54,"sSd":917,"sAp":1298,"sR":1.42},{"ym":"2021-01","yr":2021,"gSd":523,"gAp":5020,"gR":9.6,"sSd":532,"sAp":305,"sR":null},{"ym":"2021-02","yr":2021,"gSd":643,"gAp":7501,"gR":11.67,"sSd":488,"sAp":473,"sR":null},{"ym":"2021-03","yr":2021,"gSd":2553,"gAp":27738,"gR":10.86,"sSd":1993,"sAp":1292,"sR":null},{"ym":"2021-04","yr":2021,"gSd":1066,"gAp":11347,"gR":10.64,"sSd":664,"sAp":877,"sR":1.32},{"ym":"2021-05","yr":2021,"gSd":304,"gAp":3849,"gR":12.66,"sSd":304,"sAp":343,"sR":1.13},{"ym":"2021-06","yr":2021,"gSd":1226,"gAp":3920,"gR":3.2,"sSd":1118,"sAp":262,"sR":null},{"ym":"2021-07","yr":2021,"gSd":1195,"gAp":7163,"gR":5.99,"sSd":1061,"sAp":530,"sR":null},{"ym":"2021-08","yr":2021,"gSd":356,"gAp":1573,"gR":4.42,"sSd":344,"sAp":108,"sR":null},{"ym":"2021-09","yr":2021,"gSd":471,"gAp":539,"gR":1.14,"sSd":470,"sAp":38,"sR":null},{"ym":"2021-10","yr":2021,"gSd":368,"gAp":1282,"gR":3.48,"sSd":345,"sAp":124,"sR":null},{"ym":"2021-11","yr":2021,"gSd":574,"gAp":2106,"gR":3.67,"sSd":510,"sAp":280,"sR":null},{"ym":"2021-12","yr":2021,"gSd":2148,"gAp":2084,"gR":null,"sSd":1892,"sAp":242,"sR":null},{"ym":"2022-01","yr":2022,"gSd":29,"gAp":24,"gR":null,"sSd":31,"sAp":3,"sR":null},{"ym":"2022-02","yr":2022,"gSd":623,"gAp":159,"gR":null,"sSd":680,"sAp":13,"sR":null},{"ym":"2022-03","yr":2022,"gSd":312,"gAp":741,"gR":2.38,"sSd":319,"sAp":58,"sR":null},{"ym":"2022-04","yr":2022,"gSd":607,"gAp":501,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-05","yr":2022,"gSd":524,"gAp":136,"gR":null,"sSd":300,"sAp":7,"sR":null},{"ym":"2022-06","yr":2022,"gSd":849,"gAp":401,"gR":null,"sSd":258,"sAp":10,"sR":null},{"ym":"2022-07","yr":2022,"gSd":1787,"gAp":1974,"gR":1.1,"sSd":1288,"sAp":93,"sR":null},{"ym":"2022-08","yr":2022,"gSd":328,"gAp":96,"gR":null,"sSd":348,"sAp":2,"sR":null},{"ym":"2022-09","yr":2022,"gSd":271,"gAp":706,"gR":2.61,"sSd":292,"sAp":64,"sR":null},{"ym":"2022-10","yr":2022,"gSd":889,"gAp":246,"gR":null,"sSd":806,"sAp":20,"sR":null},{"ym":"2022-11","yr":2022,"gSd":50,"gAp":13,"gR":null,"sSd":55,"sAp":4,"sR":null},{"ym":"2022-12","yr":2022,"gSd":251,"gAp":28,"gR":null,"sSd":230,"sAp":3,"sR":null},{"ym":"2023-05","yr":2023,"gSd":34,"gAp":10,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-02","yr":2024,"gSd":126,"gAp":19,"gR":null,"sSd":114,"sAp":1,"sR":null},{"ym":"2024-03","yr":2024,"gSd":71,"gAp":1370,"gR":19.3,"sSd":72,"sAp":103,"sR":1.43},{"ym":"2024-04","yr":2024,"gSd":171,"gAp":489,"gR":2.86,"sSd":166,"sAp":9,"sR":null},{"ym":"2024-05","yr":2024,"gSd":670,"gAp":477,"gR":null,"sSd":468,"sAp":47,"sR":null},{"ym":"2024-09","yr":2024,"gSd":586,"gAp":8116,"gR":13.85,"sSd":552,"sAp":1134,"sR":2.05},{"ym":"2024-11","yr":2024,"gSd":626,"gAp":52,"gR":null,"sSd":364,"sAp":6,"sR":null},{"ym":"2024-12","yr":2024,"gSd":420,"gAp":271,"gR":null,"sSd":101,"sAp":11,"sR":null},{"ym":"2025-02","yr":2025,"gSd":237,"gAp":316,"gR":1.33,"sSd":137,"sAp":37,"sR":null},{"ym":"2025-03","yr":2025,"gSd":71,"gAp":113,"gR":1.59,"sSd":76,"sAp":7,"sR":null},{"ym":"2025-04","yr":2025,"gSd":54,"gAp":225,"gR":4.17,"sSd":54,"sAp":7,"sR":null},{"ym":"2025-05","yr":2025,"gSd":235,"gAp":18,"gR":null,"sSd":305,"sAp":0,"sR":null},{"ym":"2025-06","yr":2025,"gSd":568,"gAp":3599,"gR":6.34,"sSd":128,"sAp":338,"sR":2.64},{"ym":"2025-07","yr":2025,"gSd":12,"gAp":21,"gR":1.75,"sSd":15,"sAp":2,"sR":null},{"ym":"2025-10","yr":2025,"gSd":1,"gAp":18,"gR":18.0,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-03","yr":2026,"gSd":21,"gAp":2131,"gR":101.48,"sSd":26,"sAp":209,"sR":8.04}],"yearly":{"2020":{"gR":32.9,"sR":3.18,"gSd":14247,"gAp":399987,"months":11},"2021":{"gR":7.03,"sR":1.23,"gSd":11427,"gAp":74122,"months":12},"2022":{"gR":2.03,"sR":0.0,"gSd":6520,"gAp":5025,"months":12},"2023":{"gR":null,"sR":0.0,"gSd":34,"gAp":10,"months":1},"2024":{"gR":12.0,"sR":1.74,"gSd":2670,"gAp":10794,"months":7},"2025":{"gR":5.53,"sR":1.32,"gSd":1178,"gAp":4310,"months":7},"2026":{"gR":101.48,"sR":8.04,"gSd":21,"gAp":2131,"months":1}},"summary":{"avgGR":17.6,"maxGR":141.4,"maxGRym":"2020-02","totalGSd":36097,"totalGAp":496379,"dataFrom":"2020-02","dataTo":"2026-03"}},"대전":{"monthly":[{"ym":"2020-04","yr":2020,"gSd":717,"gAp":13744,"gR":19.17,"sSd":632,"sAp":856,"sR":1.35},{"ym":"2020-05","yr":2020,"gSd":509,"gAp":28699,"gR":56.38,"sSd":446,"sAp":1576,"sR":3.53},{"ym":"2020-09","yr":2020,"gSd":1002,"gAp":16645,"gR":16.61,"sSd":745,"sAp":3528,"sR":4.74},{"ym":"2020-10","yr":2020,"gSd":166,"gAp":25484,"gR":153.52,"sSd":950,"sAp":10835,"sR":11.41},{"ym":"2020-11","yr":2020,"gSd":499,"gAp":7637,"gR":15.3,"sSd":499,"sAp":1749,"sR":3.51},{"ym":"2021-02","yr":2021,"gSd":209,"gAp":4986,"gR":23.86,"sSd":209,"sAp":1445,"sR":6.91},{"ym":"2021-04","yr":2021,"gSd":168,"gAp":4873,"gR":29.01,"sSd":168,"sAp":1008,"sR":6.0},{"ym":"2021-05","yr":2021,"gSd":307,"gAp":8094,"gR":26.36,"sSd":306,"sAp":2731,"sR":8.92},{"ym":"2021-06","yr":2021,"gSd":300,"gAp":7612,"gR":25.37,"sSd":298,"sAp":2164,"sR":7.26},{"ym":"2021-09","yr":2021,"gSd":577,"gAp":9907,"gR":17.17,"sSd":1010,"sAp":3047,"sR":3.02},{"ym":"2021-10","yr":2021,"gSd":151,"gAp":7060,"gR":46.75,"sSd":153,"sAp":2308,"sR":15.08},{"ym":"2021-11","yr":2021,"gSd":75,"gAp":2028,"gR":27.04,"sSd":71,"sAp":449,"sR":6.32},{"ym":"2021-12","yr":2021,"gSd":397,"gAp":5321,"gR":13.4,"sSd":434,"sAp":1779,"sR":4.1},{"ym":"2022-02","yr":2022,"gSd":842,"gAp":13367,"gR":15.88,"sSd":919,"sAp":6550,"sR":7.13},{"ym":"2022-03","yr":2022,"gSd":92,"gAp":641,"gR":6.97,"sSd":103,"sAp":60,"sR":null},{"ym":"2022-04","yr":2022,"gSd":697,"gAp":9106,"gR":13.06,"sSd":1294,"sAp":2691,"sR":2.08},{"ym":"2022-06","yr":2022,"gSd":83,"gAp":368,"gR":4.43,"sSd":92,"sAp":40,"sR":null},{"ym":"2022-07","yr":2022,"gSd":801,"gAp":5916,"gR":7.39,"sSd":855,"sAp":1981,"sR":2.32},{"ym":"2022-10","yr":2022,"gSd":1128,"gAp":3130,"gR":2.77,"sSd":1119,"sAp":372,"sR":null},{"ym":"2022-11","yr":2022,"gSd":1646,"gAp":54060,"gR":32.84,"sSd":1763,"sAp":7187,"sR":4.08},{"ym":"2022-12","yr":2022,"gSd":496,"gAp":147,"gR":null,"sSd":355,"sAp":15,"sR":null},{"ym":"2023-07","yr":2023,"gSd":63,"gAp":81,"gR":1.29,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-08","yr":2023,"gSd":705,"gAp":48415,"gR":68.67,"sSd":648,"sAp":5700,"sR":8.8},{"ym":"2023-10","yr":2023,"gSd":264,"gAp":2598,"gR":9.84,"sSd":264,"sAp":309,"sR":1.17},{"ym":"2023-11","yr":2023,"gSd":274,"gAp":464,"gR":1.69,"sSd":294,"sAp":104,"sR":null},{"ym":"2023-12","yr":2023,"gSd":258,"gAp":383,"gR":1.48,"sSd":100,"sAp":43,"sR":null},{"ym":"2024-02","yr":2024,"gSd":392,"gAp":284,"gR":null,"sSd":384,"sAp":96,"sR":null},{"ym":"2024-03","yr":2024,"gSd":263,"gAp":460,"gR":1.75,"sSd":232,"sAp":164,"sR":null},{"ym":"2024-04","yr":2024,"gSd":926,"gAp":833,"gR":null,"sSd":843,"sAp":208,"sR":null},{"ym":"2024-05","yr":2024,"gSd":576,"gAp":1208,"gR":2.1,"sSd":805,"sAp":307,"sR":null},{"ym":"2024-06","yr":2024,"gSd":167,"gAp":110,"gR":null,"sSd":167,"sAp":41,"sR":null},{"ym":"2024-07","yr":2024,"gSd":2049,"gAp":30679,"gR":14.97,"sSd":1198,"sAp":2632,"sR":2.2},{"ym":"2024-10","yr":2024,"gSd":657,"gAp":2810,"gR":4.28,"sSd":549,"sAp":465,"sR":null},{"ym":"2024-11","yr":2024,"gSd":1627,"gAp":14719,"gR":9.05,"sSd":853,"sAp":915,"sR":1.07},{"ym":"2025-02","yr":2025,"gSd":201,"gAp":225,"gR":1.12,"sSd":193,"sAp":52,"sR":null},{"ym":"2025-03","yr":2025,"gSd":156,"gAp":294,"gR":1.88,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-06","yr":2025,"gSd":560,"gAp":487,"gR":null,"sSd":607,"sAp":26,"sR":null},{"ym":"2025-07","yr":2025,"gSd":2,"gAp":51,"gR":25.5,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-10","yr":2025,"gSd":205,"gAp":3636,"gR":17.74,"sSd":94,"sAp":291,"sR":3.1},{"ym":"2025-12","yr":2025,"gSd":30,"gAp":16345,"gR":544.83,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-01","yr":2026,"gSd":297,"gAp":66,"gR":null,"sSd":44,"sAp":0,"sR":null},{"ym":"2026-03","yr":2026,"gSd":384,"gAp":188,"gR":null,"sSd":271,"sAp":34,"sR":null},{"ym":"2026-04","yr":2026,"gSd":1599,"gAp":7437,"gR":4.65,"sSd":1132,"sAp":1417,"sR":1.25}],"yearly":{"2020":{"gR":52.2,"sR":4.91,"gSd":2893,"gAp":92209,"months":5},"2021":{"gR":26.12,"sR":7.2,"gSd":2184,"gAp":49881,"months":8},"2022":{"gR":11.91,"sR":3.9,"gSd":5785,"gAp":86735,"months":8},"2023":{"gR":16.59,"sR":3.32,"gSd":1564,"gAp":51941,"months":5},"2024":{"gR":6.43,"sR":1.64,"gSd":6657,"gAp":51103,"months":8},"2025":{"gR":118.21,"sR":0.78,"gSd":1154,"gAp":21038,"months":6},"2026":{"gR":4.65,"sR":1.25,"gSd":2280,"gAp":7691,"months":3}},"summary":{"avgGR":35.11,"maxGR":544.83,"maxGRym":"2025-12","totalGSd":22517,"totalGAp":360598,"dataFrom":"2020-04","dataTo":"2026-04"}},"부산":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":489,"gAp":16588,"gR":33.92,"sSd":367,"sAp":484,"sR":1.32},{"ym":"2020-03","yr":2020,"gSd":88,"gAp":19928,"gR":226.45,"sSd":64,"sAp":796,"sR":12.44},{"ym":"2020-04","yr":2020,"gSd":613,"gAp":11646,"gR":19.0,"sSd":409,"sAp":351,"sR":null},{"ym":"2020-05","yr":2020,"gSd":664,"gAp":43621,"gR":65.69,"sSd":457,"sAp":1770,"sR":3.87},{"ym":"2020-06","yr":2020,"gSd":1125,"gAp":52029,"gR":46.25,"sSd":807,"sAp":1576,"sR":1.95},{"ym":"2020-07","yr":2020,"gSd":1445,"gAp":76052,"gR":52.63,"sSd":926,"sAp":3319,"sR":3.58},{"ym":"2020-08","yr":2020,"gSd":56,"gAp":6036,"gR":107.79,"sSd":36,"sAp":316,"sR":8.78},{"ym":"2020-09","yr":2020,"gSd":1576,"gAp":190117,"gR":120.63,"sSd":1183,"sAp":11010,"sR":9.31},{"ym":"2020-10","yr":2020,"gSd":286,"gAp":33715,"gR":117.88,"sSd":229,"sAp":1508,"sR":6.59},{"ym":"2020-11","yr":2020,"gSd":109,"gAp":60824,"gR":558.02,"sSd":108,"sAp":4061,"sR":37.6},{"ym":"2020-12","yr":2020,"gSd":682,"gAp":15456,"gR":22.66,"sSd":619,"sAp":783,"sR":1.26},{"ym":"2021-01","yr":2021,"gSd":34,"gAp":191,"gR":5.62,"sSd":3,"sAp":1,"sR":null},{"ym":"2021-02","yr":2021,"gSd":54,"gAp":4418,"gR":81.81,"sSd":51,"sAp":792,"sR":15.53},{"ym":"2021-03","yr":2021,"gSd":130,"gAp":7837,"gR":60.28,"sSd":90,"sAp":1419,"sR":15.77},{"ym":"2021-04","yr":2021,"gSd":159,"gAp":713,"gR":4.48,"sSd":75,"sAp":15,"sR":null},{"ym":"2021-06","yr":2021,"gSd":439,"gAp":37125,"gR":84.57,"sSd":436,"sAp":7172,"sR":16.45},{"ym":"2021-07","yr":2021,"gSd":55,"gAp":403,"gR":7.33,"sSd":21,"sAp":46,"sR":2.19},{"ym":"2021-08","yr":2021,"gSd":102,"gAp":4280,"gR":41.96,"sSd":66,"sAp":734,"sR":11.12},{"ym":"2021-09","yr":2021,"gSd":338,"gAp":6835,"gR":20.22,"sSd":308,"sAp":1387,"sR":4.5},{"ym":"2021-10","yr":2021,"gSd":543,"gAp":12181,"gR":22.43,"sSd":121,"sAp":474,"sR":3.92},{"ym":"2021-11","yr":2021,"gSd":395,"gAp":30689,"gR":77.69,"sSd":420,"sAp":5308,"sR":12.64},{"ym":"2021-12","yr":2021,"gSd":1308,"gAp":67397,"gR":51.53,"sSd":1430,"sAp":17359,"sR":12.14},{"ym":"2022-03","yr":2022,"gSd":417,"gAp":2856,"gR":6.85,"sSd":455,"sAp":1141,"sR":2.51},{"ym":"2022-04","yr":2022,"gSd":312,"gAp":22868,"gR":73.29,"sSd":310,"sAp":7008,"sR":22.61},{"ym":"2022-05","yr":2022,"gSd":289,"gAp":15822,"gR":54.75,"sSd":905,"sAp":7879,"sR":8.71},{"ym":"2022-06","yr":2022,"gSd":284,"gAp":19387,"gR":68.26,"sSd":950,"sAp":9182,"sR":9.67},{"ym":"2022-07","yr":2022,"gSd":403,"gAp":1108,"gR":2.75,"sSd":509,"sAp":286,"sR":null},{"ym":"2022-08","yr":2022,"gSd":148,"gAp":744,"gR":5.03,"sSd":88,"sAp":65,"sR":null},{"ym":"2022-09","yr":2022,"gSd":601,"gAp":31821,"gR":52.95,"sSd":645,"sAp":5965,"sR":9.25},{"ym":"2022-10","yr":2022,"gSd":186,"gAp":6346,"gR":34.12,"sSd":866,"sAp":3092,"sR":3.57},{"ym":"2022-12","yr":2022,"gSd":57,"gAp":3065,"gR":53.77,"sSd":59,"sAp":245,"sR":4.15},{"ym":"2023-02","yr":2023,"gSd":564,"gAp":7328,"gR":12.99,"sSd":322,"sAp":639,"sR":1.98},{"ym":"2023-03","yr":2023,"gSd":1120,"gAp":2528,"gR":2.26,"sSd":1264,"sAp":303,"sR":null},{"ym":"2023-04","yr":2023,"gSd":747,"gAp":4601,"gR":6.16,"sSd":676,"sAp":366,"sR":null},{"ym":"2023-05","yr":2023,"gSd":510,"gAp":1209,"gR":2.37,"sSd":462,"sAp":65,"sR":null},{"ym":"2023-06","yr":2023,"gSd":1537,"gAp":21156,"gR":13.76,"sSd":1533,"sAp":2074,"sR":1.35},{"ym":"2023-07","yr":2023,"gSd":35,"gAp":34,"gR":null,"sSd":33,"sAp":4,"sR":null},{"ym":"2023-09","yr":2023,"gSd":299,"gAp":5675,"gR":18.98,"sSd":196,"sAp":428,"sR":2.18},{"ym":"2023-10","yr":2023,"gSd":558,"gAp":4406,"gR":7.9,"sSd":509,"sAp":377,"sR":null},{"ym":"2023-11","yr":2023,"gSd":1789,"gAp":3196,"gR":1.79,"sSd":2011,"sAp":424,"sR":null},{"ym":"2023-12","yr":2023,"gSd":203,"gAp":528,"gR":2.6,"sSd":175,"sAp":49,"sR":null},{"ym":"2024-01","yr":2024,"gSd":261,"gAp":199,"gR":null,"sSd":277,"sAp":37,"sR":null},{"ym":"2024-02","yr":2024,"gSd":106,"gAp":673,"gR":6.35,"sSd":322,"sAp":143,"sR":null},{"ym":"2024-04","yr":2024,"gSd":1231,"gAp":1723,"gR":1.4,"sSd":911,"sAp":219,"sR":null},{"ym":"2024-05","yr":2024,"gSd":1182,"gAp":3892,"gR":3.29,"sSd":750,"sAp":473,"sR":null},{"ym":"2024-06","yr":2024,"gSd":1310,"gAp":2608,"gR":1.99,"sSd":554,"sAp":156,"sR":null},{"ym":"2024-08","yr":2024,"gSd":9,"gAp":99,"gR":11.0,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-09","yr":2024,"gSd":575,"gAp":5294,"gR":9.21,"sSd":588,"sAp":620,"sR":1.05},{"ym":"2024-10","yr":2024,"gSd":147,"gAp":320,"gR":2.18,"sSd":162,"sAp":33,"sR":null},{"ym":"2024-12","yr":2024,"gSd":513,"gAp":216,"gR":null,"sSd":157,"sAp":12,"sR":null},{"ym":"2025-01","yr":2025,"gSd":61,"gAp":175,"gR":2.87,"sSd":55,"sAp":34,"sR":null},{"ym":"2025-02","yr":2025,"gSd":82,"gAp":51,"gR":null,"sSd":86,"sAp":11,"sR":null},{"ym":"2025-03","yr":2025,"gSd":491,"gAp":445,"gR":null,"sSd":934,"sAp":145,"sR":null},{"ym":"2025-04","yr":2025,"gSd":412,"gAp":503,"gR":1.22,"sSd":644,"sAp":69,"sR":null},{"ym":"2025-05","yr":2025,"gSd":398,"gAp":417,"gR":1.05,"sSd":360,"sAp":54,"sR":null},{"ym":"2025-06","yr":2025,"gSd":314,"gAp":653,"gR":2.08,"sSd":363,"sAp":203,"sR":null},{"ym":"2025-07","yr":2025,"gSd":2844,"gAp":27186,"gR":9.56,"sSd":854,"sAp":1760,"sR":2.06},{"ym":"2025-08","yr":2025,"gSd":1399,"gAp":3084,"gR":2.2,"sSd":1195,"sAp":294,"sR":null},{"ym":"2025-09","yr":2025,"gSd":908,"gAp":12415,"gR":13.67,"sSd":989,"sAp":1776,"sR":1.8},{"ym":"2025-10","yr":2025,"gSd":514,"gAp":232,"gR":null,"sSd":580,"sAp":27,"sR":null},{"ym":"2025-11","yr":2025,"gSd":803,"gAp":50,"gR":null,"sSd":146,"sAp":7,"sR":null},{"ym":"2025-12","yr":2025,"gSd":267,"gAp":1602,"gR":6.0,"sSd":311,"sAp":352,"sR":1.13},{"ym":"2026-01","yr":2026,"gSd":74,"gAp":188,"gR":2.54,"sSd":92,"sAp":54,"sR":null},{"ym":"2026-02","yr":2026,"gSd":16,"gAp":77,"gR":4.81,"sSd":197,"sAp":21,"sR":null},{"ym":"2026-03","yr":2026,"gSd":1129,"gAp":982,"gR":null,"sSd":1310,"sAp":156,"sR":null},{"ym":"2026-04","yr":2026,"gSd":135,"gAp":85,"gR":null,"sSd":132,"sAp":6,"sR":null}],"yearly":{"2020":{"gR":124.63,"sR":8.67,"gSd":7133,"gAp":526012,"months":11},"2021":{"gR":41.63,"sR":10.47,"gSd":3557,"gAp":172069,"months":11},"2022":{"gR":39.09,"sR":8.64,"gSd":2697,"gAp":104017,"months":9},"2023":{"gR":7.65,"sR":1.84,"gSd":7362,"gAp":50661,"months":10},"2024":{"gR":5.06,"sR":0.52,"gSd":5334,"gAp":15024,"months":9},"2025":{"gR":4.83,"sR":1.66,"gSd":8493,"gAp":46813,"months":12},"2026":{"gR":3.68,"sR":null,"gSd":1354,"gAp":1332,"months":4}},"summary":{"avgGR":40.89,"maxGR":558.02,"maxGRym":"2020-11","totalGSd":35930,"totalGAp":915928,"dataFrom":"2020-02","dataTo":"2026-04"}},"서울":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":252,"gAp":36999,"gR":146.82,"sSd":710,"sAp":16106,"sR":22.68},{"ym":"2020-03","yr":2020,"gSd":67,"gAp":8358,"gR":124.75,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-04","yr":2020,"gSd":346,"gAp":28295,"gR":81.78,"sSd":192,"sAp":9626,"sR":50.14},{"ym":"2020-05","yr":2020,"gSd":898,"gAp":53280,"gR":59.33,"sSd":31,"sAp":7876,"sR":254.06},{"ym":"2020-06","yr":2020,"gSd":633,"gAp":39279,"gR":62.05,"sSd":914,"sAp":18135,"sR":19.84},{"ym":"2020-07","yr":2020,"gSd":3000,"gAp":142657,"gR":47.55,"sSd":707,"sAp":29826,"sR":42.19},{"ym":"2020-08","yr":2020,"gSd":1006,"gAp":119322,"gR":118.61,"sSd":654,"sAp":41953,"sR":64.15},{"ym":"2020-09","yr":2020,"gSd":99,"gAp":939,"gR":9.48,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-10","yr":2020,"gSd":116,"gAp":26410,"gR":227.67,"sSd":11,"sAp":5053,"sR":459.36},{"ym":"2020-11","yr":2020,"gSd":342,"gAp":81710,"gR":238.92,"sSd":1433,"sAp":30335,"sR":21.17},{"ym":"2020-12","yr":2020,"gSd":458,"gAp":117035,"gR":255.53,"sSd":351,"sAp":20380,"sR":58.06},{"ym":"2021-02","yr":2021,"gSd":518,"gAp":83688,"gR":161.56,"sSd":313,"sAp":25854,"sR":82.6},{"ym":"2021-03","yr":2021,"gSd":18,"gAp":3922,"gR":217.89,"sSd":16,"sAp":1983,"sR":123.94},{"ym":"2021-04","yr":2021,"gSd":69,"gAp":3541,"gR":51.32,"sSd":43,"sAp":1591,"sR":37.0},{"ym":"2021-05","yr":2021,"gSd":240,"gAp":6981,"gR":29.09,"sSd":140,"sAp":1159,"sR":8.28},{"ym":"2021-06","yr":2021,"gSd":224,"gAp":36116,"gR":161.23,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-07","yr":2021,"gSd":171,"gAp":4324,"gR":25.29,"sSd":28,"sAp":648,"sR":23.14},{"ym":"2021-08","yr":2021,"gSd":37,"gAp":2288,"gR":61.84,"sSd":30,"sAp":922,"sR":30.73},{"ym":"2021-09","yr":2021,"gSd":389,"gAp":131447,"gR":337.91,"sSd":204,"sAp":34021,"sR":166.77},{"ym":"2021-11","yr":2021,"gSd":55,"gAp":10589,"gR":192.53,"sSd":59,"sAp":7373,"sR":124.97},{"ym":"2022-01","yr":2022,"gSd":295,"gAp":10157,"gR":34.43,"sSd":32,"sAp":9203,"sR":287.59},{"ym":"2022-02","yr":2022,"gSd":247,"gAp":13380,"gR":54.17,"sSd":176,"sAp":21041,"sR":119.55},{"ym":"2022-03","yr":2022,"gSd":346,"gAp":4712,"gR":13.62,"sSd":113,"sAp":5359,"sR":47.42},{"ym":"2022-04","yr":2022,"gSd":298,"gAp":8080,"gR":27.11,"sSd":131,"sAp":9691,"sR":73.98},{"ym":"2022-05","yr":2022,"gSd":41,"gAp":492,"gR":12.0,"sSd":48,"sAp":536,"sR":11.17},{"ym":"2022-06","yr":2022,"gSd":17,"gAp":385,"gR":22.65,"sSd":18,"sAp":138,"sR":7.67},{"ym":"2022-08","yr":2022,"gSd":178,"gAp":604,"gR":3.39,"sSd":53,"sAp":265,"sR":5.0},{"ym":"2022-11","yr":2022,"gSd":5106,"gAp":28520,"gR":5.59,"sSd":1724,"sAp":8081,"sR":4.69},{"ym":"2022-12","yr":2022,"gSd":159,"gAp":6751,"gR":42.46,"sSd":113,"sAp":5340,"sR":47.26},{"ym":"2023-02","yr":2023,"gSd":377,"gAp":22401,"gR":59.42,"sSd":398,"sAp":6254,"sR":15.71},{"ym":"2023-03","yr":2023,"gSd":329,"gAp":17013,"gR":51.71,"sSd":371,"sAp":5577,"sR":15.03},{"ym":"2023-04","yr":2023,"gSd":118,"gAp":457,"gR":3.87,"sSd":108,"sAp":167,"sR":1.55},{"ym":"2023-05","yr":2023,"gSd":173,"gAp":14222,"gR":82.21,"sSd":154,"sAp":5042,"sR":32.74},{"ym":"2023-06","yr":2023,"gSd":205,"gAp":25067,"gR":122.28,"sSd":184,"sAp":9489,"sR":51.57},{"ym":"2023-07","yr":2023,"gSd":546,"gAp":52570,"gR":96.28,"sSd":243,"sAp":7687,"sR":31.63},{"ym":"2023-08","yr":2023,"gSd":1036,"gAp":55881,"gR":53.94,"sSd":953,"sAp":17764,"sR":18.64},{"ym":"2023-09","yr":2023,"gSd":117,"gAp":9013,"gR":77.03,"sSd":192,"sAp":2929,"sR":15.26},{"ym":"2023-10","yr":2023,"gSd":1115,"gAp":32295,"gR":28.96,"sSd":990,"sAp":10090,"sR":10.19},{"ym":"2023-11","yr":2023,"gSd":278,"gAp":29475,"gR":106.03,"sSd":188,"sAp":15374,"sR":81.78},{"ym":"2023-12","yr":2023,"gSd":491,"gAp":18889,"gR":38.47,"sSd":431,"sAp":5398,"sR":12.52},{"ym":"2024-01","yr":2024,"gSd":175,"gAp":36889,"gR":210.79,"sSd":115,"sAp":10110,"sR":87.91},{"ym":"2024-02","yr":2024,"gSd":141,"gAp":11833,"gR":83.92,"sSd":99,"sAp":3176,"sR":32.08},{"ym":"2024-04","yr":2024,"gSd":59,"gAp":195,"gR":3.31,"sSd":55,"sAp":130,"sR":2.36},{"ym":"2024-05","yr":2024,"gSd":253,"gAp":59280,"gR":234.31,"sSd":225,"sAp":6951,"sR":30.89},{"ym":"2024-06","yr":2024,"gSd":297,"gAp":41583,"gR":140.01,"sSd":257,"sAp":12882,"sR":50.12},{"ym":"2024-07","yr":2024,"gSd":803,"gAp":139046,"gR":173.16,"sSd":667,"sAp":58813,"sR":88.18},{"ym":"2024-08","yr":2024,"gSd":968,"gAp":79626,"gR":82.26,"sSd":910,"sAp":37013,"sR":40.67},{"ym":"2024-09","yr":2024,"gSd":243,"gAp":96989,"gR":399.13,"sSd":181,"sAp":37766,"sR":208.65},{"ym":"2024-10","yr":2024,"gSd":336,"gAp":83000,"gR":247.02,"sSd":306,"sAp":39700,"sR":129.74},{"ym":"2024-11","yr":2024,"gSd":1932,"gAp":88175,"gR":45.64,"sSd":1036,"sAp":41865,"sR":40.41},{"ym":"2024-12","yr":2024,"gSd":564,"gAp":6007,"gR":10.65,"sSd":236,"sAp":2507,"sR":10.62},{"ym":"2025-01","yr":2025,"gSd":268,"gAp":40635,"gR":151.62,"sSd":214,"sAp":18129,"sR":84.71},{"ym":"2025-04","yr":2025,"gSd":43,"gAp":917,"gR":21.33,"sSd":54,"sAp":474,"sR":8.78},{"ym":"2025-05","yr":2025,"gSd":837,"gAp":42950,"gR":51.31,"sSd":929,"sAp":18560,"sR":19.98},{"ym":"2025-06","yr":2025,"gSd":123,"gAp":43407,"gR":352.9,"sSd":140,"sAp":19261,"sR":137.58},{"ym":"2025-07","yr":2025,"gSd":38,"gAp":3503,"gR":92.18,"sSd":44,"sAp":2303,"sR":52.34},{"ym":"2025-08","yr":2025,"gSd":172,"gAp":70377,"gR":409.17,"sSd":142,"sAp":37173,"sR":261.78},{"ym":"2025-09","yr":2025,"gSd":113,"gAp":1328,"gR":11.75,"sSd":129,"sAp":574,"sR":4.45},{"ym":"2025-10","yr":2025,"gSd":306,"gAp":79464,"gR":259.69,"sSd":370,"sAp":37788,"sR":102.13},{"ym":"2025-12","yr":2025,"gSd":44,"gAp":21432,"gR":487.09,"sSd":43,"sAp":11007,"sR":255.98},{"ym":"2026-01","yr":2026,"gSd":151,"gAp":6655,"gR":44.07,"sSd":181,"sAp":6840,"sR":37.79},{"ym":"2026-02","yr":2026,"gSd":29,"gAp":222,"gR":7.66,"sSd":32,"sAp":228,"sR":7.13},{"ym":"2026-03","yr":2026,"gSd":578,"gAp":90750,"gR":157.01,"sSd":539,"sAp":54885,"sR":101.83},{"ym":"2026-04","yr":2026,"gSd":312,"gAp":11903,"gR":38.15,"sSd":333,"sAp":11788,"sR":35.4}],"yearly":{"2020":{"gR":124.77,"sR":90.15,"gSd":7217,"gAp":654284,"months":11},"2021":{"gR":137.63,"sR":66.38,"gSd":1721,"gAp":282896,"months":9},"2022":{"gR":23.94,"sR":67.15,"gSd":6687,"gAp":73081,"months":9},"2023":{"gR":65.47,"sR":26.06,"gSd":4785,"gAp":277283,"months":11},"2024":{"gR":148.2,"sR":65.6,"gSd":5771,"gAp":642623,"months":11},"2025":{"gR":204.12,"sR":103.08,"gSd":1944,"gAp":304013,"months":9},"2026":{"gR":61.72,"sR":45.54,"gSd":1070,"gAp":109530,"months":4}},"summary":{"avgGR":113.45,"maxGR":487.09,"maxGRym":"2025-12","totalGSd":29195,"totalGAp":2343710,"dataFrom":"2020-02","dataTo":"2026-04"}},"세종":{"monthly":[{"ym":"2020-10","yr":2020,"gSd":169,"gAp":25910,"gR":153.31,"sSd":289,"sAp":2217,"sR":7.67},{"ym":"2021-01","yr":2021,"gSd":376,"gAp":71464,"gR":190.06,"sSd":974,"sAp":13382,"sR":13.74},{"ym":"2021-07","yr":2021,"gSd":1106,"gAp":220843,"gR":199.68,"sSd":244,"sAp":22759,"sR":93.27},{"ym":"2021-12","yr":2021,"gSd":284,"gAp":5023,"gR":17.69,"sSd":376,"sAp":878,"sR":2.34},{"ym":"2022-02","yr":2022,"gSd":104,"gAp":84007,"gR":807.76,"sSd":526,"sAp":21576,"sR":41.02},{"ym":"2022-03","yr":2022,"gSd":72,"gAp":98073,"gR":1362.13,"sSd":127,"sAp":43830,"sR":345.12},{"ym":"2022-12","yr":2022,"gSd":89,"gAp":185,"gR":2.08,"sSd":101,"sAp":58,"sR":null},{"ym":"2024-12","yr":2024,"gSd":131,"gAp":32,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-01","yr":2025,"gSd":280,"gAp":4170,"gR":14.89,"sSd":418,"sAp":595,"sR":1.42},{"ym":"2025-11","yr":2025,"gSd":172,"gAp":2712,"gR":15.77,"sSd":252,"sAp":810,"sR":3.21}],"yearly":{"2020":{"gR":153.31,"sR":7.67,"gSd":169,"gAp":25910,"months":1},"2021":{"gR":135.81,"sR":36.45,"gSd":1766,"gAp":297330,"months":3},"2022":{"gR":723.99,"sR":193.07,"gSd":265,"gAp":182265,"months":3},"2024":{"gR":null,"sR":0.0,"gSd":131,"gAp":32,"months":1},"2025":{"gR":15.33,"sR":2.32,"gSd":452,"gAp":6882,"months":2}},"summary":{"avgGR":307.04,"maxGR":1362.13,"maxGRym":"2022-03","totalGSd":2783,"totalGAp":512419,"dataFrom":"2020-10","dataTo":"2025-11"}},"울산":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":69,"gAp":20,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-05","yr":2020,"gSd":1585,"gAp":18613,"gR":11.74,"sSd":1102,"sAp":400,"sR":null},{"ym":"2020-06","yr":2020,"gSd":171,"gAp":12854,"gR":75.17,"sSd":124,"sAp":552,"sR":4.45},{"ym":"2020-07","yr":2020,"gSd":291,"gAp":2846,"gR":9.78,"sSd":196,"sAp":99,"sR":null},{"ym":"2020-08","yr":2020,"gSd":338,"gAp":14667,"gR":43.39,"sSd":219,"sAp":798,"sR":3.64},{"ym":"2020-09","yr":2020,"gSd":1033,"gAp":45140,"gR":43.7,"sSd":721,"sAp":2180,"sR":3.02},{"ym":"2021-02","yr":2021,"gSd":70,"gAp":1800,"gR":25.71,"sSd":66,"sAp":153,"sR":2.32},{"ym":"2021-03","yr":2021,"gSd":438,"gAp":3716,"gR":8.48,"sSd":486,"sAp":299,"sR":null},{"ym":"2021-04","yr":2021,"gSd":425,"gAp":9059,"gR":21.32,"sSd":657,"sAp":796,"sR":1.21},{"ym":"2021-06","yr":2021,"gSd":86,"gAp":1749,"gR":20.34,"sSd":98,"sAp":298,"sR":3.04},{"ym":"2021-07","yr":2021,"gSd":57,"gAp":224,"gR":3.93,"sSd":62,"sAp":6,"sR":null},{"ym":"2021-12","yr":2021,"gSd":511,"gAp":922,"gR":1.8,"sSd":456,"sAp":68,"sR":null},{"ym":"2022-03","yr":2022,"gSd":253,"gAp":2369,"gR":9.36,"sSd":256,"sAp":417,"sR":1.63},{"ym":"2022-05","yr":2022,"gSd":107,"gAp":96,"gR":null,"sSd":114,"sAp":19,"sR":null},{"ym":"2022-07","yr":2022,"gSd":565,"gAp":172,"gR":null,"sSd":714,"sAp":27,"sR":null},{"ym":"2022-08","yr":2022,"gSd":143,"gAp":283,"gR":1.98,"sSd":159,"sAp":26,"sR":null},{"ym":"2022-10","yr":2022,"gSd":334,"gAp":122,"gR":null,"sSd":412,"sAp":6,"sR":null},{"ym":"2022-11","yr":2022,"gSd":309,"gAp":128,"gR":null,"sSd":402,"sAp":14,"sR":null},{"ym":"2022-12","yr":2022,"gSd":393,"gAp":369,"gR":null,"sSd":238,"sAp":2,"sR":null},{"ym":"2023-03","yr":2023,"gSd":43,"gAp":6,"gR":null,"sSd":52,"sAp":2,"sR":null},{"ym":"2023-05","yr":2023,"gSd":75,"gAp":39,"gR":null,"sSd":118,"sAp":6,"sR":null},{"ym":"2023-06","yr":2023,"gSd":192,"gAp":24,"gR":null,"sSd":160,"sAp":4,"sR":null},{"ym":"2023-09","yr":2023,"gSd":182,"gAp":465,"gR":2.55,"sSd":220,"sAp":13,"sR":null},{"ym":"2023-10","yr":2023,"gSd":391,"gAp":733,"gR":1.87,"sSd":718,"sAp":52,"sR":null},{"ym":"2023-12","yr":2023,"gSd":208,"gAp":772,"gR":3.71,"sSd":237,"sAp":35,"sR":null},{"ym":"2024-01","yr":2024,"gSd":85,"gAp":58,"gR":null,"sSd":107,"sAp":4,"sR":null},{"ym":"2024-02","yr":2024,"gSd":419,"gAp":191,"gR":null,"sSd":473,"sAp":9,"sR":null},{"ym":"2024-04","yr":2024,"gSd":499,"gAp":5849,"gR":11.72,"sSd":574,"sAp":653,"sR":1.14},{"ym":"2024-05","yr":2024,"gSd":97,"gAp":36,"gR":null,"sSd":101,"sAp":10,"sR":null},{"ym":"2024-06","yr":2024,"gSd":124,"gAp":5,"gR":null,"sSd":172,"sAp":3,"sR":null},{"ym":"2024-08","yr":2024,"gSd":387,"gAp":909,"gR":2.35,"sSd":416,"sAp":113,"sR":null},{"ym":"2024-10","yr":2024,"gSd":212,"gAp":60,"gR":null,"sSd":269,"sAp":4,"sR":null},{"ym":"2024-11","yr":2024,"gSd":727,"gAp":2412,"gR":3.32,"sSd":902,"sAp":214,"sR":null},{"ym":"2025-01","yr":2025,"gSd":137,"gAp":15,"gR":null,"sSd":195,"sAp":4,"sR":null},{"ym":"2025-02","yr":2025,"gSd":218,"gAp":414,"gR":1.9,"sSd":249,"sAp":86,"sR":null},{"ym":"2025-04","yr":2025,"gSd":126,"gAp":5591,"gR":44.37,"sSd":181,"sAp":877,"sR":4.85},{"ym":"2025-06","yr":2025,"gSd":25,"gAp":173,"gR":6.92,"sSd":30,"sAp":62,"sR":2.07},{"ym":"2025-08","yr":2025,"gSd":135,"gAp":55,"gR":null,"sSd":181,"sAp":32,"sR":null},{"ym":"2025-09","yr":2025,"gSd":598,"gAp":6091,"gR":10.19,"sSd":602,"sAp":447,"sR":null},{"ym":"2025-11","yr":2025,"gSd":446,"gAp":3638,"gR":8.16,"sSd":704,"sAp":548,"sR":null},{"ym":"2025-12","yr":2025,"gSd":574,"gAp":2793,"gR":4.87,"sSd":761,"sAp":186,"sR":null},{"ym":"2026-01","yr":2026,"gSd":9,"gAp":10,"gR":1.11,"sSd":22,"sAp":1,"sR":null},{"ym":"2026-02","yr":2026,"gSd":34,"gAp":111,"gR":3.26,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-04","yr":2026,"gSd":309,"gAp":2388,"gR":7.73,"sSd":407,"sAp":354,"sR":null}],"yearly":{"2020":{"gR":36.76,"sR":2.78,"gSd":3487,"gAp":94140,"months":6},"2021":{"gR":13.6,"sR":2.19,"gSd":1587,"gAp":17470,"months":6},"2022":{"gR":5.67,"sR":1.63,"gSd":2104,"gAp":3539,"months":7},"2023":{"gR":2.71,"sR":null,"gSd":1091,"gAp":2039,"months":6},"2024":{"gR":5.8,"sR":1.14,"gSd":2550,"gAp":9520,"months":8},"2025":{"gR":12.74,"sR":3.46,"gSd":2259,"gAp":18770,"months":8},"2026":{"gR":4.03,"sR":0.0,"gSd":352,"gAp":2509,"months":3}},"summary":{"avgGR":13.95,"maxGR":75.17,"maxGRym":"2020-06","totalGSd":13430,"totalGAp":147987,"dataFrom":"2020-02","dataTo":"2026-04"}},"인천":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":800,"gAp":15833,"gR":19.79,"sSd":251,"sAp":100,"sR":null},{"ym":"2020-03","yr":2020,"gSd":1950,"gAp":112230,"gR":57.55,"sSd":1251,"sAp":6458,"sR":5.16},{"ym":"2020-04","yr":2020,"gSd":308,"gAp":15842,"gR":51.44,"sSd":322,"sAp":1125,"sR":3.49},{"ym":"2020-05","yr":2020,"gSd":4018,"gAp":178571,"gR":44.44,"sSd":2815,"sAp":9285,"sR":3.3},{"ym":"2020-06","yr":2020,"gSd":2014,"gAp":55149,"gR":27.38,"sSd":1419,"sAp":3743,"sR":2.64},{"ym":"2020-07","yr":2020,"gSd":1176,"gAp":6995,"gR":5.95,"sSd":1018,"sAp":379,"sR":null},{"ym":"2020-12","yr":2020,"gSd":2057,"gAp":30970,"gR":15.06,"sSd":1985,"sAp":9981,"sR":5.03},{"ym":"2021-01","yr":2021,"gSd":2068,"gAp":36536,"gR":17.67,"sSd":1611,"sAp":5201,"sR":3.23},{"ym":"2021-02","yr":2021,"gSd":71,"gAp":4308,"gR":60.68,"sSd":46,"sAp":584,"sR":12.7},{"ym":"2021-03","yr":2021,"gSd":621,"gAp":8091,"gR":13.03,"sSd":460,"sAp":2054,"sR":4.47},{"ym":"2021-04","yr":2021,"gSd":1654,"gAp":47116,"gR":28.49,"sSd":2693,"sAp":17121,"sR":6.36},{"ym":"2021-05","yr":2021,"gSd":554,"gAp":7704,"gR":13.91,"sSd":1107,"sAp":1545,"sR":1.4},{"ym":"2021-06","yr":2021,"gSd":676,"gAp":11592,"gR":17.15,"sSd":552,"sAp":3145,"sR":5.7},{"ym":"2021-07","yr":2021,"gSd":408,"gAp":20036,"gR":49.11,"sSd":404,"sAp":7776,"sR":19.25},{"ym":"2021-08","yr":2021,"gSd":96,"gAp":4070,"gR":42.4,"sSd":84,"sAp":2000,"sR":23.81},{"ym":"2021-09","yr":2021,"gSd":654,"gAp":18734,"gR":28.65,"sSd":1173,"sAp":5397,"sR":4.6},{"ym":"2021-10","yr":2021,"gSd":39,"gAp":2243,"gR":57.51,"sSd":57,"sAp":550,"sR":9.65},{"ym":"2021-11","yr":2021,"gSd":3342,"gAp":49237,"gR":14.73,"sSd":2274,"sAp":7621,"sR":3.35},{"ym":"2021-12","yr":2021,"gSd":1645,"gAp":74502,"gR":45.29,"sSd":2030,"sAp":20515,"sR":10.11},{"ym":"2022-01","yr":2022,"gSd":1114,"gAp":6353,"gR":5.7,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-02","yr":2022,"gSd":1078,"gAp":8876,"gR":8.23,"sSd":589,"sAp":1426,"sR":2.42},{"ym":"2022-03","yr":2022,"gSd":1772,"gAp":77324,"gR":43.64,"sSd":2218,"sAp":17831,"sR":8.04},{"ym":"2022-04","yr":2022,"gSd":88,"gAp":1679,"gR":19.08,"sSd":74,"sAp":1948,"sR":26.32},{"ym":"2022-05","yr":2022,"gSd":400,"gAp":2977,"gR":7.44,"sSd":424,"sAp":1322,"sR":3.12},{"ym":"2022-06","yr":2022,"gSd":398,"gAp":2245,"gR":5.64,"sSd":482,"sAp":614,"sR":1.27},{"ym":"2022-07","yr":2022,"gSd":982,"gAp":4585,"gR":4.67,"sSd":1041,"sAp":2472,"sR":2.37},{"ym":"2022-08","yr":2022,"gSd":373,"gAp":8397,"gR":22.51,"sSd":616,"sAp":3323,"sR":5.39},{"ym":"2022-09","yr":2022,"gSd":180,"gAp":283,"gR":1.57,"sSd":160,"sAp":40,"sR":null},{"ym":"2022-10","yr":2022,"gSd":570,"gAp":539,"gR":null,"sSd":849,"sAp":61,"sR":null},{"ym":"2022-12","yr":2022,"gSd":546,"gAp":392,"gR":null,"sSd":650,"sAp":99,"sR":null},{"ym":"2023-01","yr":2023,"gSd":52,"gAp":62,"gR":1.19,"sSd":58,"sAp":16,"sR":null},{"ym":"2023-02","yr":2023,"gSd":376,"gAp":450,"gR":1.2,"sSd":394,"sAp":83,"sR":null},{"ym":"2023-03","yr":2023,"gSd":665,"gAp":2176,"gR":3.27,"sSd":627,"sAp":265,"sR":null},{"ym":"2023-04","yr":2023,"gSd":307,"gAp":271,"gR":null,"sSd":333,"sAp":16,"sR":null},{"ym":"2023-05","yr":2023,"gSd":50,"gAp":31,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-06","yr":2023,"gSd":223,"gAp":7980,"gR":35.78,"sSd":332,"sAp":897,"sR":2.7},{"ym":"2023-07","yr":2023,"gSd":1051,"gAp":1327,"gR":1.26,"sSd":669,"sAp":137,"sR":null},{"ym":"2023-09","yr":2023,"gSd":1522,"gAp":35599,"gR":23.39,"sSd":1779,"sAp":4928,"sR":2.77},{"ym":"2023-10","yr":2023,"gSd":331,"gAp":2733,"gR":8.26,"sSd":450,"sAp":485,"sR":1.08},{"ym":"2023-11","yr":2023,"gSd":1731,"gAp":2600,"gR":1.5,"sSd":1577,"sAp":287,"sR":null},{"ym":"2023-12","yr":2023,"gSd":721,"gAp":17693,"gR":24.54,"sSd":618,"sAp":1864,"sR":3.02},{"ym":"2024-01","yr":2024,"gSd":227,"gAp":10675,"gR":47.03,"sSd":166,"sAp":902,"sR":5.43},{"ym":"2024-02","yr":2024,"gSd":1957,"gAp":6567,"gR":3.36,"sSd":1503,"sAp":454,"sR":null},{"ym":"2024-04","yr":2024,"gSd":848,"gAp":1179,"gR":1.39,"sSd":985,"sAp":241,"sR":null},{"ym":"2024-06","yr":2024,"gSd":203,"gAp":1679,"gR":8.27,"sSd":189,"sAp":165,"sR":null},{"ym":"2024-07","yr":2024,"gSd":1592,"gAp":6268,"gR":3.94,"sSd":1081,"sAp":2195,"sR":2.03},{"ym":"2024-08","yr":2024,"gSd":500,"gAp":4203,"gR":8.41,"sSd":222,"sAp":142,"sR":null},{"ym":"2024-09","yr":2024,"gSd":973,"gAp":8137,"gR":8.36,"sSd":761,"sAp":2204,"sR":2.9},{"ym":"2024-10","yr":2024,"gSd":1195,"gAp":21248,"gR":17.78,"sSd":889,"sAp":3231,"sR":3.63},{"ym":"2024-11","yr":2024,"gSd":632,"gAp":641,"gR":1.01,"sSd":549,"sAp":205,"sR":null},{"ym":"2024-12","yr":2024,"gSd":777,"gAp":14650,"gR":18.85,"sSd":765,"sAp":3017,"sR":3.94},{"ym":"2025-02","yr":2025,"gSd":17,"gAp":97,"gR":5.71,"sSd":12,"sAp":15,"sR":1.25},{"ym":"2025-03","yr":2025,"gSd":106,"gAp":70,"gR":null,"sSd":90,"sAp":29,"sR":null},{"ym":"2025-04","yr":2025,"gSd":1313,"gAp":6471,"gR":4.93,"sSd":1389,"sAp":1708,"sR":1.23},{"ym":"2025-06","yr":2025,"gSd":114,"gAp":213,"gR":1.87,"sSd":94,"sAp":97,"sR":1.03},{"ym":"2025-07","yr":2025,"gSd":519,"gAp":7269,"gR":14.01,"sSd":491,"sAp":1870,"sR":3.81},{"ym":"2025-08","yr":2025,"gSd":714,"gAp":386,"gR":null,"sSd":738,"sAp":81,"sR":null},{"ym":"2025-09","yr":2025,"gSd":1160,"gAp":1835,"gR":1.58,"sSd":1176,"sAp":701,"sR":null},{"ym":"2025-10","yr":2025,"gSd":514,"gAp":786,"gR":1.53,"sSd":445,"sAp":102,"sR":null},{"ym":"2025-11","yr":2025,"gSd":938,"gAp":12777,"gR":13.62,"sSd":903,"sAp":3393,"sR":3.76},{"ym":"2025-12","yr":2025,"gSd":1098,"gAp":740,"gR":null,"sSd":1563,"sAp":83,"sR":null},{"ym":"2026-01","yr":2026,"gSd":358,"gAp":1327,"gR":3.71,"sSd":418,"sAp":475,"sR":1.14},{"ym":"2026-03","yr":2026,"gSd":351,"gAp":6562,"gR":18.7,"sSd":654,"sAp":1930,"sR":2.95}],"yearly":{"2020":{"gR":31.66,"sR":3.92,"gSd":12323,"gAp":415590,"months":7},"2021":{"gR":32.38,"sR":8.72,"gSd":11828,"gAp":284169,"months":12},"2022":{"gR":13.16,"sR":6.12,"gSd":7501,"gAp":113650,"months":11},"2023":{"gR":11.15,"sR":1.91,"gSd":7029,"gAp":70922,"months":11},"2024":{"gR":11.84,"sR":3.59,"gSd":8904,"gAp":75247,"months":10},"2025":{"gR":6.18,"sR":2.22,"gSd":6493,"gAp":30644,"months":10},"2026":{"gR":11.2,"sR":2.04,"gSd":709,"gAp":7889,"months":2}},"summary":{"avgGR":18.09,"maxGR":60.68,"maxGRym":"2021-02","totalGSd":54787,"totalGAp":998111,"dataFrom":"2020-02","dataTo":"2026-03"}},"전남":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":287,"gAp":619,"gR":2.16,"sSd":211,"sAp":7,"sR":null},{"ym":"2020-03","yr":2020,"gSd":1017,"gAp":33744,"gR":33.18,"sSd":584,"sAp":777,"sR":1.33},{"ym":"2020-04","yr":2020,"gSd":389,"gAp":6519,"gR":16.76,"sSd":152,"sAp":178,"sR":1.17},{"ym":"2020-05","yr":2020,"gSd":487,"gAp":20917,"gR":42.95,"sSd":359,"sAp":648,"sR":1.81},{"ym":"2020-06","yr":2020,"gSd":91,"gAp":100,"gR":1.1,"sSd":72,"sAp":3,"sR":null},{"ym":"2020-07","yr":2020,"gSd":637,"gAp":1646,"gR":2.58,"sSd":477,"sAp":38,"sR":null},{"ym":"2020-08","yr":2020,"gSd":385,"gAp":18831,"gR":48.91,"sSd":228,"sAp":423,"sR":1.86},{"ym":"2020-09","yr":2020,"gSd":56,"gAp":236,"gR":4.21,"sSd":32,"sAp":5,"sR":null},{"ym":"2020-10","yr":2020,"gSd":407,"gAp":21920,"gR":53.86,"sSd":225,"sAp":621,"sR":2.76},{"ym":"2020-11","yr":2020,"gSd":542,"gAp":4463,"gR":8.23,"sSd":240,"sAp":61,"sR":null},{"ym":"2020-12","yr":2020,"gSd":306,"gAp":1758,"gR":5.75,"sSd":300,"sAp":54,"sR":null},{"ym":"2021-01","yr":2021,"gSd":134,"gAp":242,"gR":1.81,"sSd":109,"sAp":9,"sR":null},{"ym":"2021-02","yr":2021,"gSd":72,"gAp":123,"gR":1.71,"sSd":156,"sAp":8,"sR":null},{"ym":"2021-04","yr":2021,"gSd":548,"gAp":1794,"gR":3.27,"sSd":299,"sAp":118,"sR":null},{"ym":"2021-07","yr":2021,"gSd":234,"gAp":1740,"gR":7.44,"sSd":309,"sAp":122,"sR":null},{"ym":"2021-08","yr":2021,"gSd":1046,"gAp":2779,"gR":2.66,"sSd":745,"sAp":191,"sR":null},{"ym":"2021-09","yr":2021,"gSd":384,"gAp":1628,"gR":4.24,"sSd":367,"sAp":97,"sR":null},{"ym":"2021-10","yr":2021,"gSd":98,"gAp":11,"gR":null,"sSd":94,"sAp":0,"sR":null},{"ym":"2021-11","yr":2021,"gSd":499,"gAp":3977,"gR":7.97,"sSd":617,"sAp":260,"sR":null},{"ym":"2021-12","yr":2021,"gSd":1198,"gAp":26535,"gR":22.15,"sSd":1200,"sAp":1816,"sR":1.51},{"ym":"2022-01","yr":2022,"gSd":219,"gAp":1047,"gR":4.78,"sSd":185,"sAp":96,"sR":null},{"ym":"2022-02","yr":2022,"gSd":133,"gAp":25,"gR":null,"sSd":106,"sAp":3,"sR":null},{"ym":"2022-03","yr":2022,"gSd":168,"gAp":81,"gR":null,"sSd":107,"sAp":7,"sR":null},{"ym":"2022-04","yr":2022,"gSd":248,"gAp":1185,"gR":4.78,"sSd":369,"sAp":45,"sR":null},{"ym":"2022-05","yr":2022,"gSd":1733,"gAp":8997,"gR":5.19,"sSd":1004,"sAp":1140,"sR":1.14},{"ym":"2022-06","yr":2022,"gSd":89,"gAp":25,"gR":null,"sSd":94,"sAp":2,"sR":null},{"ym":"2022-07","yr":2022,"gSd":605,"gAp":5852,"gR":9.67,"sSd":882,"sAp":434,"sR":null},{"ym":"2022-08","yr":2022,"gSd":167,"gAp":1098,"gR":6.57,"sSd":174,"sAp":57,"sR":null},{"ym":"2022-09","yr":2022,"gSd":1200,"gAp":1300,"gR":1.08,"sSd":954,"sAp":67,"sR":null},{"ym":"2022-10","yr":2022,"gSd":120,"gAp":116,"gR":null,"sSd":124,"sAp":12,"sR":null},{"ym":"2022-11","yr":2022,"gSd":121,"gAp":3,"gR":null,"sSd":111,"sAp":0,"sR":null},{"ym":"2023-02","yr":2023,"gSd":45,"gAp":10,"gR":null,"sSd":27,"sAp":1,"sR":null},{"ym":"2023-08","yr":2023,"gSd":611,"gAp":6700,"gR":10.97,"sSd":909,"sAp":449,"sR":null},{"ym":"2023-09","yr":2023,"gSd":794,"gAp":7637,"gR":9.62,"sSd":1109,"sAp":567,"sR":null},{"ym":"2024-01","yr":2024,"gSd":463,"gAp":268,"gR":null,"sSd":434,"sAp":16,"sR":null},{"ym":"2024-04","yr":2024,"gSd":429,"gAp":3519,"gR":8.2,"sSd":888,"sAp":920,"sR":1.04},{"ym":"2024-06","yr":2024,"gSd":686,"gAp":8373,"gR":12.21,"sSd":366,"sAp":479,"sR":1.31},{"ym":"2024-10","yr":2024,"gSd":62,"gAp":83,"gR":1.34,"sSd":8,"sAp":1,"sR":null},{"ym":"2024-12","yr":2024,"gSd":798,"gAp":379,"gR":null,"sSd":446,"sAp":17,"sR":null},{"ym":"2025-05","yr":2025,"gSd":183,"gAp":18,"gR":null,"sSd":25,"sAp":2,"sR":null},{"ym":"2025-06","yr":2025,"gSd":134,"gAp":87,"gR":null,"sSd":160,"sAp":11,"sR":null},{"ym":"2025-07","yr":2025,"gSd":25,"gAp":110,"gR":4.4,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-10","yr":2025,"gSd":447,"gAp":3142,"gR":7.03,"sSd":624,"sAp":218,"sR":null},{"ym":"2025-11","yr":2025,"gSd":75,"gAp":3,"gR":null,"sSd":65,"sAp":0,"sR":null},{"ym":"2025-12","yr":2025,"gSd":132,"gAp":8,"gR":null,"sSd":173,"sAp":4,"sR":null},{"ym":"2026-03","yr":2026,"gSd":41,"gAp":82,"gR":2.0,"sSd":40,"sAp":16,"sR":null},{"ym":"2026-04","yr":2026,"gSd":572,"gAp":1079,"gR":1.89,"sSd":1107,"sAp":161,"sR":null}],"yearly":{"2020":{"gR":19.97,"sR":1.79,"gSd":4604,"gAp":110753,"months":11},"2021":{"gR":6.41,"sR":1.51,"gSd":4213,"gAp":38829,"months":9},"2022":{"gR":5.34,"sR":1.14,"gSd":4803,"gAp":19729,"months":11},"2023":{"gR":10.3,"sR":null,"gSd":1450,"gAp":14347,"months":3},"2024":{"gR":7.25,"sR":1.18,"gSd":2438,"gAp":12622,"months":5},"2025":{"gR":5.72,"sR":0.0,"gSd":996,"gAp":3368,"months":6},"2026":{"gR":1.94,"sR":null,"gSd":613,"gAp":1161,"months":2}},"summary":{"avgGR":10.61,"maxGR":53.86,"maxGRym":"2020-10","totalGSd":19117,"totalGAp":200809,"dataFrom":"2020-02","dataTo":"2026-04"}},"전북":{"monthly":[{"ym":"2020-04","yr":2020,"gSd":169,"gAp":8713,"gR":51.56,"sSd":151,"sAp":105,"sR":null},{"ym":"2020-05","yr":2020,"gSd":234,"gAp":1245,"gR":5.32,"sSd":158,"sAp":29,"sR":null},{"ym":"2020-06","yr":2020,"gSd":292,"gAp":709,"gR":2.43,"sSd":94,"sAp":24,"sR":null},{"ym":"2020-09","yr":2020,"gSd":348,"gAp":2531,"gR":7.27,"sSd":257,"sAp":107,"sR":null},{"ym":"2020-10","yr":2020,"gSd":964,"gAp":4914,"gR":5.1,"sSd":798,"sAp":155,"sR":null},{"ym":"2020-11","yr":2020,"gSd":116,"gAp":3838,"gR":33.09,"sSd":48,"sAp":81,"sR":1.69},{"ym":"2020-12","yr":2020,"gSd":805,"gAp":6620,"gR":8.22,"sSd":1053,"sAp":279,"sR":null},{"ym":"2021-01","yr":2021,"gSd":201,"gAp":82,"gR":null,"sSd":177,"sAp":6,"sR":null},{"ym":"2021-02","yr":2021,"gSd":999,"gAp":27164,"gR":27.19,"sSd":309,"sAp":1868,"sR":6.05},{"ym":"2021-05","yr":2021,"gSd":571,"gAp":27521,"gR":48.2,"sSd":407,"sAp":1609,"sR":3.95},{"ym":"2021-06","yr":2021,"gSd":322,"gAp":1069,"gR":3.32,"sSd":674,"sAp":94,"sR":null},{"ym":"2021-07","yr":2021,"gSd":233,"gAp":8609,"gR":36.95,"sSd":221,"sAp":335,"sR":1.52},{"ym":"2021-08","yr":2021,"gSd":173,"gAp":652,"gR":3.77,"sSd":95,"sAp":50,"sR":null},{"ym":"2021-10","yr":2021,"gSd":161,"gAp":882,"gR":5.48,"sSd":149,"sAp":67,"sR":null},{"ym":"2021-11","yr":2021,"gSd":2236,"gAp":25158,"gR":11.25,"sSd":1892,"sAp":1371,"sR":null},{"ym":"2021-12","yr":2021,"gSd":1459,"gAp":43785,"gR":30.01,"sSd":1087,"sAp":2753,"sR":2.53},{"ym":"2022-03","yr":2022,"gSd":339,"gAp":3445,"gR":10.16,"sSd":539,"sAp":269,"sR":null},{"ym":"2022-04","yr":2022,"gSd":156,"gAp":323,"gR":2.07,"sSd":174,"sAp":42,"sR":null},{"ym":"2022-06","yr":2022,"gSd":116,"gAp":354,"gR":3.05,"sSd":118,"sAp":69,"sR":null},{"ym":"2022-07","yr":2022,"gSd":429,"gAp":1720,"gR":4.01,"sSd":464,"sAp":115,"sR":null},{"ym":"2022-08","yr":2022,"gSd":625,"gAp":1778,"gR":2.84,"sSd":691,"sAp":97,"sR":null},{"ym":"2022-09","yr":2022,"gSd":486,"gAp":1382,"gR":2.84,"sSd":284,"sAp":73,"sR":null},{"ym":"2022-10","yr":2022,"gSd":994,"gAp":1975,"gR":1.99,"sSd":860,"sAp":80,"sR":null},{"ym":"2022-11","yr":2022,"gSd":339,"gAp":115,"gR":null,"sSd":230,"sAp":6,"sR":null},{"ym":"2022-12","yr":2022,"gSd":64,"gAp":0,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-01","yr":2023,"gSd":149,"gAp":133,"gR":null,"sSd":596,"sAp":18,"sR":null},{"ym":"2023-03","yr":2023,"gSd":548,"gAp":896,"gR":1.64,"sSd":308,"sAp":80,"sR":null},{"ym":"2023-04","yr":2023,"gSd":389,"gAp":1212,"gR":3.12,"sSd":244,"sAp":45,"sR":null},{"ym":"2023-07","yr":2023,"gSd":110,"gAp":9393,"gR":85.39,"sSd":158,"sAp":739,"sR":4.68},{"ym":"2023-08","yr":2023,"gSd":216,"gAp":1012,"gR":4.69,"sSd":117,"sAp":17,"sR":null},{"ym":"2023-10","yr":2023,"gSd":573,"gAp":1862,"gR":3.25,"sSd":355,"sAp":76,"sR":null},{"ym":"2023-11","yr":2023,"gSd":78,"gAp":7,"gR":null,"sSd":51,"sAp":0,"sR":null},{"ym":"2023-12","yr":2023,"gSd":1,"gAp":16,"gR":16.0,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-01","yr":2024,"gSd":66,"gAp":9,"gR":null,"sSd":26,"sAp":0,"sR":null},{"ym":"2024-02","yr":2024,"gSd":644,"gAp":35797,"gR":55.59,"sSd":581,"sAp":3681,"sR":6.34},{"ym":"2024-04","yr":2024,"gSd":737,"gAp":981,"gR":1.33,"sSd":422,"sAp":70,"sR":null},{"ym":"2024-05","yr":2024,"gSd":490,"gAp":67698,"gR":138.16,"sSd":342,"sAp":7643,"sR":22.35},{"ym":"2024-07","yr":2024,"gSd":178,"gAp":23,"gR":null,"sSd":97,"sAp":8,"sR":null},{"ym":"2024-10","yr":2024,"gSd":91,"gAp":430,"gR":4.73,"sSd":44,"sAp":1,"sR":null},{"ym":"2024-11","yr":2024,"gSd":98,"gAp":933,"gR":9.52,"sSd":101,"sAp":103,"sR":1.02},{"ym":"2025-01","yr":2025,"gSd":836,"gAp":21816,"gR":26.1,"sSd":590,"sAp":3482,"sR":5.9},{"ym":"2025-03","yr":2025,"gSd":142,"gAp":428,"gR":3.01,"sSd":135,"sAp":58,"sR":null},{"ym":"2025-05","yr":2025,"gSd":28,"gAp":281,"gR":10.04,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-07","yr":2025,"gSd":341,"gAp":1022,"gR":3.0,"sSd":387,"sAp":100,"sR":null},{"ym":"2025-10","yr":2025,"gSd":27,"gAp":362,"gR":13.41,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-11","yr":2025,"gSd":235,"gAp":2860,"gR":12.17,"sSd":273,"sAp":214,"sR":null},{"ym":"2025-12","yr":2025,"gSd":41,"gAp":205,"gR":5.0,"sSd":7,"sAp":5,"sR":null},{"ym":"2026-02","yr":2026,"gSd":29,"gAp":386,"gR":13.31,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-04","yr":2026,"gSd":342,"gAp":6703,"gR":19.6,"sSd":351,"sAp":1075,"sR":3.06}],"yearly":{"2020":{"gR":16.14,"sR":1.69,"gSd":2928,"gAp":28570,"months":7},"2021":{"gR":20.77,"sR":3.51,"gSd":6355,"gAp":134922,"months":9},"2022":{"gR":3.85,"sR":0.0,"gSd":3548,"gAp":11092,"months":9},"2023":{"gR":19.02,"sR":2.34,"gSd":2064,"gAp":14531,"months":8},"2024":{"gR":41.87,"sR":9.9,"gSd":2304,"gAp":105871,"months":7},"2025":{"gR":10.39,"sR":1.97,"gSd":1650,"gAp":26974,"months":7},"2026":{"gR":16.46,"sR":1.53,"gSd":371,"gAp":7089,"months":2}},"summary":{"avgGR":17.5,"maxGR":138.16,"maxGRym":"2024-05","totalGSd":19220,"totalGAp":329049,"dataFrom":"2020-04","dataTo":"2026-04"}},"제주":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":127,"gAp":145,"gR":1.14,"sSd":85,"sAp":10,"sR":null},{"ym":"2020-03","yr":2020,"gSd":48,"gAp":5,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-05","yr":2020,"gSd":98,"gAp":50,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-06","yr":2020,"gSd":64,"gAp":6,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-07","yr":2020,"gSd":79,"gAp":25,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2020-10","yr":2020,"gSd":96,"gAp":152,"gR":1.58,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-03","yr":2021,"gSd":157,"gAp":1298,"gR":8.27,"sSd":35,"sAp":97,"sR":2.77},{"ym":"2021-04","yr":2021,"gSd":204,"gAp":2802,"gR":13.74,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-07","yr":2021,"gSd":60,"gAp":45,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-09","yr":2021,"gSd":111,"gAp":404,"gR":3.64,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-10","yr":2021,"gSd":169,"gAp":731,"gR":4.33,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-11","yr":2021,"gSd":127,"gAp":31,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-12","yr":2021,"gSd":148,"gAp":275,"gR":1.86,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-02","yr":2022,"gSd":259,"gAp":3391,"gR":13.09,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-03","yr":2022,"gSd":353,"gAp":1861,"gR":5.27,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-04","yr":2022,"gSd":476,"gAp":613,"gR":1.29,"sSd":4,"sAp":0,"sR":null},{"ym":"2022-06","yr":2022,"gSd":36,"gAp":40,"gR":1.11,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-07","yr":2022,"gSd":134,"gAp":205,"gR":1.53,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-08","yr":2022,"gSd":578,"gAp":356,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-10","yr":2022,"gSd":93,"gAp":402,"gR":4.32,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-11","yr":2022,"gSd":136,"gAp":16,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-12","yr":2022,"gSd":77,"gAp":11,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-03","yr":2023,"gSd":66,"gAp":13,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-05","yr":2023,"gSd":136,"gAp":16,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-06","yr":2023,"gSd":425,"gAp":115,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-07","yr":2023,"gSd":40,"gAp":12,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-08","yr":2023,"gSd":204,"gAp":64,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-09","yr":2023,"gSd":93,"gAp":43,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-12","yr":2023,"gSd":36,"gAp":9,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-02","yr":2024,"gSd":653,"gAp":776,"gR":1.19,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-08","yr":2024,"gSd":1260,"gAp":5703,"gR":4.53,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-07","yr":2025,"gSd":83,"gAp":40,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2025-11","yr":2025,"gSd":209,"gAp":53,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2026-01","yr":2026,"gSd":53,"gAp":94,"gR":1.77,"sSd":41,"sAp":35,"sR":null},{"ym":"2026-02","yr":2026,"gSd":27,"gAp":0,"gR":null,"sSd":23,"sAp":0,"sR":null},{"ym":"2026-04","yr":2026,"gSd":49,"gAp":12,"gR":null,"sSd":0,"sAp":0,"sR":0.0}],"yearly":{"2020":{"gR":1.36,"sR":0.0,"gSd":512,"gAp":383,"months":6},"2021":{"gR":6.37,"sR":0.4,"gSd":976,"gAp":5586,"months":7},"2022":{"gR":4.43,"sR":0.0,"gSd":2142,"gAp":6895,"months":9},"2023":{"gR":null,"sR":0.0,"gSd":1000,"gAp":272,"months":7},"2024":{"gR":2.86,"sR":0.0,"gSd":1913,"gAp":6479,"months":2},"2025":{"gR":null,"sR":0.0,"gSd":292,"gAp":93,"months":2},"2026":{"gR":1.77,"sR":0.0,"gSd":129,"gAp":106,"months":3}},"summary":{"avgGR":4.29,"maxGR":13.74,"maxGRym":"2021-04","totalGSd":6964,"totalGAp":19814,"dataFrom":"2020-02","dataTo":"2026-04"}},"충남":{"monthly":[{"ym":"2020-02","yr":2020,"gSd":589,"gAp":2594,"gR":4.4,"sSd":93,"sAp":62,"sR":null},{"ym":"2020-04","yr":2020,"gSd":945,"gAp":3349,"gR":3.54,"sSd":609,"sAp":138,"sR":null},{"ym":"2020-06","yr":2020,"gSd":563,"gAp":6223,"gR":11.05,"sSd":387,"sAp":265,"sR":null},{"ym":"2020-07","yr":2020,"gSd":1897,"gAp":82898,"gR":43.7,"sSd":1338,"sAp":3881,"sR":2.9},{"ym":"2020-08","yr":2020,"gSd":1079,"gAp":27266,"gR":25.27,"sSd":769,"sAp":1059,"sR":1.38},{"ym":"2020-09","yr":2020,"gSd":978,"gAp":1659,"gR":1.7,"sSd":720,"sAp":73,"sR":null},{"ym":"2020-10","yr":2020,"gSd":1207,"gAp":2619,"gR":2.17,"sSd":1237,"sAp":58,"sR":null},{"ym":"2020-11","yr":2020,"gSd":314,"gAp":12224,"gR":38.93,"sSd":357,"sAp":457,"sR":1.28},{"ym":"2020-12","yr":2020,"gSd":2437,"gAp":69036,"gR":28.33,"sSd":2242,"sAp":3247,"sR":1.45},{"ym":"2021-01","yr":2021,"gSd":122,"gAp":13,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2021-02","yr":2021,"gSd":473,"gAp":49422,"gR":104.49,"sSd":482,"sAp":76,"sR":null},{"ym":"2021-03","yr":2021,"gSd":2387,"gAp":41762,"gR":17.5,"sSd":2352,"sAp":2141,"sR":null},{"ym":"2021-04","yr":2021,"gSd":1044,"gAp":34217,"gR":32.77,"sSd":940,"sAp":1560,"sR":1.66},{"ym":"2021-05","yr":2021,"gSd":363,"gAp":9961,"gR":27.44,"sSd":268,"sAp":504,"sR":1.88},{"ym":"2021-06","yr":2021,"gSd":228,"gAp":3701,"gR":16.23,"sSd":476,"sAp":311,"sR":null},{"ym":"2021-07","yr":2021,"gSd":1835,"gAp":21631,"gR":11.79,"sSd":2051,"sAp":1733,"sR":null},{"ym":"2021-08","yr":2021,"gSd":1331,"gAp":18058,"gR":13.57,"sSd":1651,"sAp":1062,"sR":null},{"ym":"2021-10","yr":2021,"gSd":365,"gAp":1551,"gR":4.25,"sSd":755,"sAp":50,"sR":null},{"ym":"2021-11","yr":2021,"gSd":1031,"gAp":136985,"gR":132.87,"sSd":1334,"sAp":7075,"sR":5.3},{"ym":"2021-12","yr":2021,"gSd":919,"gAp":12249,"gR":13.33,"sSd":908,"sAp":1844,"sR":2.03},{"ym":"2022-01","yr":2022,"gSd":1264,"gAp":15062,"gR":11.92,"sSd":1241,"sAp":1979,"sR":1.59},{"ym":"2022-02","yr":2022,"gSd":219,"gAp":696,"gR":3.18,"sSd":617,"sAp":47,"sR":null},{"ym":"2022-03","yr":2022,"gSd":321,"gAp":2703,"gR":8.42,"sSd":532,"sAp":205,"sR":null},{"ym":"2022-04","yr":2022,"gSd":182,"gAp":1783,"gR":9.8,"sSd":117,"sAp":101,"sR":null},{"ym":"2022-06","yr":2022,"gSd":99,"gAp":434,"gR":4.38,"sSd":96,"sAp":46,"sR":null},{"ym":"2022-07","yr":2022,"gSd":575,"gAp":1902,"gR":3.31,"sSd":635,"sAp":186,"sR":null},{"ym":"2022-08","yr":2022,"gSd":928,"gAp":2912,"gR":3.14,"sSd":874,"sAp":411,"sR":null},{"ym":"2022-09","yr":2022,"gSd":147,"gAp":75,"gR":null,"sSd":169,"sAp":11,"sR":null},{"ym":"2022-10","yr":2022,"gSd":2839,"gAp":6548,"gR":2.31,"sSd":4046,"sAp":920,"sR":null},{"ym":"2022-11","yr":2022,"gSd":1450,"gAp":2693,"gR":1.86,"sSd":975,"sAp":95,"sR":null},{"ym":"2022-12","yr":2022,"gSd":554,"gAp":266,"gR":null,"sSd":445,"sAp":14,"sR":null},{"ym":"2023-01","yr":2023,"gSd":80,"gAp":3,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-03","yr":2023,"gSd":134,"gAp":243,"gR":1.81,"sSd":244,"sAp":34,"sR":null},{"ym":"2023-04","yr":2023,"gSd":60,"gAp":6,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2023-05","yr":2023,"gSd":182,"gAp":164,"gR":null,"sSd":176,"sAp":11,"sR":null},{"ym":"2023-06","yr":2023,"gSd":963,"gAp":11546,"gR":11.99,"sSd":884,"sAp":463,"sR":null},{"ym":"2023-07","yr":2023,"gSd":66,"gAp":62,"gR":null,"sSd":198,"sAp":2,"sR":null},{"ym":"2023-10","yr":2023,"gSd":681,"gAp":3613,"gR":5.31,"sSd":1378,"sAp":628,"sR":null},{"ym":"2023-12","yr":2023,"gSd":1877,"gAp":45962,"gR":24.49,"sSd":1280,"sAp":1881,"sR":1.47},{"ym":"2024-01","yr":2024,"gSd":299,"gAp":1341,"gR":4.48,"sSd":360,"sAp":199,"sR":null},{"ym":"2024-02","yr":2024,"gSd":725,"gAp":732,"gR":1.01,"sSd":565,"sAp":61,"sR":null},{"ym":"2024-03","yr":2024,"gSd":44,"gAp":17929,"gR":407.48,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-04","yr":2024,"gSd":1104,"gAp":22404,"gR":20.29,"sSd":1029,"sAp":1310,"sR":1.27},{"ym":"2024-05","yr":2024,"gSd":448,"gAp":158,"gR":null,"sSd":375,"sAp":15,"sR":null},{"ym":"2024-06","yr":2024,"gSd":183,"gAp":3,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2024-08","yr":2024,"gSd":222,"gAp":3795,"gR":17.09,"sSd":216,"sAp":330,"sR":1.53},{"ym":"2024-10","yr":2024,"gSd":493,"gAp":11400,"gR":23.12,"sSd":485,"sAp":737,"sR":1.52},{"ym":"2024-11","yr":2024,"gSd":1165,"gAp":11370,"gR":9.76,"sSd":804,"sAp":741,"sR":null},{"ym":"2024-12","yr":2024,"gSd":1601,"gAp":16622,"gR":10.38,"sSd":1639,"sAp":1418,"sR":null},{"ym":"2025-02","yr":2025,"gSd":979,"gAp":20794,"gR":21.24,"sSd":519,"sAp":779,"sR":1.5},{"ym":"2025-04","yr":2025,"gSd":198,"gAp":416,"gR":2.1,"sSd":116,"sAp":23,"sR":null},{"ym":"2025-06","yr":2025,"gSd":576,"gAp":5311,"gR":9.22,"sSd":662,"sAp":514,"sR":null},{"ym":"2025-07","yr":2025,"gSd":434,"gAp":47,"gR":null,"sSd":429,"sAp":8,"sR":null},{"ym":"2025-08","yr":2025,"gSd":616,"gAp":2357,"gR":3.83,"sSd":361,"sAp":163,"sR":null},{"ym":"2025-09","yr":2025,"gSd":1157,"gAp":3357,"gR":2.9,"sSd":666,"sAp":102,"sR":null},{"ym":"2025-10","yr":2025,"gSd":1240,"gAp":3833,"gR":3.09,"sSd":821,"sAp":229,"sR":null},{"ym":"2025-11","yr":2025,"gSd":839,"gAp":512,"gR":null,"sSd":1138,"sAp":52,"sR":null},{"ym":"2026-02","yr":2026,"gSd":1147,"gAp":14606,"gR":12.73,"sSd":702,"sAp":666,"sR":null},{"ym":"2026-03","yr":2026,"gSd":1166,"gAp":7008,"gR":6.01,"sSd":1367,"sAp":696,"sR":null},{"ym":"2026-04","yr":2026,"gSd":2664,"gAp":15017,"gR":5.64,"sSd":1989,"sAp":599,"sR":null}],"yearly":{"2020":{"gR":17.68,"sR":1.75,"gSd":10009,"gAp":207868,"months":9},"2021":{"gR":37.42,"sR":2.17,"gSd":10098,"gAp":329550,"months":11},"2022":{"gR":5.37,"sR":1.59,"gSd":8578,"gAp":35074,"months":11},"2023":{"gR":10.9,"sR":0.49,"gSd":4043,"gAp":61599,"months":8},"2024":{"gR":61.7,"sR":0.86,"gSd":6284,"gAp":85754,"months":10},"2025":{"gR":7.06,"sR":1.5,"gSd":6039,"gAp":36627,"months":8},"2026":{"gR":8.13,"sR":null,"gSd":4977,"gAp":36631,"months":3}},"summary":{"avgGR":24.2,"maxGR":407.48,"maxGRym":"2024-03","totalGSd":50028,"totalGAp":793103,"dataFrom":"2020-02","dataTo":"2026-04"}},"충북":{"monthly":[{"ym":"2020-03","yr":2020,"gSd":691,"gAp":2637,"gR":3.82,"sSd":414,"sAp":15,"sR":null},{"ym":"2020-05","yr":2020,"gSd":19,"gAp":6,"gR":null,"sSd":13,"sAp":0,"sR":null},{"ym":"2020-06","yr":2020,"gSd":327,"gAp":3216,"gR":9.83,"sSd":235,"sAp":128,"sR":null},{"ym":"2020-11","yr":2020,"gSd":1270,"gAp":110,"gR":null,"sSd":1254,"sAp":6,"sR":null},{"ym":"2020-12","yr":2020,"gSd":1329,"gAp":26488,"gR":19.93,"sSd":1079,"sAp":4309,"sR":3.99},{"ym":"2021-01","yr":2021,"gSd":319,"gAp":24,"gR":null,"sSd":261,"sAp":0,"sR":null},{"ym":"2021-02","yr":2021,"gSd":568,"gAp":9808,"gR":17.27,"sSd":743,"sAp":2366,"sR":3.18},{"ym":"2021-04","yr":2021,"gSd":377,"gAp":2370,"gR":6.29,"sSd":353,"sAp":259,"sR":null},{"ym":"2021-05","yr":2021,"gSd":528,"gAp":7319,"gR":13.86,"sSd":2073,"sAp":3172,"sR":1.53},{"ym":"2021-06","yr":2021,"gSd":524,"gAp":3068,"gR":5.85,"sSd":558,"sAp":270,"sR":null},{"ym":"2021-07","yr":2021,"gSd":142,"gAp":4712,"gR":33.18,"sSd":99,"sAp":889,"sR":8.98},{"ym":"2021-09","yr":2021,"gSd":386,"gAp":11348,"gR":29.4,"sSd":360,"sAp":2100,"sR":5.83},{"ym":"2021-11","yr":2021,"gSd":45,"gAp":12,"gR":null,"sSd":27,"sAp":3,"sR":null},{"ym":"2021-12","yr":2021,"gSd":545,"gAp":2148,"gR":3.94,"sSd":1568,"sAp":428,"sR":null},{"ym":"2022-01","yr":2022,"gSd":774,"gAp":11704,"gR":15.12,"sSd":417,"sAp":2079,"sR":4.99},{"ym":"2022-02","yr":2022,"gSd":1279,"gAp":10198,"gR":7.97,"sSd":1296,"sAp":2061,"sR":1.59},{"ym":"2022-04","yr":2022,"gSd":466,"gAp":4460,"gR":9.57,"sSd":563,"sAp":467,"sR":null},{"ym":"2022-05","yr":2022,"gSd":798,"gAp":3005,"gR":3.77,"sSd":1109,"sAp":358,"sR":null},{"ym":"2022-06","yr":2022,"gSd":793,"gAp":11448,"gR":14.44,"sSd":1179,"sAp":3521,"sR":2.99},{"ym":"2022-07","yr":2022,"gSd":74,"gAp":788,"gR":10.65,"sSd":75,"sAp":190,"sR":2.53},{"ym":"2022-08","yr":2022,"gSd":806,"gAp":5891,"gR":7.31,"sSd":951,"sAp":1953,"sR":2.05},{"ym":"2022-09","yr":2022,"gSd":1744,"gAp":704,"gR":null,"sSd":856,"sAp":51,"sR":null},{"ym":"2022-10","yr":2022,"gSd":1019,"gAp":33,"gR":null,"sSd":0,"sAp":0,"sR":0.0},{"ym":"2022-12","yr":2022,"gSd":629,"gAp":186,"gR":null,"sSd":23,"sAp":17,"sR":null},{"ym":"2023-02","yr":2023,"gSd":332,"gAp":3369,"gR":10.15,"sSd":493,"sAp":607,"sR":1.23},{"ym":"2023-03","yr":2023,"gSd":94,"gAp":33,"gR":null,"sSd":106,"sAp":1,"sR":null},{"ym":"2023-04","yr":2023,"gSd":1264,"gAp":52176,"gR":41.28,"sSd":1612,"sAp":7178,"sR":4.45},{"ym":"2023-06","yr":2023,"gSd":343,"gAp":2288,"gR":6.67,"sSd":590,"sAp":331,"sR":null},{"ym":"2023-09","yr":2023,"gSd":416,"gAp":7120,"gR":17.12,"sSd":228,"sAp":497,"sR":2.18},{"ym":"2023-11","yr":2023,"gSd":1532,"gAp":107139,"gR":69.93,"sSd":625,"sAp":5313,"sR":8.5},{"ym":"2023-12","yr":2023,"gSd":585,"gAp":3170,"gR":5.42,"sSd":424,"sAp":180,"sR":null},{"ym":"2024-02","yr":2024,"gSd":900,"gAp":4561,"gR":5.07,"sSd":775,"sAp":553,"sR":null},{"ym":"2024-06","yr":2024,"gSd":670,"gAp":28673,"gR":42.8,"sSd":1073,"sAp":4303,"sR":4.01},{"ym":"2024-09","yr":2024,"gSd":134,"gAp":172,"gR":1.28,"sSd":129,"sAp":36,"sR":null},{"ym":"2024-11","yr":2024,"gSd":425,"gAp":14974,"gR":35.23,"sSd":578,"sAp":2430,"sR":4.2},{"ym":"2024-12","yr":2024,"gSd":312,"gAp":14480,"gR":46.41,"sSd":287,"sAp":2216,"sR":7.72},{"ym":"2025-03","yr":2025,"gSd":73,"gAp":14,"gR":null,"sSd":75,"sAp":3,"sR":null},{"ym":"2025-04","yr":2025,"gSd":152,"gAp":16668,"gR":109.66,"sSd":424,"sAp":3092,"sR":7.29},{"ym":"2025-06","yr":2025,"gSd":164,"gAp":1616,"gR":9.85,"sSd":486,"sAp":377,"sR":null},{"ym":"2025-07","yr":2025,"gSd":1142,"gAp":2751,"gR":2.41,"sSd":1051,"sAp":447,"sR":null},{"ym":"2025-08","yr":2025,"gSd":111,"gAp":132,"gR":1.19,"sSd":132,"sAp":10,"sR":null},{"ym":"2025-09","yr":2025,"gSd":217,"gAp":1870,"gR":8.62,"sSd":242,"sAp":209,"sR":null},{"ym":"2025-10","yr":2025,"gSd":503,"gAp":1152,"gR":2.29,"sSd":384,"sAp":177,"sR":null},{"ym":"2026-04","yr":2026,"gSd":879,"gAp":7295,"gR":8.3,"sSd":472,"sAp":386,"sR":null}],"yearly":{"2020":{"gR":11.19,"sR":3.99,"gSd":3636,"gAp":32457,"months":5},"2021":{"gR":15.68,"sR":4.88,"gSd":3434,"gAp":40809,"months":9},"2022":{"gR":9.83,"sR":2.36,"gSd":8382,"gAp":48417,"months":10},"2023":{"gR":25.1,"sR":4.09,"gSd":4566,"gAp":175295,"months":7},"2024":{"gR":26.16,"sR":5.31,"gSd":2441,"gAp":62860,"months":5},"2025":{"gR":22.34,"sR":7.29,"gSd":2362,"gAp":24203,"months":7},"2026":{"gR":8.3,"sR":null,"gSd":879,"gAp":7295,"months":1}},"summary":{"avgGR":18.17,"maxGR":109.66,"maxGRym":"2025-04","totalGSd":25700,"totalGAp":391336,"dataFrom":"2020-03","dataTo":"2026-04"}}};
+const SIDO_RANK = {"세종": 1, "서울": 2, "부산": 3, "대전": 4, "충남": 5, "경기": 6, "충북": 7, "인천": 8, "대구": 9, "전북": 10, "경남": 11, "울산": 12, "광주": 13, "강원": 14, "전남": 15, "경북": 16, "제주": 17};
+const SIDO_LIST = Object.keys(SIDO_DB);
+
+// ── API 설정 ──
+const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+// API 1: 분양정보 조회 (단지명+주소+지역 포함)
+const API_DETAIL = 'https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail';
+// API 2: 경쟁률 조회 (HOUSE_MANAGE_NO로 JOIN)
+const API_CMPET  = 'https://api.odcloud.kr/api/ApplyhomeInfoCmpetRtSvc/v1/getAPTLttotPblancCmpet';
+
+// ── 상태 ──
+let currentTab = 'sido';
+let apiCurrentPage = 1;
+let apiTotalCount = 0;
+let apiPageSize = 20;
+let apiCurrentQuery = '';
+let apiAllItems = [];
+let charts = {};
+
+// ── 탭 초기화 ──
+function setupChips() {
+  const sidoChips = ['서울','경기','인천','부산','대전','충남','충북','세종','대구'];
+  const apiChips  = ['용인','수원','성남','화성','평택','고양','부천','안산'];
+  const row = document.getElementById('chipRow');
+  row.innerHTML = '';
+  const list = currentTab === 'sido' ? sidoChips : apiChips;
+  list.forEach(s => {
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = s;
+    c.onclick = () => { document.getElementById('searchInput').value = s; doSearch(); };
+    row.appendChild(c);
+  });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  ['sido','api'].forEach(t => {
+    document.getElementById('panel-' + t).classList.toggle('visible', t === tab);
+    const btn = document.getElementById('tab-' + t);
+    if(btn) {
+      if(t === tab) {
+        btn.style.color = 'var(--accent,#1d4ed8)';
+        btn.style.borderBottom = '2px solid var(--accent,#1d4ed8)';
+        btn.style.fontWeight = '500';
+      } else {
+        btn.style.color = 'var(--ink3,#71717a)';
+        btn.style.borderBottom = '2px solid transparent';
+        btn.style.fontWeight = '400';
+      }
+    }
+  });
+  const input = document.getElementById('searchInput');
+  const pf = document.getElementById('period-filter');
+  if(tab === 'sido') {
+    document.getElementById('search-lbl-text').textContent = '시도명';
+    input.placeholder = '예: 경기, 서울, 충남...';
+    pf.style.display = 'none';
+  } else {
+    document.getElementById('search-lbl-text').textContent = '시군구 / 단지명';
+    input.placeholder = '예: 용인, 수원, 성남, 판교...';
+    pf.style.display = 'flex';
+  }
+  setupChips();
+}
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if(!q) return;
+  if(currentTab === 'sido') searchSido(q);
+  else searchApi(q);
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+// 기간 필터 변경 시 재검색 (단지별 탭에서만)
+['startYear','startMonth','endYear','endMonth'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', () => {
+    if(currentTab === 'api' && apiCurrentQuery) {
+      apiCurrentPage = 1;
+      fetchApi(apiCurrentQuery, 1);
+    }
+  });
+});
+
+setupChips();
+
+// ────────────────────────────────────────────────
+// ── 시도 탭 ──
+// ────────────────────────────────────────────────
+function fmt(n, d) { if(n==null) return '—'; return Number(n).toFixed(d!=null?d:1); }
+function fmtK(n) {
+  if(n==null) return '—';
+  if(n>=100000000) return (n/100000000).toFixed(1)+'억';
+  if(n>=10000) return (n/10000).toFixed(1)+'만';
+  return n.toLocaleString();
+}
+function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function searchSido(q) {
+  const sido = SIDO_LIST.find(s => s===q || s.includes(q) || q.includes(s));
+  if(!sido) { alert('시도를 찾을 수 없습니다.\n가능한 지역: ' + SIDO_LIST.join(', ')); return; }
+  renderSido(sido);
+}
+
+function renderSido(sido) {
+  const d = SIDO_DB[sido], s = d.summary, y = d.yearly, m = d.monthly;
+  document.getElementById('sido-placeholder').style.display = 'none';
+  document.getElementById('sido-result').style.display = 'block';
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.textContent.trim()===sido));
+
+  document.getElementById('sido-name').textContent = sido;
+  document.getElementById('sido-meta').textContent = '데이터 기간: ' + s.dataFrom + ' ~ ' + s.dataTo + ' · ' + m.length + '개월';
+  document.getElementById('sido-rank').textContent = SIDO_RANK[sido] + '위';
+
+  document.getElementById('s-avg').innerHTML = fmt(s.avgGR) + '<span class="sc-unit">:1</span>';
+  document.getElementById('s-avg-sub').textContent = '전국 ' + SIDO_RANK[sido] + '위';
+  document.getElementById('s-max').innerHTML = fmt(s.maxGR) + '<span class="sc-unit">:1</span>';
+  document.getElementById('s-max-sub').textContent = s.maxGRym || '—';
+  document.getElementById('s-sd').innerHTML = fmtK(s.totalGSd) + '<span class="sc-unit">세대</span>';
+  document.getElementById('s-sd-sub').textContent = '일반공급 누적';
+  document.getElementById('s-ap').innerHTML = fmtK(s.totalGAp) + '<span class="sc-unit">건</span>';
+  document.getElementById('s-ap-sub').textContent = '일반 청약 누적';
+
+  // 연도별 차트
+  destroyChart('yearly');
+  const yrs = Object.keys(y);
+  const yVals = yrs.map(k => y[k].gR);
+  const ySp   = yrs.map(k => y[k].sR);
+  const seoulVals = sido !== '서울' && SIDO_DB['서울']
+    ? yrs.map(k => SIDO_DB['서울'].yearly[k] ? SIDO_DB['서울'].yearly[k].gR : null)
+    : [];
+
+  if(sido !== '서울') {
+    document.getElementById('leg-compare').innerHTML =
+      '<span class="leg-dash" style="border-top-color:#8b2c2c"></span>서울(비교)';
+  } else {
+    document.getElementById('leg-compare').textContent = '';
+  }
+
+  charts.yearly = new Chart(document.getElementById('yearlyChart'), {
+    type: 'bar',
+    data: { labels: yrs, datasets: [
+      { label: sido+' 일반', data: yVals, backgroundColor: '#1a3a5c', borderRadius: 3 },
+      { label: sido+' 특별', data: ySp, backgroundColor: 'rgba(45,106,79,.55)', borderRadius: 3 },
+      { label: '서울 일반', data: seoulVals, type: 'line', borderColor: '#8b2c2c', backgroundColor: 'transparent',
+        borderDash: [5,4], pointRadius: 3, pointBackgroundColor: '#8b2c2c', tension: .3, spanGaps: true }
+    ]},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.dataset.label+' '+(c.parsed.y!=null?c.parsed.y.toFixed(1):'—')+':1'}} },
+      scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{font:{size:10},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.06)'}}}
+    }
+  });
+
+  // 월별 차트
+  destroyChart('monthly');
+  const mData = m.filter(r => r.gR != null);
+  charts.monthly = new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: { labels: mData.map(r=>r.ym.substring(2)), datasets:[{
+      label:'경쟁률', data: mData.map(r=>r.gR),
+      borderColor:'#1a3a5c', backgroundColor:'rgba(26,58,92,.08)', fill:true, tension:.3,
+      pointRadius:2.5, pointBackgroundColor:'#1a3a5c'
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toFixed(1)+':1'}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:20}},
+        y:{beginAtZero:true,ticks:{font:{size:10},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}}}
+    }
+  });
+
+  // 연도별 테이블
+  const tbody = document.getElementById('sido-tbody');
+  tbody.innerHTML = '';
+  const maxGR = Math.max(...Object.values(y).map(v=>v.gR).filter(v=>v!=null), 1);
+  Object.keys(y).forEach(k => {
+    const row = y[k];
+    const gr = row.gR, pct = gr ? Math.round((gr/maxGR)*100) : 0;
+    tbody.innerHTML += '<tr>' +
+      '<td style="font-family:var(--mono);font-weight:500">'+k+'</td>' +
+      '<td class="num '+(gr&&gr===maxGR?'hi':'')+'">'+(gr?gr.toFixed(1)+':1':'—')+'</td>' +
+      '<td class="num">'+(row.sR!=null?row.sR.toFixed(1)+':1':'—')+'</td>' +
+      '<td class="num">'+(row.gSd?row.gSd.toLocaleString():'—')+'</td>' +
+      '<td class="num">'+(row.gAp?row.gAp.toLocaleString():'—')+'</td>' +
+      '<td><div class="bar-cell"><div class="mini-bar" style="width:'+Math.max(pct,gr?2:0)+'%;max-width:100px"></div>' +
+      '<span style="font-family:var(--mono);font-size:10px;color:var(--ink3)">'+(gr?gr.toFixed(1):'—')+'</span></div></td>' +
+      '</tr>';
+  });
+
+  // 전국 비교
+  destroyChart('rank');
+  const rankData = SIDO_LIST.filter(s=>SIDO_DB[s].summary.avgGR!=null)
+    .map(s=>({sido:s,avg:SIDO_DB[s].summary.avgGR})).sort((a,b)=>b.avg-a.avg);
+  charts.rank = new Chart(document.getElementById('rankChart'), {
+    type: 'bar',
+    data:{ labels: rankData.map(r=>r.sido), datasets:[{
+      data: rankData.map(r=>r.avg),
+      backgroundColor: rankData.map(r=>r.sido===sido?'#1a3a5c':'#d0cdc5'), borderRadius:3
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toFixed(1)+':1'}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{font:{size:10},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.06)'}}}
+    }
+  });
+}
+
+// ────────────────────────────────────────────────
+// ── API 탭 ──
+// ────────────────────────────────────────────────
+function searchApi(q) {
+  if(!q.trim()) { alert('검색어를 입력하세요.\n예: 용인, 수원, 성남, 경기, 힐스테이트'); return; }
+  apiCurrentQuery = q.trim();
+  apiCurrentPage = 1;
+  apiAllItems = [];
+  fetchApi(q.trim(), 1);
+}
+
+async function fetchApi(q, page) {
+  document.getElementById('api-placeholder').style.display = 'none';
+  document.getElementById('api-result').style.display = 'none';
+  document.getElementById('api-error').style.display = 'none';
+  document.getElementById('api-loading').style.display = 'block';
+  document.getElementById('api-loading-msg').textContent = '"' + q + '" 단지 검색 중...';
+
+  try {
+    // ── STEP 1: 분양정보 전체 로드 (병렬 3페이지, 최대 2784건) ──
+    document.getElementById('api-loading-msg').textContent = '전체 분양 목록 로딩 중 (1/2)...';
+
+    const fetchPage = async (pageNo) => {
+      const url = API_DETAIL + '?page=' + pageNo + '&perPage=1000&serviceKey=' + API_KEY;
+      const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(API_DETAIL + '?page=' + pageNo + '&perPage=1000') + '&serviceKey=' + API_KEY;
+      for (const tryUrl of [url, proxyUrl]) {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 20000);
+          const res = await fetch(tryUrl, { mode: 'cors', signal: ctrl.signal });
+          clearTimeout(timer);
+          const text = await res.text();
+          if (!text || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') continue;
+          // 멀티 JSON 대응
+          const firstBrace = text.indexOf('{');
+          let depth = 0, endIdx = -1;
+          for(let i = firstBrace; i < text.length; i++) {
+            if(text[i] === '{') depth++;
+            else if(text[i] === '}') { depth--; if(depth === 0){ endIdx = i; break; } }
+          }
+          const d = JSON.parse(text.substring(firstBrace, endIdx + 1));
+          if (d.code && d.code < 0) throw new Error('API 오류: ' + d.msg);
+          return d.data || [];
+        } catch(e) { if(e.name !== 'AbortError') continue; }
+      }
+      return [];
+    };
+
+    // 1페이지 먼저 로드해서 totalCount 파악
+    const url1 = API_DETAIL + '?page=1&perPage=1000&serviceKey=' + API_KEY;
+    const proxy1 = 'https://corsproxy.io/?url=' + encodeURIComponent(API_DETAIL + '?page=1&perPage=1000') + '&serviceKey=' + API_KEY;
+    let firstData = null, totalCount1 = 0;
+    for (const tryUrl of [url1, proxy1]) {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 20000);
+        const res = await fetch(tryUrl, { mode: 'cors', signal: ctrl.signal });
+        clearTimeout(timer);
+        const text = await res.text();
+        if (!text || text.trim().startsWith('<!')) continue;
+        const firstBrace = text.indexOf('{');
+        let depth = 0, endIdx = -1;
+        for(let i = firstBrace; i < text.length; i++) {
+          if(text[i] === '{') depth++;
+          else if(text[i] === '}') { depth--; if(depth === 0){ endIdx = i; break; } }
+        }
+        const d = JSON.parse(text.substring(firstBrace, endIdx + 1));
+        if (d.code && d.code < 0) throw new Error('API 오류 [' + d.code + ']: ' + d.msg);
+        firstData = d.data || [];
+        totalCount1 = d.totalCount || 0;
+        break;
+      } catch(e) { if(e.message.includes('API 오류')) throw e; }
+    }
+    if (!firstData) throw new Error('분양정보 API 연결 실패');
+    if (totalCount1 === 0) throw new Error('API_MAINTENANCE');
+
+    // 나머지 페이지 병렬 로드
+    const totalPages = Math.ceil(totalCount1 / 1000);
+    let allDetailData = [...firstData];
+    if (totalPages > 1) {
+      document.getElementById('api-loading-msg').textContent =
+        '전체 분양 목록 로딩 중 (' + totalCount1.toLocaleString() + '건, ' + totalPages + '페이지)...';
+      const restPages = Array.from({length: totalPages - 1}, (_, i) => i + 2);
+      const restResults = await Promise.all(restPages.map(p => fetchPage(p)));
+      restResults.forEach(data => allDetailData = allDetailData.concat(data));
+    }
+
+    // ── STEP 2: 검색어 + 기간으로 필터링 ──
+    const qLow = q.trim().toLowerCase();
+
+    // 기간 필터 값 읽기
+    const syEl = document.getElementById('startYear');
+    const smEl = document.getElementById('startMonth');
+    const eyEl = document.getElementById('endYear');
+    const emEl = document.getElementById('endMonth');
+    const startYM = (syEl && smEl) ? syEl.value + '-' + smEl.value : null;
+    const endYM   = (eyEl && emEl) ? eyEl.value + '-' + emEl.value : null;
+
+    // 단어 경계 기반 검색: q가 토큰의 시작에 있는지 확인
+    // 예) "수지"로 검색 시 "수원당수지구"는 제외, "수지구"·"수지자이"는 포함
+    const wordMatch = (text, kw) => {
+      if (!text) return false;
+      const t = text.toLowerCase();
+      const k = kw.toLowerCase();
+
+      // 1) 공백 포함 직접 매칭 (기존 방식)
+      const tokens = t.split(/[\s()\-,./··]/);
+      for (const tok of tokens) {
+        if (tok && tok.startsWith(k)) return true;
+      }
+      const idx = t.indexOf(k);
+      if (idx !== -1 && (idx === 0 || /[\s()\-,./··]/.test(t[idx-1]))) return true;
+
+      // 2) 공백 제거 후 매칭 (띄어쓰기 없이 검색해도 찾아줌)
+      // 예: "더샵관저아르테" → "더샵 관저아르테" 매칭
+      const tNoSpace = t.replace(/\s+/g, '');
+      const kNoSpace = k.replace(/\s+/g, '');
+      if (tNoSpace.includes(kNoSpace)) return true;
+
+      return false;
+    };
+
+    const matched = allDetailData.filter(item => {
+      // 검색어 필터 (단어 경계 기반)
+      const nm   = item.HOUSE_NM || '';
+      const addr = item.HSSPLY_ADRES || '';
+      const area = item.SUBSCRPT_AREA_CODE_NM || '';
+      const hay  = [nm, addr, area];
+      // 1) 전체 구문 매칭 (기존 방식: "더샵 관저아르테" 등)
+      let textMatch = hay.some(t => wordMatch(t, qLow));
+      // 2) 다중 키워드 AND 매칭: "르엘 센텀" → "르엘"+"센텀" 모두 포함 시 매칭
+      //    예) "르엘 센텀" → "르엘 리버파크 센텀" 검색 가능
+      if (!textMatch) {
+        const kws = qLow.split(/\s+/).filter(Boolean);
+        if (kws.length > 1) {
+          textMatch = kws.every(kw => hay.some(t => wordMatch(t, kw)));
+        }
+      }
+      if (!textMatch) return false;
+
+      // 기간 필터 (RCEPT_BGNDE: 청약접수시작일 기준, 예: "2024-06-15")
+      if (startYM || endYM) {
+        const rcpt = (item.RCEPT_BGNDE || '').substring(0, 7); // "YYYY-MM"
+        if (!rcpt) return true; // 날짜 없으면 통과
+        if (startYM && rcpt < startYM) return false;
+        if (endYM   && rcpt > endYM)   return false;
+      }
+      return true;
+    });
+
+    if (matched.length === 0) {
+      throw new Error('"' + q + '" 검색 결과 없음\n\n검색 예시:\n· 지역: 용인, 수원, 성남, 경기, 서울\n· 단지명: 힐스테이트, 래미안, 아이파크\n· 주소: 수지구, 기흥구, 판교');
+    }
+
+    // ── STEP 3: 매칭된 단지들의 경쟁률 조회 (병렬, 최대 20개) ──
+    document.getElementById('api-loading-msg').textContent =
+      matched.length + '개 단지 경쟁률 조회 중 (2/2)...';
+
+    // 페이지네이션 처리
+    const perPageDetail = 20;
+    const totalMatchCount = matched.length;
+    const startIdx = (page - 1) * perPageDetail;
+    const pageItems = matched.slice(startIdx, startIdx + perPageDetail);
+
+    const fetchCmpet = async (manageNo) => {
+      const baseUrl = API_CMPET + '?page=1&perPage=50&cond%5BHOUSE_MANAGE_NO%3A%3AEQ%5D=' + manageNo;
+      const direct = baseUrl + '&serviceKey=' + API_KEY;
+      const proxy  = 'https://corsproxy.io/?url=' + encodeURIComponent(baseUrl) + '&serviceKey=' + API_KEY;
+      for (const tryUrl of [direct, proxy]) {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 15000);
+          const res = await fetch(tryUrl, { mode: 'cors', signal: ctrl.signal });
+          clearTimeout(timer);
+          const text = await res.text();
+          if (!text || text.trim().startsWith('<!') || text.trim() === 'Unexpected errors') continue;
+          const firstBrace = text.indexOf('{');
+          let depth = 0, endIdx = -1;
+          for(let i = firstBrace; i < text.length; i++) {
+            if(text[i] === '{') depth++;
+            else if(text[i] === '}') { depth--; if(depth === 0){ endIdx = i; break; } }
+          }
+          return JSON.parse(text.substring(firstBrace, endIdx + 1)).data || [];
+        } catch(e) { continue; }
+      }
+      return [];
+    };
+
+    // 현재 페이지 단지들 경쟁률 병렬 조회
+    const cmpetResults = await Promise.all(
+      pageItems.map(item => fetchCmpet(item.HOUSE_MANAGE_NO))
+    );
+
+    // ── STEP 4: JOIN하여 통합 데이터 구성 ──
+    const joinedItems = pageItems.map((detail, i) => ({
+      detail,
+      cmpet: cmpetResults[i] || []
+    }));
+
+    apiTotalCount = totalMatchCount;
+    apiCurrentPage = page;
+    renderApiResult(q, joinedItems, totalMatchCount, page);
+
+  } catch(err) {
+    document.getElementById('api-loading').style.display = 'none';
+    document.getElementById('api-error').style.display = 'block';
+    if (err.message === 'API_MAINTENANCE') {
+      document.getElementById('api-error').innerHTML =
+        '<div style="display:flex;align-items:flex-start;gap:.625rem">' +
+        '<span style="font-size:1.1rem;flex-shrink:0">⚠</span>' +
+        '<div>' +
+        '<div style="font-weight:500;margin-bottom:.3rem">청약홈 분양정보 API 임시 점검 중</div>' +
+        '<div style="font-size:12.5px;line-height:1.7;color:#92400e">' +
+        '공공데이터포털의 청약홈 분양정보 상세 서비스가 현재 데이터를 반환하지 않고 있습니다.<br>' +
+        '공급자(한국부동산원) 측 서버 점검으로 추정되며, 복구 시 자동으로 정상화됩니다.<br>' +
+        '<span style="font-family:var(--mono);font-size:11px;opacity:.75">' +
+        '※ 경쟁률 분석(시도별 탭)은 정상 운영 중입니다</span>' +
+        '</div></div></div>';
+      document.getElementById('api-error').style.background = '#fef9c3';
+      document.getElementById('api-error').style.borderColor = '#fde68a';
+      document.getElementById('api-error').style.color = '#92400e';
+    } else {
+      const isNoResult = err.message.includes('없음');
+      document.getElementById('api-error').innerHTML =
+        '<b>⚠ ' + err.message.replace(/\n/g, '<br>') + '</b>' +
+        (isNoResult ? '' : '<br><br>확인: data.go.kr 마이페이지 → 인증키 활성 상태, 두 서비스 활용신청 완료 여부');
+    }
+  }
+}
+
+
+function renderApiResult(q, joinedItems, totalMatchCount, page) {
+  document.getElementById('api-loading').style.display = 'none';
+  document.getElementById('api-result').style.display = 'block';
+
+  document.getElementById('api-title').textContent = '"' + q + '" 검색 결과';
+  document.getElementById('api-meta').textContent =
+    '총 ' + totalMatchCount + '개 단지 매칭 · 페이지 ' + page + ' / ' + Math.ceil(totalMatchCount / 10);
+
+  // 경쟁률 계산 (1순위 해당지역 기준)
+  function getBestRate(cmpetData) {
+    const v1 = cmpetData.filter(it => it.SUBSCRPT_RANK_CODE == 1 && it.RESIDE_SECD === '01');
+    const rates = v1.map(it => {
+      const r = it.CMPET_RATE || '';
+      if (r === '-' || r.startsWith('(△') || r.startsWith('(▽')) return 0;
+      return parseFloat(r) || 0;
+    }).filter(v => v > 0);
+    return rates.length ? Math.max(...rates) : 0;
+  }
+  function fmtRate(cmpetData) {
+    const v1 = cmpetData.filter(it => it.SUBSCRPT_RANK_CODE == 1 && it.RESIDE_SECD === '01');
+    if (!v1.length) return '—';
+    const rates = v1.map(it => it.CMPET_RATE || '—');
+    // 유효 경쟁률 우선
+    const valid = rates.filter(r => r !== '-' && r !== '—' && !r.startsWith('('));
+    if (valid.length) return Math.max(...valid.map(r => parseFloat(r))).toFixed(1) + ':1';
+    return rates[0]; // △ 등 그대로
+  }
+  function getTotalReq(cmpetData) {
+    const v1 = cmpetData.filter(it => it.SUBSCRPT_RANK_CODE == 1);
+    return v1.reduce((s, it) => s + (parseInt(it.REQ_CNT) || 0), 0);
+  }
+
+  const allRates = joinedItems.map(ji => getBestRate(ji.cmpet)).filter(v => v > 0);
+  const avgRate  = allRates.length ? (allRates.reduce((a,b)=>a+b,0)/allRates.length).toFixed(1) : '—';
+  const maxRate  = allRates.length ? Math.max(...allRates).toFixed(1) : '—';
+
+  document.getElementById('api-total-cnt').innerHTML = totalMatchCount + '<span class="sc-unit">단지</span>';
+  document.getElementById('api-avg-rate').innerHTML = avgRate + '<span class="sc-unit">:1</span>';
+  document.getElementById('api-max-rate').innerHTML = maxRate + '<span class="sc-unit">:1</span>';
+
+  // 차트 - 단지별 경쟁률
+  // joinedItems를 전역 저장 (클릭 이벤트에서 참조)
+  window._lastJoinedItems = joinedItems;
+
+  destroyChart('apiTime');
+  const chartLabels = joinedItems.map(ji => (ji.detail.HOUSE_NM || '').substring(0, 10));
+  const chartRates  = joinedItems.map(ji => getBestRate(ji.cmpet));
+  charts.apiTime = new Chart(document.getElementById('apiTimeChart'), {
+    type: 'bar',
+    data:{ labels: chartLabels, datasets:[{
+      label:'1순위 경쟁률', data: chartRates,
+      backgroundColor: chartRates.map(r => r>=50?'rgba(139,44,44,0.85)':r>=20?'rgba(26,58,92,0.85)':r>=5?'rgba(45,106,79,0.85)':'rgba(180,178,169,0.85)'),
+      borderRadius: 3,
+      hoverBackgroundColor: chartRates.map(r => r>=50?'#8b2c2c':r>=20?'#1a3a5c':r>=5?'#2d6a4f':'#888780'),
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label: c => c.parsed.y ? c.parsed.y.toFixed(1)+':1' : '미달/데이터없음',
+          title: c => joinedItems[c[0].dataIndex]?.detail?.HOUSE_NM || ''
+        }}
+      },
+      onClick: (evt, elements) => {
+        if(elements.length > 0) {
+          const idx = elements[0].index;
+          const ji = window._lastJoinedItems?.[idx];
+          if(ji) showAptDetail(ji);
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:40}},
+        y:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}}
+      },
+      cursor: 'pointer'
+    }
+  });
+  document.getElementById('apiTimeChart').style.cursor = 'pointer';
+
+  destroyChart('apiRank');
+  const sorted = [...joinedItems].sort((a,b) => getBestRate(b.cmpet) - getBestRate(a.cmpet)).slice(0,8);
+  charts.apiRank = new Chart(document.getElementById('apiRankChart'), {
+    type: 'bar',
+    data:{ labels: sorted.map(ji=>(ji.detail.HOUSE_NM||'').substring(0,12)),
+      datasets:[{
+        data: sorted.map(ji=>getBestRate(ji.cmpet)),
+        backgroundColor: sorted.map(ji => { const r=getBestRate(ji.cmpet); return r>=50?'rgba(139,44,44,0.85)':r>=20?'rgba(26,58,92,0.85)':'rgba(45,106,79,0.85)'; }),
+        hoverBackgroundColor: sorted.map(ji => { const r=getBestRate(ji.cmpet); return r>=50?'#8b2c2c':r>=20?'#1a3a5c':'#2d6a4f'; }),
+        borderRadius:3
+      }]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:c=>c.parsed.x?c.parsed.x.toFixed(1)+':1':'데이터없음',
+          title:c=>sorted[c[0].dataIndex]?.detail?.HOUSE_NM||''
+        }}
+      },
+      onClick:(evt,elements) => {
+        if(elements.length>0) { const ji=sorted[elements[0].index]; if(ji) showAptDetail(ji); }
+      },
+      scales:{x:{beginAtZero:true,ticks:{font:{size:9},callback:v=>v+':1'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{font:{size:9}}}}
+    }
+  });
+  document.getElementById('apiRankChart').style.cursor = 'pointer';
+
+  // 테이블
+  const tbody = document.getElementById('api-tbody');
+  tbody.innerHTML = '';
+  joinedItems.forEach(ji => {
+    const d  = ji.detail;
+    const cr = ji.cmpet;
+    const nm      = d.HOUSE_NM || '—';
+    const addr    = d.HSSPLY_ADRES || '—';
+    const area    = d.SUBSCRPT_AREA_CODE_NM || '—';
+    const rcpt    = d.RCEPT_BGNDE || '—';
+    const tot     = d.TOT_SUPLY_HSHLDCO || '—';
+    const manNo   = d.HOUSE_MANAGE_NO || '—';
+    const pblUrl  = d.PBLANC_URL || '';
+    const rate    = fmtRate(cr);
+    const totalReq = getTotalReq(cr);
+    const rNum    = getBestRate(cr);
+    const lvl = rNum>=50?'tag-c':rNum>=20?'tag-b':rNum>=5?'tag-a':'tag-d';
+    const lvlTxt  = rNum>=50?'초과열':rNum>=20?'과열':rNum>=5?'경쟁':'보통';
+    // 단지명 셀: 클릭 시 상세 패널 / 오른쪽 [공고↗] 버튼: 공고 이동
+    const nmCell = '<span style="cursor:pointer;font-weight:500;color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(26,58,92,.3)" class="nm-detail-btn">' + nm + '</span>' +
+      (pblUrl ? '&nbsp;<a href="' + pblUrl + '" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;font-family:var(--mono);color:var(--accent);background:rgba(26,58,92,.08);border:1px solid rgba(26,58,92,.2);border-radius:3px;padding:1px 5px;text-decoration:none;white-space:nowrap;vertical-align:middle">공고↗</a>' : '');
+
+    const rowId = 'row-ji-' + manNo;
+    tbody.innerHTML += '<tr id="' + rowId + '" style="cursor:pointer" title="클릭하면 상세 경쟁률 보기">' +
+      '<td style="white-space:nowrap;font-family:var(--mono);font-size:10px;color:var(--ink3)">' + rcpt + '</td>' +
+      '<td style="min-width:180px">' + nmCell + '</td>' +
+      '<td style="font-size:11px;color:var(--ink3)">' + area + '</td>' +
+      '<td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + addr + '">' + addr + '</td>' +
+      '<td class="num">' + tot + '</td>' +
+      '<td class="num">' + (totalReq ? totalReq.toLocaleString() : '—') + '</td>' +
+      '<td class="num"><b>' + rate + '</b>&nbsp;<span class="tag ' + lvl + '">' + lvlTxt + '</span></td>' +
+      '<td style="font-size:10px;color:var(--ink3);white-space:nowrap">📊</td>' +
+      '</tr>';
+    // 행 전체 클릭 → 상세 패널
+    setTimeout(() => {
+      const row = document.getElementById(rowId);
+      if(row) row.addEventListener('click', () => showAptDetail(ji));
+    }, 0);
+  });
+
+  // 페이지네이션 — 번호 버튼 렌더링
+  const perPage = 20;
+  const totalPages = Math.ceil(totalMatchCount / perPage);
+  document.getElementById('pager-info').textContent =
+    '총 ' + totalMatchCount + '개 단지 · ' + page + ' / ' + totalPages + '페이지';
+  document.getElementById('prev-btn').disabled = page <= 1;
+  document.getElementById('next-btn').disabled = page >= totalPages;
+
+  // 페이지 번호 버튼 생성 (최대 10개 표시)
+  const numWrap = document.getElementById('pager-numbers');
+  numWrap.innerHTML = '';
+  const delta = 4;
+  let pStart = Math.max(1, page - delta);
+  let pEnd   = Math.min(totalPages, page + delta);
+  if (pEnd - pStart < delta * 2) {
+    pStart = Math.max(1, pEnd - delta * 2);
+    pEnd   = Math.min(totalPages, pStart + delta * 2);
+  }
+  if (pStart > 1) {
+    const b = document.createElement('button');
+    b.className = 'pager-num'; b.textContent = '1';
+    b.onclick = () => { fetchApi(apiCurrentQuery, 1); window.scrollTo({top:0,behavior:'smooth'}); };
+    numWrap.appendChild(b);
+    if (pStart > 2) {
+      const s = document.createElement('span');
+      s.style.cssText = 'font-family:var(--mono);font-size:11px;color:var(--ink3);padding:0 2px';
+      s.textContent = '…'; numWrap.appendChild(s);
+    }
+  }
+  for (let p = pStart; p <= pEnd; p++) {
+    const b = document.createElement('button');
+    b.className = 'pager-num' + (p === page ? ' active' : '');
+    b.textContent = p;
+    const pg = p;
+    b.onclick = () => { fetchApi(apiCurrentQuery, pg); window.scrollTo({top:0,behavior:'smooth'}); };
+    numWrap.appendChild(b);
+  }
+  if (pEnd < totalPages) {
+    if (pEnd < totalPages - 1) {
+      const s = document.createElement('span');
+      s.style.cssText = 'font-family:var(--mono);font-size:11px;color:var(--ink3);padding:0 2px';
+      s.textContent = '…'; numWrap.appendChild(s);
+    }
+    const b = document.createElement('button');
+    b.className = 'pager-num'; b.textContent = totalPages;
+    b.onclick = () => { fetchApi(apiCurrentQuery, totalPages); window.scrollTo({top:0,behavior:'smooth'}); };
+    numWrap.appendChild(b);
+  }
+
+  document.getElementById('api-note').textContent =
+    '※ 출처: 한국부동산원 청약홈 분양정보 / 조회일: ' + new Date().toLocaleDateString('ko-KR');
+}
+
+function showAptDetail(ji) {
+  const detail = ji.detail;
+  const cmpet  = ji.cmpet;
+  const nm     = detail.HOUSE_NM || '단지명 없음';
+  const addr   = detail.HSSPLY_ADRES || '';
+  const area   = detail.SUBSCRPT_AREA_CODE_NM || '';
+  const rcpt   = detail.RCEPT_BGNDE || '';
+  const tot    = detail.TOT_SUPLY_HSHLDCO || '—';
+  const pblUrl = detail.PBLANC_URL || '';
+  const manNo  = detail.HOUSE_MANAGE_NO || '';
+
+  // 이전 선택 해제 후 현재 행 강조
+  document.querySelectorAll('#api-tbody tr.selected').forEach(r => r.classList.remove('selected'));
+  const manNo2 = detail.HOUSE_MANAGE_NO || '';
+  const selRow = document.getElementById('row-ji-' + manNo2);
+  if(selRow) selRow.classList.add('selected');
+
+  // 패널 표시
+  const panel = document.getElementById('apt-detail-panel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // 제목
+  const titleEl = document.getElementById('apt-detail-title');
+  titleEl.innerHTML = nm +
+    (pblUrl ? '&nbsp;<a href="' + pblUrl + '" target="_blank" style="font-size:11px;font-family:var(--mono);color:var(--accent);background:rgba(26,58,92,.1);border:1px solid rgba(26,58,92,.25);border-radius:4px;padding:2px 8px;text-decoration:none;vertical-align:middle;margin-left:6px">청약홈 공고↗</a>' : '');
+
+  // 요약 카드
+  function getBestRt(data, rank, secd) {
+    const filtered = data.filter(it => it.SUBSCRPT_RANK_CODE == rank && (secd ? it.RESIDE_SECD === secd : true));
+    const rates = filtered.map(it => {
+      const r = it.CMPET_RATE || '';
+      if (r === '-' || r.startsWith('(')) return 0;
+      return parseFloat(r) || 0;
+    }).filter(v => v > 0);
+    return rates.length ? Math.max(...rates) : 0;
+  }
+  const totalReq1 = cmpet.filter(it => it.SUBSCRPT_RANK_CODE == 1).reduce((s,it) => s + (parseInt(it.REQ_CNT)||0), 0);
+  const best1Rt   = getBestRt(cmpet, 1, '01');
+  const best2Rt   = getBestRt(cmpet, 2, '01');
+
+  const sumCards = [
+    {lbl:'단지명', val:nm.length>15?nm.substring(0,15)+'…':nm, sub:area, color:'b'},
+    {lbl:'청약접수 시작', val:rcpt||'—', sub:addr.substring(0,20), color:'g'},
+    {lbl:'총 공급세대', val:(tot||'—')+'세대', sub:'주택관리번호: '+manNo, color:'o'},
+    {lbl:'1순위 최고 경쟁률', val:best1Rt?best1Rt.toFixed(1)+':1':'—', sub:'해당지역 기준', color:best1Rt>=50?'r':'b'},
+    {lbl:'2순위 최고 경쟁률', val:best2Rt?best2Rt.toFixed(1)+':1':'—', sub:'해당지역 기준', color:'g'},
+    {lbl:'총 청약 접수', val:totalReq1.toLocaleString()+'건', sub:'1순위 전체', color:'o'},
+  ];
+  const sumWrap = document.getElementById('apt-detail-summary');
+  sumWrap.innerHTML = sumCards.map(c =>
+    '<div class="sc ' + c.color + '" style="min-width:130px">' +
+    '<p class="sc-lbl">' + c.lbl + '</p>' +
+    '<p class="sc-val" style="font-size:1.3rem">' + c.val + '</p>' +
+    '<p class="sc-sub">' + c.sub + '</p></div>'
+  ).join('');
+
+  // 주택형별 데이터 집계
+  const typeMap = {};
+  cmpet.forEach(it => {
+    const ht   = it.HOUSE_TY || '—';
+    const rank = it.SUBSCRPT_RANK_CODE;
+    const secd = it.RESIDE_SECD;
+    const key  = ht;
+    if (!typeMap[key]) typeMap[key] = { ht, items: [] };
+    typeMap[key].items.push(it);
+  });
+
+  const types = Object.keys(typeMap).sort();
+
+  // 주택형별 1순위 해당지역 경쟁률
+  const typeLabels = types.map(t => t.replace(/\.\d+/, '').replace('0000','').trim() || t);
+  const typeRates  = types.map(t => {
+    const its = typeMap[t].items.filter(it => it.SUBSCRPT_RANK_CODE == 1 && it.RESIDE_SECD === '01');
+    const rates = its.map(it => {
+      const r = it.CMPET_RATE || '';
+      if (r === '-' || r.startsWith('(')) return 0;
+      return parseFloat(r) || 0;
+    }).filter(v => v > 0);
+    return rates.length ? Math.max(...rates) : 0;
+  });
+  const typeReqs = types.map(t => {
+    return typeMap[t].items.filter(it => it.SUBSCRPT_RANK_CODE == 1).reduce((s,it) => s+(parseInt(it.REQ_CNT)||0), 0);
+  });
+
+  // 주택형별 경쟁률 차트
+  destroyChart('aptType');
+  const typeColors = typeRates.map(r => r>=50?'#8b2c2c':r>=20?'#1a3a5c':r>=5?'#2d6a4f':'#B4B2A9');
+  charts.aptType = new Chart(document.getElementById('apt-type-chart'), {
+    type: 'bar',
+    data:{ labels: typeLabels, datasets:[
+      {label:'1순위 경쟁률', data:typeRates, backgroundColor:typeColors, borderRadius:3, yAxisID:'y'},
+      {label:'접수건수', data:typeReqs, type:'line', borderColor:'#BA7517', backgroundColor:'transparent',
+       pointRadius:4, pointBackgroundColor:'#BA7517', tension:.3, yAxisID:'y1'}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true, labels:{font:{size:10}, boxWidth:10}},
+        tooltip:{callbacks:{label:c => c.datasetIndex===0 ? c.parsed.y.toFixed(1)+':1' : c.parsed.y.toLocaleString()+'건'}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{size:9}}},
+        y:{beginAtZero:true, position:'left',  ticks:{font:{size:9}, callback:v=>v+':1'}, grid:{color:'rgba(0,0,0,.05)'}},
+        y1:{beginAtZero:true, position:'right', ticks:{font:{size:9}, callback:v=>v>999?Math.round(v/1000)+'k':v}, grid:{display:false}}
+      }
+    }
+  });
+
+  // 거주구분별 접수 파이 차트
+  const resideMap = {'01':'해당지역','02':'기타지역','03':'기타경기'};
+  const resideReqs = ['01','02','03'].map(secd =>
+    cmpet.filter(it => it.SUBSCRPT_RANK_CODE==1 && it.RESIDE_SECD===secd)
+         .reduce((s,it) => s+(parseInt(it.REQ_CNT)||0), 0)
+  ).filter((v,i,arr) => v > 0 ? true : (arr.some(x=>x>0)));
+  const resideLabels = ['01','02','03'].filter((s,i) => resideReqs[i] > 0).map(s => resideMap[s]);
+  const resideVals   = resideReqs.filter(v => v > 0);
+
+  destroyChart('aptReside');
+  charts.aptReside = new Chart(document.getElementById('apt-reside-chart'), {
+    type: 'doughnut',
+    data:{ labels: resideLabels, datasets:[{
+      data: resideVals,
+      backgroundColor:['#1a3a5c','#2d6a4f','#BA7517'],
+      borderWidth: 2, borderColor: 'transparent'
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true, position:'bottom', labels:{font:{size:10}, boxWidth:10}},
+        tooltip:{callbacks:{label:c => c.label+': '+c.parsed.toLocaleString()+'건 ('+
+          (c.parsed/resideVals.reduce((a,b)=>a+b,1)*100).toFixed(1)+'%)'}}
+      }
+    }
+  });
+
+  // 상세 테이블
+  const tbody = document.getElementById('apt-detail-tbody');
+  tbody.innerHTML = '';
+
+  // 주택형 × 순위 × 거주구분 정렬
+  const sorted = [...cmpet].sort((a,b) => {
+    const htCmp = (a.HOUSE_TY||'').localeCompare(b.HOUSE_TY||'');
+    if(htCmp !== 0) return htCmp;
+    const rnkCmp = (a.SUBSCRPT_RANK_CODE||0) - (b.SUBSCRPT_RANK_CODE||0);
+    if(rnkCmp !== 0) return rnkCmp;
+    return (a.RESIDE_SECD||'').localeCompare(b.RESIDE_SECD||'');
+  });
+
+  const resideNm = {'01':'해당지역','02':'기타지역','03':'기타경기'};
+  let lastHt = null;
+  sorted.forEach(it => {
+    const ht   = it.HOUSE_TY || '—';
+    const mn   = it.MODEL_NO || '—';
+    const sd   = it.SUPLY_HSHLDCO || '—';
+    const rsnm = resideNm[it.RESIDE_SECD] || it.RESIDE_SENM || '—';
+    const rank = it.SUBSCRPT_RANK_CODE || '—';
+    const req  = parseInt(it.REQ_CNT) || 0;
+    const cr   = it.CMPET_RATE || '—';
+
+    const isNew = ht !== lastHt;
+    lastHt = ht;
+
+    // 경쟁률 색상
+    const crNum = parseFloat(cr) || 0;
+    const crClass = crNum>=50?'hi':crNum>=20?'':crNum>0?'':'lo';
+    const crStyle = crNum>=50?'color:var(--red);font-weight:500':crNum>=20?'color:var(--accent);font-weight:500':'';
+
+    tbody.innerHTML += '<tr style="' + (isNew?'border-top:1.5px solid var(--bg3)':'') + '">' +
+      '<td style="font-family:var(--mono);font-size:12px' + (isNew?';font-weight:500;color:var(--ink)':'') + '">' + ht + '</td>' +
+      '<td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">' + mn + '</td>' +
+      '<td class="num">' + sd + '</td>' +
+      '<td style="font-size:12px">' +
+        '<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-family:var(--mono);' +
+        (it.RESIDE_SECD==='01'?'background:#e8eef5;color:#1a3a5c':
+         it.RESIDE_SECD==='02'?'background:#e8f0e8;color:#2d6a4f':
+         'background:#faeeda;color:#633806') + '">' + rsnm + '</span></td>' +
+      '<td class="num" style="font-family:var(--mono)">' + rank + '순위</td>' +
+      '<td class="num">' + (req?req.toLocaleString():'—') + '</td>' +
+      '<td class="num" style="' + crStyle + '">' + cr + '</td>' +
+      '</tr>';
+  });
+}
+
+function changePage(dir) {
+  const newPage = apiCurrentPage + dir;
+  const totalPages = Math.ceil(apiTotalCount / 20);
+  if(newPage < 1 || newPage > totalPages) return;
+  fetchApi(apiCurrentQuery, newPage);
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+</script>
+
+<script src="js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const _app = initializeApp(FIREBASE_CONFIG);
+const _auth = getAuth(_app);
+const _db = getFirestore(_app);
+onAuthStateChanged(_auth, async u => {
+  const right = document.getElementById('gnav-right');
+  if(!right) return;
+  if(u) {
+    const snap = await getDoc(doc(_db,'users',u.uid));
+    const ud = snap.data();
+    const name = ud?.displayName || u.email.split('@')[0];
+    const isAdmin = ud?.role === 'admin';
+    right.innerHTML = `<div style="position:relative" onmouseenter="this.querySelector('.dd').style.display='block'" onmouseleave="this.querySelector('.dd').style.display='none'">
+      <div style="display:flex;align-items:center;gap:.4rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;font-size:12px;color:var(--ink2)">
+        <div style="width:26px;height:26px;background:var(--accent,#1d4ed8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:500">${name[0].toUpperCase()}</div>
+        <span>${name}</span>${isAdmin?'<span style="background:#fef2f2;color:#dc2626;font-size:9px;padding:1px 5px;border-radius:3px;font-family:monospace">관리자</span>':''}▾
+      </div>
+      <div class="dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--bg3,#e5e7eb);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,.08);min-width:150px;padding:.375rem;z-index:300">
+        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px;font-weight:500">⚙ 관리자 대시보드</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
+        <a href="#" onclick="signOut(_auth).then(()=>{location.href='/competition.html';});return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
+      </div>
+    </div>`;
+  } else {
+    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff;border:1px solid #1d4ed8">관리자 로그인</a>`;
+  }
+  // 방문자 추적
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const month = today.slice(0,7);
+    const sk = 'al_v_'+today;
+    if(!sessionStorage.getItem(sk)) {
+      sessionStorage.setItem(sk,'1');
+      await setDoc(doc(_db,'analytics_daily',today),{views:increment(1),date:today,month},{merge:true});
+      await setDoc(doc(_db,'analytics_monthly',month),{views:increment(1),month},{merge:true});
+      const page = location.pathname.replace(/\//g,'_').replace(/^_/,'')||'home';
+      await setDoc(doc(_db,'analytics_pages',page),{views:increment(1),page:location.pathname},{merge:true});
+    }
+  } catch(e) {}
+});
+</script>
+
+<script type="module" src="js/inquiry.js"></script>
+</body>
+</html>

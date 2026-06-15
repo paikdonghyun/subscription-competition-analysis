@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/favicon-180.png">
+  <link rel="manifest" href="/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관리자 계정 · 청약랩</title>
@@ -93,11 +97,11 @@ onAuthStateChanged(auth, async u => {
   if(!u){location.href='/login.html';return;}
   meAuth=u;
   me=await ensureAdminDoc(u);
-  if(me?.role!=='admin'){alert('관리자만 접근 가능합니다.');location.href='/';return;}
+  if(me?.role!=='admin'){alert('관리자만 접근 가능합니다.');location.href='/competition.html';return;}
   renderMyInfo();
   loadAdmins();
 });
-window.doLogout=async()=>{await signOut(auth);location.href='/';};
+window.doLogout=async()=>{await signOut(auth);location.href='/competition.html';};
 
 function showAlert(msg,type='success'){
   const el=document.getElementById('alert-area');

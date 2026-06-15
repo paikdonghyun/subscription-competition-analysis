@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/favicon-180.png">
+  <link rel="manifest" href="/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관리자 대시보드 · 청약랩</title>
@@ -163,13 +167,13 @@ async function ensureAdminDoc(u){
 onAuthStateChanged(auth, async u => {
   if(!u){ location.href='/login.html'; return; }
   const ud = await ensureAdminDoc(u);
-  if(ud?.role !== 'admin'){ alert('관리자만 접근할 수 있습니다.'); location.href='/'; return; }
+  if(ud?.role !== 'admin'){ alert('관리자만 접근할 수 있습니다.'); location.href='/competition.html'; return; }
   document.getElementById('admin-user-info').textContent = `로그인: ${ud.displayName||u.email} (${ud.role})`;
   loadStats();
   loadSummary();
 });
 
-window.doLogout = async () => { await signOut(auth); location.href='/'; };
+window.doLogout = async () => { await signOut(auth); location.href='/competition.html'; };
 window.loadStats = loadStats;
 
 window.setPeriod = (days) => {
