@@ -9,9 +9,9 @@ import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm';
 
 
 // ── EmailJS 설정 (https://www.emailjs.com 에서 발급) ──
-const EMAILJS_SERVICE_ID  = 'EMAILJS_SERVICE_ID_HERE';   // 예: service_abc123
-const EMAILJS_TEMPLATE_ID = 'EMAILJS_TEMPLATE_ID_HERE';  // 예: template_xyz789
-const EMAILJS_PUBLIC_KEY  = 'EMAILJS_PUBLIC_KEY_HERE';   // Public Key
+const EMAILJS_SERVICE_ID  = 'service_14kp10q';
+const EMAILJS_TEMPLATE_ID = 'template_brxrrt7';
+const EMAILJS_PUBLIC_KEY  = 'u-INa1jFb7x3Axdto';
 
 
 // index.html 등 기본 앱이 이미 초기화된 페이지와 충돌하지 않도록 별도 이름의 앱 사용
