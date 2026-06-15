@@ -43,6 +43,33 @@
   --radius:6px;--radius-lg:10px;--radius-xl:14px;
   --max-w:1400px;--content-w:860px;
 }
+/* ══ NAV 기본 CSS ══ */
+.nav{background:#fff;border-bottom:1px solid var(--bg4,#e5e7eb);box-shadow:0 1px 3px rgba(0,0,0,.07);position:sticky;top:0;z-index:100}
+.nav-in{max-width:var(--max-w,1400px);margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
+.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0}
+.logo-kr{font-family:var(--serif,'Noto Serif KR',serif);font-size:1.1rem;font-weight:600;color:var(--ink,#18181b)}
+.logo-en{font-family:var(--mono,'IBM Plex Mono',monospace);font-size:.68rem;color:var(--ink3,#71717a);letter-spacing:.05em}
+.nav-div{width:1px;height:16px;background:var(--bg4,#e5e7eb);flex-shrink:0}
+.nav-menu{display:flex;gap:.125rem;flex:1}
+.nav-a{font-size:13px;color:var(--ink3,#71717a);padding:.38rem .75rem;border-radius:var(--radius,6px);transition:all .12s;text-decoration:none;white-space:nowrap}
+.nav-a:hover{color:var(--ink,#18181b);background:var(--bg3,#f3f4f6)}
+.nav-a.on{color:var(--accent,#1d4ed8);font-weight:500;background:var(--accent-light,#eff6ff)}
+.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
+.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--radius,6px);background:var(--accent,#1d4ed8);color:#fff;text-decoration:none;white-space:nowrap}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--radius,6px);flex-shrink:0}
+.nav-hamburger span{display:block;height:2px;background:var(--ink2,#3f3f46);border-radius:2px;transition:all .25s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav-mobile{display:none;flex-direction:column;background:#fff;border-bottom:1px solid var(--bg4,#e5e7eb);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
+.nav-mobile.open{display:flex}
+.nav-mobile-inner{max-width:var(--max-w,1400px);margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
+.nav-mobile-a{font-size:14px;color:var(--ink2,#3f3f46);padding:.65rem .875rem;border-radius:var(--radius,6px);text-decoration:none;transition:background .12s;font-weight:300}
+.nav-mobile-a:hover{background:var(--bg3,#f3f4f6)}
+.nav-mobile-a.on{color:var(--accent,#1d4ed8);font-weight:500;background:var(--accent-light,#eff6ff)}
+#visitor-counter{flex-shrink:0}
+
+
 html{scroll-behavior:smooth}
 body{font-family:var(--sans);background:var(--bg2);color:var(--ink);min-height:100vh;font-weight:300;font-size:14px;line-height:1.6}
 
@@ -347,6 +374,8 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
   .nav-mobile{display:none!important}
 }
 
+
+#api-notice{background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;padding:.875rem 1.125rem;margin-bottom:.875rem;flex-direction:row;align-items:flex-start;gap:.75rem}
 </style>
 <script type="application/ld+json">
   {
@@ -538,9 +567,7 @@ footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);t
 
   <!-- ── API 탭 ── -->
   <div class="panel" id="panel-api">
-    <div id="api-notice" style="
-      background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;
-      padding:.875rem 1.125rem;margin-bottom:.875rem;display:flex;align-items:flex-start;gap:.75rem">
+    <div id="api-notice" style="display:none">
       <span style="font-size:1.1rem;flex-shrink:0">⚠</span>
       <div>
         <div style="font-size:13px;font-weight:500;color:#92400e;margin-bottom:.25rem">
@@ -928,6 +955,7 @@ async function fetchApi(q, page) {
   document.getElementById('api-placeholder').style.display = 'none';
   document.getElementById('api-result').style.display = 'none';
   document.getElementById('api-error').style.display = 'none';
+  document.getElementById('api-notice').style.display = 'none';
   document.getElementById('api-loading').style.display = 'block';
   document.getElementById('api-loading-msg').textContent = '"' + q + '" 단지 검색 중...';
 
@@ -1120,6 +1148,7 @@ async function fetchApi(q, page) {
     document.getElementById('api-loading').style.display = 'none';
     document.getElementById('api-error').style.display = 'block';
     if (err.message === 'API_MAINTENANCE') {
+      document.getElementById('api-notice').style.display = 'flex';
       document.getElementById('api-error').innerHTML =
         '<div style="display:flex;align-items:flex-start;gap:.625rem">' +
         '<span style="font-size:1.1rem;flex-shrink:0">⚠</span>' +
@@ -1145,6 +1174,7 @@ async function fetchApi(q, page) {
 
 
 function renderApiResult(q, joinedItems, totalMatchCount, page) {
+  document.getElementById('api-notice').style.display = 'none';
   document.getElementById('api-loading').style.display = 'none';
   document.getElementById('api-result').style.display = 'block';
 
