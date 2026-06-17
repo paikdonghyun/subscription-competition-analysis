@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부동산 뉴스 키워드 트렌드 · 청약랩 ApplyLab</title>
+<meta name="description" content="2016~2021년 부동산 뉴스 키워드 트렌드 분석. 분기별 핵심 키워드 변화로 부동산 시장 흐름을 읽습니다.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --bg:#f8fafc;--bg2:#f1f5f9;--bg3:#e2e8f0;--white:#fff;
+  --accent:#1d4ed8;--accent-l:#eff6ff;--accent-h:#1e40af;
+  --red:#dc2626;--green:#16a34a;--orange:#ea580c;--amber:#d97706;
+  --gold:#b45309;--purple:#7c3aed;--teal:#0d9488;
+  --serif:'Noto Serif KR',serif;
+  --sans:'Noto Sans KR',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.08);
+  --r:6px;--rl:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;font-weight:300}
+
+/* ── NAV ── */
+.nav{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--sh);position:sticky;top:0;z-index:100}
+.nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem;overflow:hidden}
+.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0;color:inherit}
+.logo-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
+.logo-en{font-family:var(--mono);font-size:.68rem;color:var(--ink3);letter-spacing:.05em}
+.nav-div{width:1px;height:16px;background:var(--bg3);flex-shrink:0}
+.nav-menu{display:flex;gap:.125rem;flex:1}
+.nav-a{font-size:13px;color:var(--ink3);padding:.38rem .75rem;border-radius:var(--r);transition:all .12s;text-decoration:none;white-space:nowrap}
+.nav-a:hover{color:var(--ink);background:var(--bg2)}
+.nav-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
+.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
+.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--r);flex-shrink:0}
+.nav-hamburger span{display:block;height:2px;background:var(--ink2);border-radius:2px;transition:all .25s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav-mobile{display:none;flex-direction:column;background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
+.nav-mobile.open{display:flex}
+.nav-mobile-inner{max-width:1400px;margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
+.nav-mobile-a{font-size:14px;color:var(--ink2);padding:.65rem .875rem;border-radius:var(--r);text-decoration:none;transition:background .12s;font-weight:300}
+.nav-mobile-a:hover{background:var(--bg2)}
+.nav-mobile-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f2a1e 100%);color:#fff;padding:3rem 1.5rem 2.5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-in{max-width:1400px;margin:0 auto;position:relative}
+.hero-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#34d399;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.hero-eyebrow::before{content:'';display:inline-block;width:20px;height:1.5px;background:#34d399}
+.hero-title{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;line-height:1.25;margin-bottom:.75rem;color:#f1f5f9}
+.hero-title em{color:#34d399;font-style:normal}
+.hero-desc{font-size:14px;color:#94a3b8;max-width:560px;line-height:1.7;margin-bottom:1.5rem}
+.hero-meta{display:flex;gap:1.5rem;flex-wrap:wrap}
+.hero-stat{display:flex;flex-direction:column}
+.hero-stat-v{font-family:var(--mono);font-size:1.3rem;font-weight:600;color:#f1f5f9}
+.hero-stat-l{font-size:10px;color:#64748b;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1400px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start}
+.main{padding:0 1.25rem;min-width:0}
+.ad-col{padding-top:0}
+.ad-sticky{position:sticky;top:66px}
+.ad-box{background:var(--bg2);border:1px dashed var(--bg3);border-radius:var(--rl);text-align:center;overflow:hidden;margin-bottom:.65rem}
+.ad-lbl{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;padding:.3rem;border-bottom:1px solid var(--bg3);text-transform:uppercase}
+@media(max-width:1200px){.wrap{grid-template-columns:1fr}.ad-col{display:none}.main{padding:0}}
+
+/* ── 분기 타임라인 슬라이더 ── */
+.timeline-ctrl{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh);margin-bottom:1rem}
+.timeline-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem}
+.timeline-ym{font-family:var(--serif);font-size:1.25rem;font-weight:600;color:var(--ink)}
+.timeline-total{font-family:var(--mono);font-size:11px;color:var(--ink4);background:var(--bg2);padding:3px 10px;border-radius:20px}
+.timeline-bar{display:grid;grid-template-columns:repeat(19,1fr);gap:3px;margin-bottom:.75rem}
+.tb-item{height:40px;border-radius:4px;cursor:pointer;position:relative;background:var(--bg3);transition:all .2s;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.tb-item::before{content:'';position:absolute;bottom:0;left:0;right:0;background:var(--accent);transition:height .3s ease;border-radius:3px}
+.tb-item.on{background:var(--accent-l);outline:2px solid var(--accent)}
+.tb-item:hover{transform:scaleY(1.05);transform-origin:bottom}
+.tb-label{font-family:var(--mono);font-size:7px;color:var(--ink4);text-align:center;padding:2px 0;position:relative;z-index:1}
+.tb-item.on .tb-label{color:var(--accent);font-weight:600}
+.timeline-nav{display:flex;gap:.5rem;align-items:center;justify-content:center}
+.tn-btn{font-size:12px;padding:.4rem .875rem;border-radius:var(--r);border:1.5px solid var(--bg3);background:var(--white);color:var(--ink3);cursor:pointer;font-family:var(--mono);transition:all .12s}
+.tn-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.tn-btn:disabled{opacity:.35;cursor:default}
+.tn-info{font-family:var(--mono);font-size:11px;color:var(--ink4)}
+
+/* ── 메인 그리드 ── */
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:.875rem}
+@media(max-width:900px){.analysis-grid{grid-template-columns:1fr}}
+
+/* ── 카드 ── */
+.card{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh)}
+.card-title{font-family:var(--serif);font-size:.88rem;font-weight:600;color:var(--ink);margin-bottom:.875rem;display:flex;align-items:center;gap:.4rem}
+.card-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
+.card-sub{font-size:10px;color:var(--ink4);font-family:var(--mono);margin-left:.3rem;font-weight:400}
+
+/* ── 키워드 버블 ── */
+.keyword-cloud{display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end;min-height:180px;padding:.25rem 0}
+.kw-bubble{display:inline-flex;align-items:center;gap:.3rem;border-radius:24px;cursor:default;transition:all .2s;position:relative;font-family:var(--sans)}
+.kw-bubble:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.kw-bubble .kw-rank{font-family:var(--mono);opacity:.6;flex-shrink:0}
+.kw-bubble .kw-text{font-weight:500}
+.kw-bubble .kw-cnt{font-family:var(--mono);opacity:.65;font-size:.75em}
+
+/* ── 카테고리 도넛 ── */
+.donut-wrap{height:220px;position:relative}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-center-v{font-family:var(--serif);font-size:1.4rem;font-weight:600;color:var(--ink);line-height:1}
+.donut-center-l{font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:3px}
+
+/* ── 언론사 바 ── */
+.media-list{display:flex;flex-direction:column;gap:.5rem;max-height:220px;overflow-y:auto}
+.media-row{display:flex;align-items:center;gap:.625rem}
+.media-name{font-size:12px;color:var(--ink2);width:80px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.media-bar-w{flex:1;background:var(--bg2);border-radius:4px;height:16px;overflow:hidden}
+.media-bar{height:100%;border-radius:4px;background:var(--accent);transition:width .5s ease;min-width:2px}
+.media-cnt{font-family:var(--mono);font-size:10px;color:var(--ink4);width:40px;text-align:right;flex-shrink:0}
+
+/* ── 트렌드 차트 ── */
+.trend-wrap{height:200px}
+
+/* ── 뉴스 헤드라인 ── */
+.headline-list{display:flex;flex-direction:column;gap:.5rem;max-height:220px;overflow-y:auto}
+.headline-item{display:flex;gap:.625rem;padding:.5rem .625rem;border-radius:var(--r);background:var(--bg);transition:background .12s;cursor:default}
+.headline-item:hover{background:var(--bg2)}
+.hl-date{font-family:var(--mono);font-size:10px;color:var(--ink4);white-space:nowrap;flex-shrink:0;padding-top:2px}
+.hl-media{font-size:10px;color:var(--accent);white-space:nowrap;flex-shrink:0;padding-top:2px;font-family:var(--mono)}
+.hl-title{font-size:12.5px;color:var(--ink2);line-height:1.4}
+
+/* ── 키워드 트렌드 비교 ── */
+.compare-ctrl{display:flex;gap:.5rem;margin-bottom:.875rem;flex-wrap:wrap;align-items:center}
+.compare-input{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink);padding:.4rem .75rem;border-radius:var(--r);font-size:13px;font-family:var(--sans);outline:none;width:160px}
+.compare-input:focus{border-color:var(--accent)}
+.compare-btn{font-size:12px;font-weight:500;padding:.4rem .9rem;border-radius:var(--r);border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-family:var(--sans);transition:all .12s}
+.compare-btn:hover{background:var(--accent-h)}
+.compare-tags{display:flex;gap:.375rem;flex-wrap:wrap}
+.compare-tag{display:inline-flex;align-items:center;gap:.3rem;padding:3px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .12s}
+.compare-tag .del{opacity:.6;font-size:10px}
+
+/* ── 로딩 ── */
+.loading{text-align:center;padding:2.5rem;color:var(--ink4);font-family:var(--mono);font-size:12px}
+.spin{width:24px;height:24px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .75rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── 이벤트 배지 ── */
+.event-badge{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;margin-left:.375rem;font-weight:500}
+.ev-reg{background:#fef3c7;color:#92400e}
+.ev-hot{background:#fef2f2;color:#dc2626}
+.ev-cool{background:#f0fdf4;color:#16a34a}
+
+/* ── NOTE ── */
+.note{background:var(--bg2);border-left:3px solid var(--bg3);padding:.5rem .875rem;border-radius:0 var(--r) var(--r) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6;margin-top:.75rem}
+
+/* ── 반응형 ── */
+@media(max-width:768px){
+  .hero{padding:2rem 1rem 1.75rem}
+  .timeline-bar{grid-template-columns:repeat(10,1fr);gap:2px}
+  .timeline-bar .tb-item:nth-child(n+11){display:none}
+  .kw-bubble .kw-rank{display:none}
+  .compare-ctrl{flex-direction:column;align-items:stretch}
+  .compare-input{width:100%}
+}
+@media(max-width:900px){
+  .nav-menu,.nav-div,.nav-right{display:none}
+  .nav-hamburger{display:flex}
+  .nav-in{padding:0 1rem;overflow:visible}
+}
+@media(min-width:901px){
+  .nav-mobile{display:none!important}
+}
+@media(max-width:480px){
+  .logo-en{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <a href="/home.html" class="logo">
+      <span class="logo-kr">청약랩</span><span class="logo-en">ApplyLab</span>
+    </a>
+    <div class="nav-div"></div>
+    <nav class="nav-menu">
+      <a href="/home.html" class="nav-a">HOME</a>
+      <a href="/competition.html" class="nav-a">청약경쟁률</a>
+      <a href="/price.html" class="nav-a">분양가격</a>
+      <a href="/unsold.html" class="nav-a">미분양 현황</a>
+      <a href="/bankbook.html" class="nav-a">청약통장 현황</a>
+      <a href="/news-trend.html" class="nav-a on">뉴스 트렌드</a>
+    </nav>
+    <div class="nav-right">
+      <span id="visitor-counter" style="display:none"></span>
+      <a href="/login.html" class="nav-btn">관리자 로그인</a>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="메뉴 열기">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile">
+  <div class="nav-mobile-inner">
+    <a href="/home.html" class="nav-mobile-a">HOME</a>
+    <a href="/competition.html" class="nav-mobile-a">청약경쟁률</a>
+    <a href="/price.html" class="nav-mobile-a">분양가격</a>
+    <a href="/unsold.html" class="nav-mobile-a">미분양 현황</a>
+    <a href="/bankbook.html" class="nav-mobile-a">청약통장 현황</a>
+    <a href="/news-trend.html" class="nav-mobile-a on">뉴스 트렌드</a>
+  </div>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('nav-hamburger');
+  var mob=document.getElementById('nav-mobile');
+  if(!btn||!mob) return;
+  btn.addEventListener('click',function(){
+    var open=mob.classList.toggle('open');
+    btn.classList.toggle('open',open);
+    btn.setAttribute('aria-label',open?'메뉴 닫기':'메뉴 열기');
+  });
+  document.addEventListener('click',function(e){
+    if(!btn.contains(e.target)&&!mob.contains(e.target)){mob.classList.remove('open');btn.classList.remove('open');}
+  });
+  window.addEventListener('resize',function(){
+    if(window.innerWidth>900){mob.classList.remove('open');btn.classList.remove('open');}
+  });
+})();
+</script>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-in">
+    <div class="hero-eyebrow">한국언론진흥재단 뉴스빅데이터</div>
+    <h1 class="hero-title">부동산 뉴스가 말하는 것<br><em>키워드로 읽는 시장의 온도</em></h1>
+    <p class="hero-desc">2016~2021년 부동산 관련 뉴스 45만여 건의 키워드를 분기별로 분석합니다. 언론이 주목한 단어의 변화에서 시장 흐름의 맥락을 읽어보세요.</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><span class="hero-stat-v" id="stat-total">–</span><span class="hero-stat-l">총 기사 수</span></div>
+      <div class="hero-stat"><span class="hero-stat-v">19</span><span class="hero-stat-l">분기 (2016Q2~2021Q2)</span></div>
+      <div class="hero-stat"><span class="hero-stat-v" id="stat-media">–</span><span class="hero-stat-l">언론사 수</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- 좌측 광고 -->
+  <div class="ad-col"><div class="ad-sticky">
+    <div class="ad-box"><div class="ad-lbl">Ad</div>
+      <ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-5133871958265300" data-ad-slot="auto"></ins>
+    </div>
+  </div></div>
+
+  <div class="main">
+
+    <!-- 분기 타임라인 -->
+    <div class="timeline-ctrl">
+      <div class="timeline-header">
+        <div>
+          <span class="timeline-ym" id="tl-ym">2021 Q2</span>
+          <span class="event-badge ev-hot" id="tl-event">LH 사태</span>
+        </div>
+        <span class="timeline-total" id="tl-total">로딩 중…</span>
+      </div>
+      <div class="timeline-bar" id="timeline-bar"></div>
+      <div class="timeline-nav">
+        <button class="tn-btn" id="btn-prev" onclick="movePeriod(-1)">← 이전</button>
+        <span class="tn-info" id="tl-nav-info"></span>
+        <button class="tn-btn" id="btn-next" onclick="movePeriod(1)">다음 →</button>
+      </div>
+    </div>
+
+    <!-- 로딩 -->
+    <div class="loading" id="loading"><div class="spin"></div>뉴스 데이터 분석 중…</div>
+
+    <div id="content" style="display:none">
+
+      <!-- 키워드 버블 + 카테고리 -->
+      <div class="analysis-grid">
+        <div class="card">
+          <div class="card-title">핵심 키워드 Top 20<span class="card-sub">특성추출 빈도 기준</span></div>
+          <div class="keyword-cloud" id="kw-cloud"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">보도 카테고리 분포<span class="card-sub">통합 분류 기준</span></div>
+          <div class="donut-wrap">
+            <canvas id="chart-cat"></canvas>
+            <div class="donut-center">
+              <div class="donut-center-v" id="donut-pct">–%</div>
+              <div class="donut-center-l">경제>부동산</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 언론사 + 헤드라인 -->
+      <div class="analysis-grid">
+        <div class="card">
+          <div class="card-title">언론사별 보도량<span class="card-sub">기사 수 기준</span></div>
+          <div class="media-list" id="media-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">주요 뉴스 헤드라인<span class="card-sub">해당 분기 샘플</span></div>
+          <div class="headline-list" id="headline-list"></div>
+        </div>
+      </div>
+
+      <!-- 광고 (중간) -->
+      <div class="ad-box" style="margin:.75rem 0"><div class="ad-lbl">Advertisement</div>
+        <ins class="adsbygoogle" style="display:block;width:100%;height:90px" data-ad-client="ca-pub-5133871958265300" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      </div>
+
+      <!-- 분기별 기사량 추이 -->
+      <div class="card" style="margin-bottom:.875rem">
+        <div class="card-title">분기별 기사량 추이<span class="card-sub">전체 기간 · 막대 클릭으로 분기 이동</span></div>
+        <div class="trend-wrap"><canvas id="chart-trend"></canvas></div>
+      </div>
+
+      <!-- 키워드 추이 비교 -->
+      <div class="card" style="margin-bottom:.875rem">
+        <div class="card-title">키워드 출현 추이 비교<span class="card-sub">분기별 특정 키워드의 보도 빈도 변화</span></div>
+        <div class="compare-ctrl">
+          <input type="text" class="compare-input" id="kw-input" placeholder="키워드 입력 (예: 재건축)" maxlength="10">
+          <button class="compare-btn" onclick="addCompareKw()">추가</button>
+          <div class="compare-tags" id="compare-tags"></div>
+        </div>
+        <div style="height:220px"><canvas id="chart-compare"></canvas></div>
+        <div class="note">※ 각 분기 샘플 500건 기준 출현 빈도 (전체 건수 대비 상대값). 같은 단어도 기사마다 복수 등장할 수 있습니다.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 우측 광고 -->
+  <div class="ad-col"><div class="ad-sticky">
+    <div class="ad-box"><div class="ad-lbl">Ad</div>
+      <ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-5133871958265300" data-ad-slot="auto"></ins>
+    </div>
+  </div></div>
+</div>
+
+<footer style="background:#0f172a;padding:1.5rem;margin-top:2rem">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <span style="font-family:var(--serif);font-size:13px;color:#e2e8f0;font-weight:600">청약랩</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#334155">·</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#475569">ApplyLab</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#334155">·</span>
+      <span style="font-family:var(--mono);font-size:10px;color:#475569">데이터 출처: 한국언론진흥재단 뉴스빅데이터 (공공데이터포털)</span>
+    </div>
+    <div style="text-align:center;font-family:var(--mono);font-size:10px;color:#334155">
+      <a href="/privacy.html" style="color:#475569">개인정보취급방침</a> &nbsp;|&nbsp;
+      <a href="mailto:shake100@gmail.com" style="color:#475569">문의: shake100@gmail.com</a><br>
+      © 2026 청약랩 ApplyLab. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<script src="js/firebase-config.js"></script>
+<script type="module" src="js/inquiry.js"></script>
+
+<script>
+/* ============================================================
+   부동산 뉴스 키워드 트렌드 — 한국언론진흥재단 뉴스빅데이터
+   ============================================================ */
+const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+const BASE    = 'https://api.odcloud.kr/api/15086379/v1/';
+
+// 19개 분기 엔드포인트 정의
+const PERIODS = [
+  { ym:'2016-Q2', label:'16Q2', count:0, uid:'uddi:3f488f36-a8c1-41f7-b9c4-b244f7f704f9', event:'', evCls:'' },
+  { ym:'2016-Q3', label:'16Q3', count:0, uid:'uddi:32405fd1-9876-443d-879d-a3257a5c0edc', event:'', evCls:'' },
+  { ym:'2016-Q4', label:'16Q4', count:0, uid:'uddi:c2dca047-1b59-4344-bfd3-af313fecc12a', event:'탄핵정국', evCls:'ev-hot' },
+  { ym:'2017-Q1', label:'17Q1', count:0, uid:'uddi:8145d615-478d-4774-adba-8f154d51be28', event:'', evCls:'' },
+  { ym:'2017-Q2', label:'17Q2', count:0, uid:'uddi:59b576d3-d6b0-428a-a267-96d149625809', event:'8·2대책', evCls:'ev-hot' },
+  { ym:'2017-Q3', label:'17Q3', count:0, uid:'uddi:585d4e05-6dec-4745-ad17-e2fac2365173', event:'', evCls:'' },
+  { ym:'2017-Q4', label:'17Q4', count:0, uid:'uddi:dffb8f3c-6027-48e1-ada9-f25275ac2d15', event:'', evCls:'' },
+  { ym:'2018-Q1', label:'18Q1', count:0, uid:'uddi:548fef71-c6fc-4ac9-a587-d57856a51b7a', event:'', evCls:'' },
+  { ym:'2018-Q2', label:'18Q2', count:0, uid:'uddi:5a927c8f-ae85-4598-9fc8-a27972e82f58', event:'', evCls:'' },
+  { ym:'2018-Q3', label:'18Q3', count:0, uid:'uddi:5a6b5566-1946-4135-971f-8d324f3b1d9d', event:'종부세개편', evCls:'ev-reg' },
+  { ym:'2019-Q1', label:'19Q1', count:0, uid:'uddi:a77152a2-1ee1-46c8-9c71-af7f94e36d87', event:'', evCls:'' },
+  { ym:'2019-Q2', label:'19Q2', count:0, uid:'uddi:65b32352-b600-4900-84dd-efeee5b19db6', event:'', evCls:'' },
+  { ym:'2019-Q3', label:'19Q3', count:0, uid:'uddi:7e172e58-6ce5-4e74-82b7-e498fd88621c', event:'12·16대책', evCls:'ev-hot' },
+  { ym:'2019-Q4', label:'19Q4', count:0, uid:'uddi:e57f51d5-13ab-477a-8979-d982dc9ad6e3', event:'', evCls:'' },
+  { ym:'2020-Q1', label:'20Q1', count:0, uid:'uddi:825cb5ac-66aa-4a42-9d73-be0a6df9085a', event:'코로나', evCls:'ev-hot' },
+  { ym:'2020-Q2', label:'20Q2', count:0, uid:'uddi:7017f828-3820-413a-902c-cbabb1d15853', event:'7·10대책', evCls:'ev-hot' },
+  { ym:'2020-Q3', label:'20Q3', count:0, uid:'uddi:c0cac89c-0edf-499d-8de5-dbe22c00669e', event:'', evCls:'' },
+  { ym:'2021-Q1', label:'21Q1', count:0, uid:'uddi:f7192d7f-c839-4c1a-a06b-975ff9a210ba', event:'', evCls:'' },
+  { ym:'2021-Q2', label:'21Q2', count:0, uid:'uddi:efcce552-28e5-4f49-9e68-e5a1dcfb41b1', event:'LH사태', evCls:'ev-hot' },
+];
+
+// 불용어
+const STOP = new Set([
+  '부동산','아파트','시장','투자','주택','서울','정부','지역','사업','기업',
+  '가격','분양','정책','금융','경제','사람','이번','지난','올해','이후',
+  '때문','관련','현재','대한','이상','이하','수준','문제','대해','통해',
+  '위한','있는','하는','되는','하고','이를','그는','또한','있다','한국',
+  '우리','자신','모든','없는','하지','이런','그런','같은','이제','만약',
+  '기자','기사','억원','만원','조원','위해','까지','라고','에서','으로',
+  '전문','전문가','계획','시행','발표','규정','제도','법안','방안','하반기',
+  '상반기','전년','작년','지금','앞서','그동안','이날','관계자','업계','소비자',
+  '서울시','국토부','국토','교통부','중개','임대','임차','공급','수요','전세',
+  '월세','매매','거래','건설','재개','재개발','청약','경기도','인천','수도권'
+]);
+
+// 카테고리 색상
+const CAT_COLORS = {
+  '경제>부동산':     '#1d4ed8',
+  '경제>금융_재테크':'#7c3aed',
+  '경제>산업_기업':  '#0d9488',
+  '경제>증권_증시':  '#d97706',
+  '정치>행정_자치':  '#dc2626',
+  '사회>사건_사고':  '#ea580c',
+  '경제>경제일반':   '#64748b',
+  '기타':            '#94a3b8',
+};
+
+// 비교 키워드 색상
+const COMPARE_COLORS = ['#1d4ed8','#dc2626','#16a34a','#d97706','#7c3aed','#0d9488'];
+
+const state = {
+  idx: 18,   // 마지막 분기(2021-Q2)부터
+  cache: {},
+  charts: {},
+  totalSum: 0,
+  mediaSet: new Set(),
+  allCounts: [],        // 분기별 totalCount
+  compareKws: [],       // 비교 키워드 목록
+  compareData: {},      // kw → [분기별 빈도]
+};
+
+const fmt = n => n == null ? '–' : Number(n).toLocaleString('ko-KR');
+
+/* ---------- 데이터 로딩 ---------- */
+async function loadPeriod(idx) {
+  const p = PERIODS[idx];
+  if (state.cache[idx]) return state.cache[idx];
+
+  const url = `${BASE}${p.uid}?page=1&perPage=500&serviceKey=${API_KEY}`;
+  const res = await fetch(url);
+  const d   = await res.json();
+  const rows = d.data || [];
+  const total = d.totalCount || rows.length;
+
+  // 키워드 집계 (특성추출)
+  const kwMap = {};
+  const catMap = {};
+  const mediaMap = {};
+
+  rows.forEach(r => {
+    // 특성추출 키워드
+    String(r['특성추출'] || '').split(',').forEach(k => {
+      k = k.trim();
+      if (k.length >= 2 && !STOP.has(k) && !/^\d+$/.test(k))
+        kwMap[k] = (kwMap[k] || 0) + 1;
+    });
+    // 카테고리
+    const cat = String(r['통합 분류1'] || '기타');
+    catMap[cat] = (catMap[cat] || 0) + 1;
+    // 언론사
+    const media = String(r['언론사'] || '');
+    if (media) mediaMap[media] = (mediaMap[media] || 0) + 1;
+    // 헤드라인에 언론사 추가
+    state.mediaSet.add(media);
+  });
+
+  const kwTop = Object.entries(kwMap)
+    .sort((a,b) => b[1]-a[1]).slice(0,20)
+    .map(([k,v]) => ({ k, v }));
+
+  const catSorted = Object.entries(catMap).sort((a,b) => b[1]-a[1]);
+  const mediaSorted = Object.entries(mediaMap).sort((a,b) => b[1]-a[1]).slice(0,12);
+  const headlines = rows.filter(r => r['제목']).slice(0,20)
+    .map(r => ({ title: r['제목'], date: r['일자'], media: r['언론사'] }));
+
+  const result = { total, kwTop, catSorted, mediaSorted, headlines, rows };
+  state.cache[idx] = result;
+  return result;
+}
+
+/* ---------- 전체 분기 기사 수 프리패치 ---------- */
+async function fetchAllCounts() {
+  const promises = PERIODS.map((p, i) =>
+    fetch(`${BASE}${p.uid}?page=1&perPage=1&serviceKey=${API_KEY}`)
+      .then(r => r.json())
+      .then(d => { state.allCounts[i] = d.totalCount || 0; PERIODS[i].count = d.totalCount || 0; })
+      .catch(() => { state.allCounts[i] = 0; })
+  );
+  await Promise.all(promises);
+  state.totalSum = state.allCounts.reduce((s,v) => s + v, 0);
+  document.getElementById('stat-total').textContent =
+    (state.totalSum / 10000).toFixed(1) + '만건';
+  renderTimeline();
+  renderTrend();
+}
+
+/* ---------- 타임라인 바 ---------- */
+function renderTimeline() {
+  const max = Math.max(...state.allCounts.filter(v=>v>0), 1);
+  const $bar = document.getElementById('timeline-bar');
+  $bar.innerHTML = PERIODS.map((p,i) => {
+    const pct = Math.round((state.allCounts[i] || 0) / max * 80) + 10;
+    return `<div class="tb-item${i===state.idx?' on':''}" onclick="selectPeriod(${i})" title="${p.ym}: ${fmt(state.allCounts[i])}건${p.event?' · '+p.event:''}">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:${pct}%;background:${i===state.idx?'var(--accent)':'var(--bg3)'};border-radius:3px;transition:height .3s"></div>
+      <div class="tb-label" style="position:relative;z-index:1">${p.label}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- 추이 차트 ---------- */
+function renderTrend() {
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  if (state.charts.trend) state.charts.trend.destroy();
+  state.charts.trend = new Chart(document.getElementById('chart-trend'), {
+    type: 'bar',
+    data: {
+      labels: PERIODS.map(p => p.label),
+      datasets: [{
+        data: state.allCounts,
+        backgroundColor: PERIODS.map((_,i) => i===state.idx ? '#1d4ed8' : '#e2e8f0'),
+        borderRadius: 3,
+        maxBarThickness: 28,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false }, tooltip:{ callbacks:{
+        title: items => PERIODS[items[0].dataIndex].ym +
+          (PERIODS[items[0].dataIndex].event ? ' · ' + PERIODS[items[0].dataIndex].event : ''),
+        label: c => ` ${fmt(c.parsed.y)}건`
+      }}},
+      scales: { y:{ beginAtZero:true, ticks:{ callback: v => (v/10000).toFixed(0)+'만' }, grid:{color:'#f1f5f9'} },
+                x:{ grid:{display:false}, ticks:{ font:{size:9} } } },
+      onClick: (_, els) => { if (els.length) selectPeriod(els[0].index); },
+    }
+  });
+}
+
+/* ---------- 분기 선택 ---------- */
+async function selectPeriod(idx) {
+  state.idx = idx;
+  const p = PERIODS[idx];
+
+  // UI 갱신
+  document.getElementById('tl-ym').textContent = p.ym;
+  const ev = document.getElementById('tl-event');
+  ev.textContent = p.event || '';
+  ev.className = 'event-badge ' + (p.evCls || 'ev-reg');
+  ev.style.display = p.event ? 'inline-block' : 'none';
+  document.getElementById('btn-prev').disabled = idx <= 0;
+  document.getElementById('btn-next').disabled = idx >= PERIODS.length - 1;
+  document.getElementById('tl-nav-info').textContent = `${idx+1} / ${PERIODS.length}`;
+
+  // 타임라인 바 강조
+  renderTimeline();
+
+  // 데이터 로딩
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('content').style.display = 'none';
+
+  const data = await loadPeriod(idx);
+  document.getElementById('tl-total').textContent = fmt(data.total) + '건';
+
+  renderKeywords(data.kwTop);
+  renderCategory(data.catSorted);
+  renderMedia(data.mediaSorted, data.total);
+  renderHeadlines(data.headlines);
+  if (state.compareKws.length) renderCompare();
+
+  // 추이 차트 색 업데이트
+  if (state.charts.trend) {
+    state.charts.trend.data.datasets[0].backgroundColor =
+      PERIODS.map((_,i) => i===idx ? '#1d4ed8' : '#e2e8f0');
+    state.charts.trend.update();
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  document.getElementById('stat-media').textContent = state.mediaSet.size + '개';
+}
+
+function movePeriod(d) { selectPeriod(Math.max(0, Math.min(PERIODS.length-1, state.idx+d))); }
+
+/* ---------- 키워드 버블 ---------- */
+const BG_PALETTE = [
+  '#eff6ff','#f0fdf4','#fef3c7','#fef2f2','#f5f3ff',
+  '#ecfeff','#fff7ed','#f0fdf4','#fdf4ff','#eff6ff',
+];
+const FG_PALETTE = [
+  '#1d4ed8','#16a34a','#d97706','#dc2626','#7c3aed',
+  '#0d9488','#ea580c','#16a34a','#9333ea','#1d4ed8',
+];
+
+function renderKeywords(kwTop) {
+  const max = kwTop[0]?.v || 1;
+  document.getElementById('kw-cloud').innerHTML = kwTop.map((kw, i) => {
+    const size = 11 + Math.round((kw.v / max) * 10);
+    const bg = BG_PALETTE[i % BG_PALETTE.length];
+    const fg = FG_PALETTE[i % FG_PALETTE.length];
+    const pad = size > 16 ? '6px 14px' : '4px 10px';
+    return `<span class="kw-bubble" style="background:${bg};color:${fg};font-size:${size}px;padding:${pad};border:1.5px solid ${fg}22"
+      title="${kw.k}: ${kw.v}회 등장">
+      <span class="kw-rank" style="font-size:${size*0.7}px">#${i+1}</span>
+      <span class="kw-text">${kw.k}</span>
+      <span class="kw-cnt">${kw.v}</span>
+    </span>`;
+  }).join('');
+}
+
+/* ---------- 카테고리 도넛 ---------- */
+function renderCategory(catSorted) {
+  const top8 = catSorted.slice(0,7);
+  const rest = catSorted.slice(7).reduce((s,c)=>s+c[1],0);
+  if (rest > 0) top8.push(['기타', rest]);
+  const labels = top8.map(c=>c[0]);
+  const data   = top8.map(c=>c[1]);
+  const colors = labels.map(l => CAT_COLORS[l] || CAT_COLORS['기타']);
+  const total  = data.reduce((s,v)=>s+v,0);
+  const mainPct = total ? Math.round(data[0]/total*100) : 0;
+  document.getElementById('donut-pct').textContent = mainPct + '%';
+
+  if (state.charts.cat) state.charts.cat.destroy();
+  state.charts.cat = new Chart(document.getElementById('chart-cat'), {
+    type: 'doughnut',
+    data: { labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff' }] },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins:{ legend:{ position:'right', labels:{ font:{size:10}, boxWidth:10, padding:6 } },
+        tooltip:{ callbacks:{ label:c=>` ${c.label}: ${fmt(c.parsed)}건 (${Math.round(c.parsed/total*100)}%)` } } }
+    }
+  });
+}
+
+/* ---------- 언론사 바 ---------- */
+function renderMedia(mediaSorted, total) {
+  const max = mediaSorted[0]?.[1] || 1;
+  document.getElementById('media-list').innerHTML = mediaSorted.map(([name, cnt]) => {
+    const pct = Math.round(cnt/max*100);
+    return `<div class="media-row">
+      <span class="media-name" title="${name}">${name}</span>
+      <div class="media-bar-w"><div class="media-bar" style="width:${pct}%"></div></div>
+      <span class="media-cnt">${fmt(cnt)}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- 헤드라인 ---------- */
+function renderHeadlines(headlines) {
+  document.getElementById('headline-list').innerHTML = headlines.map(h =>
+    `<div class="headline-item">
+      <span class="hl-date">${h.date?.slice(5,10)||''}</span>
+      <span class="hl-media">${(h.media||'').slice(0,6)}</span>
+      <span class="hl-title">${h.title}</span>
+    </div>`
+  ).join('');
+}
+
+/* ---------- 키워드 비교 추이 ---------- */
+async function addCompareKw() {
+  const input = document.getElementById('kw-input');
+  const kw = input.value.trim();
+  if (!kw || state.compareKws.includes(kw) || state.compareKws.length >= 5) return;
+  state.compareKws.push(kw);
+  input.value = '';
+  renderCompareTags();
+  await loadCompareData(kw);
+  renderCompare();
+}
+
+async function loadCompareData(kw) {
+  const freq = [];
+  for (let i=0; i<PERIODS.length; i++) {
+    if (!state.cache[i]) await loadPeriod(i);
+    const rows = state.cache[i].rows;
+    let cnt = 0;
+    rows.forEach(r => {
+      const text = (r['특성추출']||'') + ',' + (r['키워드']||'');
+      text.split(',').forEach(k => { if (k.trim() === kw) cnt++; });
+    });
+    freq.push(cnt);
+  }
+  state.compareData[kw] = freq;
+}
+
+function removeKw(kw) {
+  state.compareKws = state.compareKws.filter(k=>k!==kw);
+  delete state.compareData[kw];
+  renderCompareTags();
+  renderCompare();
+}
+
+function renderCompareTags() {
+  document.getElementById('compare-tags').innerHTML = state.compareKws.map((kw,i) =>
+    `<span class="compare-tag" style="background:${COMPARE_COLORS[i]}22;color:${COMPARE_COLORS[i]};border:1.5px solid ${COMPARE_COLORS[i]}44" onclick="removeKw('${kw}')">
+      ${kw} <span class="del">✕</span>
+    </span>`
+  ).join('');
+}
+
+function renderCompare() {
+  if (state.charts.compare) state.charts.compare.destroy();
+  const datasets = state.compareKws.map((kw,i) => ({
+    label: kw,
+    data: state.compareData[kw] || [],
+    borderColor: COMPARE_COLORS[i],
+    backgroundColor: COMPARE_COLORS[i] + '18',
+    tension: .4, fill: true, pointRadius: 3, borderWidth: 2,
+  }));
+  state.charts.compare = new Chart(document.getElementById('chart-compare'), {
+    type: 'line',
+    data: { labels: PERIODS.map(p=>p.label), datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:10} } },
+        tooltip:{ callbacks:{ label:c=>` ${c.dataset.label}: ${c.parsed.y}회` } } },
+      scales:{ y:{ beginAtZero:true, grid:{color:'#f1f5f9'} }, x:{ grid:{display:false}, ticks:{font:{size:9}} } }
+    }
+  });
+}
+
+/* ---------- 입력 이벤트 ---------- */
+document.getElementById('kw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addCompareKw();
+});
+
+/* ---------- 시작 ---------- */
+(async function init() {
+  document.getElementById('btn-prev').disabled = true;
+  document.getElementById('btn-next').disabled = false;
+  document.getElementById('tl-nav-info').textContent = `${state.idx+1} / ${PERIODS.length}`;
+
+  // 타임라인 바 선렌더 (빈 상태)
+  document.getElementById('timeline-bar').innerHTML = PERIODS.map((p,i) =>
+    `<div class="tb-item${i===state.idx?' on':''}" onclick="selectPeriod(${i})" title="${p.ym}">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:10%;background:var(--bg3);border-radius:3px"></div>
+      <div class="tb-label">${p.label}</div>
+    </div>`
+  ).join('');
+
+  // 최신 분기 데이터 먼저 로드 (UX)
+  await selectPeriod(state.idx);
+  // 비동기로 전체 카운트 패치
+  fetchAllCounts();
+})();
+</script>
+</body>
+</html>
