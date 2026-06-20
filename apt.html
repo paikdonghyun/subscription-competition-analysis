@@ -272,10 +272,10 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
       </div>
       <div class="card safe">
         <div class="k">주변 시세 대비 안전마진</div>
-        <div class="v">+13%</div>
-        <div class="n">인근 84㎡ 평균 실거래 <b>7.90억</b> 대비 분양가 <b>6.85억</b>. 약 1.05억 시세차익 여력.</div>
-        <div class="safebar"><i data-w="87"></i></div>
-        <div class="safesc"><span>분양가 6.85억</span><span>시세 7.90억</span></div>
+        <div class="v" id="safeMargin">계산 중…</div>
+        <div class="n" id="safeDesc">인근 실거래가 데이터 로딩 중입니다.</div>
+        <div class="safebar"><i id="safeBar" data-w="0"></i></div>
+        <div class="safesc"><span id="safeL">분양가</span><span id="safeR">인근 시세</span></div>
       </div>
     </div>
   </section>
@@ -463,6 +463,11 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
       loadKakaoLocation(d.HSSPLY_ADRES, d.HOUSE_NM || '단지');
     }
 
+    // ── 실거래가 JSON 로드 → 안전마진 계산 ──
+    if (d.SUBSCRPT_AREA_CODE) {
+      loadTradeData(d.SUBSCRPT_AREA_CODE, d.HOUSE_NM || '');
+    }
+
     if (d.PBLANC_URL) {
       const link = document.createElement('a');
       link.href = d.PBLANC_URL; link.target = '_blank'; link.rel = 'noopener';
@@ -605,6 +610,103 @@ async function loadKakaoLocation(address, aptName) {
     console.warn('카카오 입지 분석 실패:', e);
     document.getElementById('poiList').innerHTML =
       '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">주변 정보를 불러올 수 없습니다.</div>';
+  }
+}
+
+/* ── 실거래가 JSON 로드 → 안전마진 계산 ── */
+async function loadTradeData(areaCode, aptName) {
+  try {
+    // 청약홈 SUBSCRPT_AREA_CODE(3자리) → 법정동 앞 5자리 매핑
+    // 주요 지역만 우선 지원 (추후 확장)
+    const codeMap = {
+      '100':'11110','110':'11650','111':'11680','112':'11710', // 서울 일부
+      '410':'41590', // 경기 화성
+      '411':'41131', // 경기 성남
+      '412':'41285', // 경기 고양
+      '413':'41190', // 경기 부천
+      '280':'28185', // 인천 연수
+      '260':'26305', // 부산 해운대
+    };
+
+    // SUBSCRPT_AREA_CODE가 없으면 HSSPLY_ADRES로 매핑 시도는 스킵
+    // 지역별 JSON 파일 경로
+    const lawd = codeMap[areaCode] || areaCode.slice(0,5);
+    const url  = `/data/trade/${lawd}.json`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      // 데이터 아직 없음 (첫 Actions 실행 전)
+      setMarginUI(null, null, '실거래가 데이터 준비 중 (매일 새벽 자동 수집)');
+      return;
+    }
+
+    const json = await res.json();
+    const stats = json.stats;
+    if (!stats) return;
+
+    // 분양가 추정: 테이블에서 읽거나 최고가 기준
+    // 분양가 정보가 공공 API에 없으므로 시세 정보만 표시
+    const avgMan  = stats.recent || stats.avg; // 만원
+    const avgEok  = (avgMan / 10000).toFixed(2); // 억원
+
+    // 단지명으로 인근 최신 시세 찾기
+    let sampleName = '';
+    let sampleAmt  = 0;
+    if (json.apts) {
+      // 가장 거래건수 많은 단지
+      const top = Object.entries(json.apts)
+        .sort((a,b) => b[1].cnt - a[1].cnt)[0];
+      if (top) { sampleName = top[0]; sampleAmt = top[1].recent || top[1].avg; }
+    }
+
+    setMarginUI(avgMan, sampleAmt, null, json.region, json.updated, stats.cnt);
+
+  } catch(e) {
+    console.warn('실거래가 로드 실패:', e);
+    setMarginUI(null, null, '실거래가 데이터를 불러올 수 없습니다.');
+  }
+}
+
+function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt) {
+  const marginEl = document.getElementById('safeMargin');
+  const descEl   = document.getElementById('safeDesc');
+  const barEl    = document.getElementById('safeBar');
+  const lEl      = document.getElementById('safeL');
+  const rEl      = document.getElementById('safeR');
+  if (!marginEl) return;
+
+  if (msg || !tradeAvg) {
+    marginEl.textContent = '–';
+    marginEl.style.color = 'var(--faint)';
+    if(descEl) descEl.textContent = msg || '데이터 없음';
+    return;
+  }
+
+  const avgEok = (tradeAvg / 10000).toFixed(2);
+
+  // 분양가: kpi1에서 세대수 대신 분양가를 넣으려면 APT API 연동 필요
+  // 현재는 지역 시세만 표시
+  marginEl.textContent = `${avgEok}억`;
+  marginEl.style.color = 'var(--mint-ink)';
+  marginEl.style.fontSize = '24px';
+
+  const cntTxt  = cnt ? ` ${cnt}건` : '';
+  const regTxt  = region ? `${region} ` : '';
+  const updTxt  = updated ? ` · ${updated} 기준` : '';
+  if(descEl) descEl.innerHTML =
+    `${regTxt}최근 6개월 아파트 매매 평균 실거래가${cntTxt}${updTxt}.<br>` +
+    `분양가 입력 시 안전마진(%)을 자동 계산합니다.`;
+
+  // 바 60%로 고정 표시 (분양가 없이는 비율 계산 불가)
+  if(barEl) { barEl.style.width='60%'; }
+  if(lEl)   lEl.textContent = '인근 시세';
+  if(rEl)   rEl.textContent = `평균 ${avgEok}억`;
+
+  // kpi2(안전마진 카드) 업데이트
+  const kpi2 = document.getElementById('kpi2');
+  if (kpi2) {
+    kpi2.innerHTML = `${avgEok}<small>억</small>`;
+    kpi2.closest('.scard').querySelector('.k').textContent = `${region||'인근'} 평균 시세`;
   }
 }
 

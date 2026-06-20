@@ -1,0 +1,3 @@
+# 이 디렉터리에 GitHub Actions가 매일 실거래가 JSON을 저장합니다.
+# summary.json: 전체 지역 요약
+# {lawd_cd}.json: 지역별 단지 상세 (예: 41590.json = 경기 화성시)
