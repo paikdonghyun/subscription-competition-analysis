@@ -1,35 +1,406 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/favicon-180.png">
+  <link rel="manifest" href="/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>청약경쟁률 | 청약랩 ApplyLab</title>
-<meta name="description" content="전국 아파트 청약경쟁률 통계. 연도별·월별·지역별 분석. 청약랩.">
-<meta name="robots" content="index, follow">
-<meta name="author" content="청약랩 ApplyLab">
-<meta name="google-site-verification" content="XSpggCEU8TEWQ88HGp2HRfZi-AEyI3GBDTiJ2Z_Hows">
-<meta name="naver-site-verification" content="77d8d71163a4d6b7ff04b5e58ecf7a3f1beebee1">
-<link rel="canonical" href="https://applylab.kr/competition.html">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://applylab.kr/competition.html">
-<meta property="og:title" content="청약경쟁률 | 청약랩 ApplyLab">
-<meta property="og:description" content="전국 아파트 청약경쟁률 통계. 연도별·월별·지역별 분석. 청약랩.">
-<meta property="og:image" content="https://applylab.kr/favicon-512.png">
-<meta property="og:site_name" content="청약랩 ApplyLab">
-<meta property="og:locale" content="ko_KR">
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
-<link rel="apple-touch-icon" href="/favicon-180.png">
-<link rel="manifest" href="/manifest.json">
+<title>청약경쟁률 조회 · 청약랩 ApplyLab | 아파트 청약 분석</title>
+  <meta name="description" content="전국 아파트 청약경쟁률을 실시간으로 조회하세요. 단지명·지역·브랜드 검색, 1순위 경쟁률·청약 접수건수 분석, 시도별 청약 트렌드 제공.">
+  <meta name="keywords" content="청약경쟁률, 아파트 청약, 청약 분석, 1순위 경쟁률, 청약 조회, 분양 경쟁률, 청약홈, 아파트 분양 정보">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="청약랩 ApplyLab">
+  <link rel="canonical" href="https://applylab.kr/competition.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://applylab.kr/competition.html">
+  <meta property="og:title" content="청약경쟁률 조회 · 청약랩">
+  <meta property="og:description" content="전국 아파트 청약경쟁률 실시간 조회. 단지명·지역·브랜드 검색, 1순위 경쟁률 분석.">
+  <meta property="og:image" content="https://applylab.kr/favicon-512.png">
+  <meta property="og:site_name" content="청약랩 ApplyLab">
+  <meta property="og:locale" content="ko_KR">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="청약경쟁률 조회 · 청약랩">
+  <meta name="twitter:description" content="전국 아파트 청약경쟁률 실시간 조회. 단지명·지역·브랜드 검색, 1순위 경쟁률 분석.">
+  <meta name="twitter:image" content="https://applylab.kr/favicon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
+  --bg:#ffffff;--bg2:#f9fafb;--bg3:#f3f4f6;--bg4:#e5e7eb;
+  --accent:#1d4ed8;--accent-light:#eff6ff;--accent-hover:#1e40af;
+  --red:#dc2626;--green:#16a34a;--gold:#b45309;--orange:#ea580c;
+  --serif:'Noto Serif KR',serif;--sans:'Noto Sans KR',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.04);
+  --radius:6px;--radius-lg:10px;--radius-xl:14px;
+  --max-w:1400px;--content-w:860px;
+}
+/* ══ NAV 기본 CSS ══ */
+.nav{background:#fff;border-bottom:1px solid var(--bg4,#e5e7eb);box-shadow:0 1px 3px rgba(0,0,0,.07);position:sticky;top:0;z-index:100}
+.nav-in{max-width:var(--max-w,1400px);margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem;overflow:hidden}
+.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0;color:inherit}
+.logo-kr{font-family:var(--serif,'Noto Serif KR',serif);font-size:1.1rem;font-weight:600;color:var(--ink,#18181b)}
+.logo-en{font-family:var(--mono,'IBM Plex Mono',monospace);font-size:.68rem;color:var(--ink3,#71717a);letter-spacing:.05em}
+.nav-div{width:1px;height:16px;background:var(--bg4,#e5e7eb);flex-shrink:0}
+.nav-menu{display:flex;gap:.125rem;flex:1}
+.nav-a{font-size:13px;color:var(--ink3,#71717a);padding:.38rem .75rem;border-radius:var(--radius,6px);transition:all .12s;text-decoration:none;white-space:nowrap}
+.nav-a:hover{color:var(--ink,#18181b);background:var(--bg3,#f3f4f6)}
+.nav-a.on{color:var(--accent,#1d4ed8);font-weight:500;background:var(--accent-light,#eff6ff)}
+.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
+.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--radius,6px);background:var(--accent,#1d4ed8);color:#fff;text-decoration:none;white-space:nowrap}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--radius,6px);flex-shrink:0}
+.nav-hamburger span{display:block;height:2px;background:var(--ink2,#3f3f46);border-radius:2px;transition:all .25s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav-mobile{display:none;flex-direction:column;background:#fff;border-bottom:1px solid var(--bg4,#e5e7eb);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
+.nav-mobile.open{display:flex}
+.nav-mobile-inner{max-width:var(--max-w,1400px);margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
+.nav-mobile-a{font-size:14px;color:var(--ink2,#3f3f46);padding:.65rem .875rem;border-radius:var(--radius,6px);text-decoration:none;transition:background .12s;font-weight:300}
+.nav-mobile-a:hover{background:var(--bg3,#f3f4f6)}
+.nav-mobile-a.on{color:var(--accent,#1d4ed8);font-weight:500;background:var(--accent-light,#eff6ff)}
+#visitor-counter{flex-shrink:0}
+
+
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg2);color:var(--ink);min-height:100vh;font-weight:300;font-size:14px;line-height:1.6}
+
+/* ── TOP BAR ── */
+.top-bar{background:#fff;border-bottom:1px solid var(--bg4);padding:0 1.5rem}
+.top-bar-inner{max-width:var(--max-w);margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo-area{display:flex;align-items:baseline;gap:.5rem}
+.logo-title{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.logo-badge{font-family:var(--mono);font-size:9px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:3px;letter-spacing:.06em;vertical-align:middle}
+.top-nav{display:flex;align-items:center;gap:.25rem}
+.top-nav-btn{font-size:13px;font-weight:500;color:var(--ink3);padding:.4rem .9rem;border:1px solid transparent;border-radius:var(--radius);cursor:pointer;background:transparent;transition:all .12s;white-space:nowrap}
+.top-nav-btn.active{color:var(--accent);background:var(--accent-light);border-color:rgba(29,78,216,.2)}
+.top-nav-btn:hover:not(.active){color:var(--ink);background:var(--bg3)}
+
+.search-input:focus{border-color:var(--accent);background:#fff}
+.period-wrap select:focus{border-color:var(--accent)}
+
+/* ── LAYOUT: 3-COLUMN (left-ad | content | right-ad) ── */
+.page-layout{max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:160px 1fr 160px;gap:0;padding:1.25rem 1rem;align-items:start}
+
+/* ══ 검색바 (신규) ══ */
+.search-bar{background:#fff;border-bottom:1px solid var(--bg4,#e5e7eb);box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:54px;z-index:90;width:100%}
+.search-bar-inner{max-width:var(--max-w,1400px);margin:0 auto;padding:.875rem 1.5rem;display:flex;align-items:center;gap:.875rem;flex-wrap:wrap}
+.tab-list{display:flex;gap:0;border-bottom:2px solid var(--bg4,#e5e7eb);flex-shrink:0}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:.55rem 1.1rem;font-size:13px;font-weight:400;color:var(--ink3,#71717a);cursor:pointer;font-family:var(--sans,'Noto Sans KR',sans-serif);white-space:nowrap;transition:all .15s}
+.tab-btn.active,.tab-btn:hover{color:var(--accent,#1d4ed8);border-bottom-color:var(--accent,#1d4ed8);font-weight:500}
+.search-lbl{font-size:11px;font-family:var(--mono,'IBM Plex Mono',monospace);letter-spacing:.08em;color:var(--ink4,#a1a1aa);white-space:nowrap;text-transform:uppercase;flex-shrink:0}
+.search-row{display:flex;align-items:center;gap:.5rem;flex:1;min-width:0;max-width:520px}
+.search-input{flex:1;min-width:0;background:var(--bg2,#f9fafb);border:1.5px solid var(--bg4,#e5e7eb);border-right:none;color:var(--ink,#18181b);font-family:var(--sans,'Noto Sans KR',sans-serif);font-size:14px;padding:.55rem .875rem;outline:none;border-radius:var(--radius,6px) 0 0 var(--radius,6px);transition:border-color .15s}
+.search-input:focus{border-color:var(--accent,#1d4ed8);background:#fff}
+.search-input::placeholder{color:var(--ink4,#a1a1aa)}
+.search-btn{background:var(--accent,#1d4ed8);color:#fff;border:none;padding:.57rem 1.2rem;font-family:var(--sans,'Noto Sans KR',sans-serif);font-size:13px;font-weight:500;cursor:pointer;border-radius:0 var(--radius,6px) var(--radius,6px) 0;white-space:nowrap;flex-shrink:0;transition:background .12s}
+.search-btn:hover{background:var(--accent-hover,#1e40af)}
+.period-wrap{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.period-select{background:var(--bg2,#f9fafb);border:1.5px solid var(--bg4,#e5e7eb);color:var(--ink2,#3f3f46);padding:.4rem .6rem;border-radius:var(--radius,6px);font-family:var(--mono,'IBM Plex Mono',monospace);font-size:12px;cursor:pointer;outline:none}
+.chip-row{display:flex;gap:.375rem;flex-wrap:wrap;width:100%}
+.chip{background:var(--bg3,#f3f4f6);border:1px solid var(--bg4,#e5e7eb);color:var(--ink3,#71717a);font-family:var(--mono,'IBM Plex Mono',monospace);font-size:10px;padding:3px 9px;border-radius:20px;cursor:pointer;letter-spacing:.04em;transition:all .12s;white-space:nowrap}
+.chip:hover,.chip.active{background:var(--accent,#1d4ed8);color:#fff;border-color:var(--accent,#1d4ed8)}
+/* 검색바 반응형 */
+@media(max-width:600px){
+  .search-bar-inner{padding:.625rem .75rem;flex-direction:column;align-items:stretch;gap:.5rem}
+  .tab-list{width:100%}
+  .tab-btn{flex:1;text-align:center;font-size:13px;padding:.55rem .5rem}
+  .search-row{max-width:100%;width:100%}
+  .search-lbl{display:none}
+  .search-input{font-size:16px}
+  .period-wrap{width:100%}
+}
+
+@media(max-width:1200px){.page-layout{grid-template-columns:0 1fr 0;padding:1rem .75rem}}
+@media(max-width:768px){.page-layout{padding:.75rem .5rem}}
+
+/* ── AD SLOTS ── */
+.ad-slot{background:#fff;border:1px solid var(--bg4);border-radius:var(--radius-lg);overflow:hidden;text-align:center}
+.ad-slot-side{position:sticky;top:1.25rem;display:flex;flex-direction:column;gap:.75rem}
+.ad-label{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;padding:.35rem 0;border-bottom:1px solid var(--bg3);background:var(--bg2)}
+.ad-slot-160x600{width:160px;height:600px;background:var(--bg2);display:flex;align-items:center;justify-content:center}
+.ad-slot-160x600 span{font-family:var(--mono);font-size:9px;color:var(--ink4);writing-mode:vertical-rl}
+.ad-slot-inline{width:100%;background:var(--bg2);display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
+.ad-slot-inline span{font-family:var(--mono);font-size:9px;color:var(--ink4)}
+@media(max-width:1200px){.ad-col{display:none}}
+
+/* ── CONTENT AREA ── */
+.content-area{min-width:0;display:flex;flex-direction:column;gap:1rem}
+
+/* ── PANEL ── */
+.panel{display:none}.panel.visible{display:flex;flex-direction:column;gap:1rem}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1px solid var(--bg4);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm)}
+.card-title{font-family:var(--serif);font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--bg3);display:flex;align-items:center;gap:.4rem}
+.card-title::before{content:'';display:inline-block;width:3px;height:.9em;background:var(--accent);border-radius:2px;flex-shrink:0}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.625rem}
+.sc{background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-lg);padding:.875rem 1rem;border-top:3px solid var(--bg4)}
+.sc.b{border-top-color:var(--accent)}.sc.r{border-top-color:var(--red)}
+.sc.g{border-top-color:var(--green)}.sc.o{border-top-color:var(--orange)}
+.sc-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.07em;color:var(--ink3);margin-bottom:.4rem;text-transform:uppercase}
+.sc-val{font-family:var(--serif);font-size:1.55rem;font-weight:600;color:var(--ink);line-height:1}
+.sc-unit{font-size:.8rem;font-weight:300;color:var(--ink3)}
+.sc-sub{font-size:10px;color:var(--ink4);margin-top:.3rem;font-family:var(--mono)}
+
+/* ── REGION HEADER ── */
+.rh{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.rh-left .region-name{font-family:var(--serif);font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:600;color:var(--ink)}
+.rh-left .region-meta{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:.3rem;line-height:1.6}
+.rank-badge{display:flex;flex-direction:column;align-items:center;background:var(--accent);color:#fff;padding:.6rem 1rem;border-radius:var(--radius-lg);min-width:68px;flex-shrink:0;box-shadow:var(--shadow)}
+.rank-num{font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1}
+.rank-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;opacity:.75;margin-top:3px}
+
+/* ── CHARTS ── */
+.chart-box{background:#fff;border:1px solid var(--bg4);border-radius:var(--radius-lg);padding:1rem 1.125rem}
+.chart-box.full{width:100%}
+.chart-lbl{font-size:11px;font-family:var(--mono);color:var(--ink4);margin-bottom:.65rem;line-height:1.5}
+.chart-wrap{position:relative;height:210px}
+.chart-wrap.tall{height:255px}
+.chart-wrap.sm{height:165px}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:640px){.chart-grid-2{grid-template-columns:1fr}}
+.legend-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.6rem;font-size:11px;color:var(--ink3);font-family:var(--mono)}
+.legend-row span{display:flex;align-items:center;gap:4px}
+.leg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.leg-dash{width:14px;height:0;border-top:2px dashed;flex-shrink:0}
+
+/* ── TABLE ── */
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;font-weight:500;color:var(--ink3);text-align:left;padding:.55rem .75rem;border-bottom:2px solid var(--bg3);text-transform:uppercase;background:var(--bg2);white-space:nowrap}
+.dt td{padding:.55rem .75rem;border-bottom:1px solid var(--bg3);color:var(--ink2);font-size:12.5px;background:#fff}
+.dt tr:last-child td{border-bottom:none}
+.dt tbody tr:hover td{background:var(--accent-light)!important;transition:background .1s}
+.dt tbody tr[style*='cursor:pointer']:hover td{background:var(--accent-light)!important}
+.dt tbody tr.selected td{background:rgba(29,78,216,.06)!important}
+.dt .num{font-family:var(--mono);text-align:right;font-size:12px}
+.dt .hi{color:var(--red);font-weight:500}
+.dt .lo{color:var(--ink4)}
+.dt .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;font-family:var(--mono)}
+.tag-a{background:#dcfce7;color:#166534}.tag-b{background:#dbeafe;color:#1e40af}
+.tag-c{background:#fee2e2;color:#991b1b}.tag-d{background:var(--bg3);color:var(--ink3)}
+.bar-cell{display:flex;align-items:center;gap:.4rem}
+.mini-bar{height:5px;border-radius:3px;background:var(--accent);min-width:2px;flex-shrink:0}
+
+/* ── PAGINATION ── */
+.pager{display:flex;align-items:center;gap:.375rem;justify-content:center;margin-top:1.125rem;font-family:var(--mono);font-size:12px;flex-wrap:wrap}
+.pager-btn{background:#fff;border:1px solid var(--bg4);color:var(--ink2);padding:.375rem .8rem;border-radius:var(--radius);cursor:pointer;transition:all .12s;font-size:12px}
+.pager-btn:hover:not(:disabled){background:var(--bg3)}
+.pager-btn:disabled{opacity:.35;cursor:not-allowed}
+.pager-num{background:#fff;border:1px solid var(--bg4);color:var(--ink2);padding:.35rem .6rem;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-size:11px;transition:all .12s;min-width:30px;text-align:center}
+.pager-num:hover{background:var(--bg3)}
+.pager-num.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pager-info{color:var(--ink4);font-size:11px;font-family:var(--mono)}
+
+/* ── PLACEHOLDER ── */
+.placeholder{text-align:center;padding:3.5rem 1.5rem;color:var(--ink3)}
+.placeholder-icon{font-size:2.5rem;margin-bottom:.875rem;opacity:.2}
+.placeholder-title{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin-bottom:.4rem;color:var(--ink2)}
+.placeholder-desc{font-size:13px;line-height:1.75;color:var(--ink3)}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:2.5rem;font-family:var(--mono);font-size:12px;color:var(--ink4)}
+.spinner{width:28px;height:28px;border:2px solid var(--bg4);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── ERROR ── */
+.error-box{background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius-lg);padding:.875rem 1.125rem;font-size:13px;color:#991b1b;font-family:var(--mono);line-height:1.6}
+
+/* ── NOTE ── */
+.note{background:var(--bg2);border-left:3px solid var(--bg4);padding:.6rem .875rem;border-radius:0 var(--radius) var(--radius) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6}
+
+/* ── HEADER ── */
+header{background:#fff;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+
+/* ── FOOTER ── */
+footer{background:var(--bg3);border-top:1px solid var(--bg4);color:var(--ink4);text-align:center;padding:1.5rem;font-family:var(--mono);font-size:10px;letter-spacing:.07em;margin-top:2rem}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-family:var(--serif);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:.875rem;padding-bottom:.5rem;border-bottom:1px solid var(--bg3);display:flex;align-items:center;gap:.4rem}
+.sec-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
+/* ── DETAIL PANEL ── */
+#apt-detail-panel .sec-title{color:var(--accent)}
+
+
+/* ═══════════════════════════════════════
+   반응형 레이아웃
+   PC: 1200px+  |  태블릿: 768~1199px  |  모바일: ~767px
+═══════════════════════════════════════ */
+
+/* 광고 컬럼 숨김 (태블릿 이하) */
+@media(max-width:1200px){
+  .ad-col{display:none}
+  .page-layout{grid-template-columns:1fr;padding:1rem}
+}
+
+/* ── 태블릿 (768~1199px) ── */
+@media(max-width:1199px) and (min-width:768px){
+  .search-bar{padding:.75rem 1.25rem}
+  .page-layout{padding:.875rem 1.25rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-box{padding:1rem}
+}
+
+/* ── 모바일 (767px 이하) ── */
+@media(max-width:767px){
+  /* 기본 */
+  *{-webkit-text-size-adjust:100%}
+  html,body{overflow-x:hidden;width:100%}
+
+  /* 검색바 */
+  .search-bar{
+    padding:.75rem 1rem;
+    position:sticky;top:54px;z-index:90;
+    background:#fff;
+    border-bottom:1px solid var(--bg4);
+  }
+  .search-bar-inner{
+    flex-direction:column;
+    gap:.625rem;
+    align-items:stretch;
+    max-width:100%;
+  }
+  .search-lbl{display:none}
+  .search-row{
+    max-width:100%;
+    min-width:0;
+    width:100%;
+  }
+  .search-row input,.search-input{
+    width:100%;
+    min-width:0;
+    font-size:16px; /* iOS 자동 줌 방지 */
+  }
+  .search-btn{
+    padding:.55rem 1rem;
+    font-size:14px;
+  }
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.3rem;
+    overflow-x:visible;
+  }
+  .chip{font-size:11px;padding:3px 8px}
+  .period-wrap{flex-wrap:wrap;gap:.35rem}
+
+  /* 레이아웃 */
+  .page-layout{
+    grid-template-columns:1fr;
+    padding:.625rem .75rem;
+    gap:.75rem;
+  }
+  .content-area{
+    padding:0!important;
+    gap:.75rem;
+  }
+
+  /* 탭 */
+  .tab-list::-webkit-scrollbar{display:none}
+
+  /* 통계 카드 */
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .sc{padding:.75rem}
+  .sc-val{font-size:1.2rem}
+  .sc-lbl{font-size:10px}
+
+  /* 섹션 */
+  .sec{padding:0}
+  .rh{flex-direction:column;gap:.5rem}
+  .rank-badge{align-self:flex-start}
+
+  /* 차트 */
+  .chart-box{padding:.75rem}
+  .chart-wrap{height:200px!important}
+  .chart-wrap.tall{height:240px!important}
+  .leg{flex-wrap:wrap;gap:.3rem .75rem}
+
+  /* 테이블 */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    border-radius:var(--radius-lg,8px);
+  }
+  .tbl{font-size:12px;min-width:480px}
+  .tbl th,.tbl td{padding:.4rem .5rem;white-space:nowrap}
+
+  /* 카드 */
+  .card{padding:.875rem}
+  .card-title{font-size:.85rem}
+
+  /* placeholder */
+  .placeholder{padding:2.5rem 1rem}
+  .placeholder-title{font-size:1rem}
+  .placeholder-desc{font-size:12px}
+
+  /* 페이저 */
+  .pager{flex-wrap:wrap;gap:.35rem;justify-content:center}
+  .pager-num{padding:.3rem .6rem;font-size:11px}
+  .pg-btn{padding:.3rem .7rem;font-size:11px}
+
+  /* api notice */
+  #api-notice{display:none;flex-direction:column;gap:.5rem}
+}
+
+/* ── 소형 모바일 (480px 이하) ── */
+@media(max-width:480px){
+  .logo-en{display:none}
+  .search-bar{padding:.625rem .75rem;top:54px}
+  .page-layout{padding:.5rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:.375rem}
+  .sc{padding:.625rem}
+  .tbl{min-width:440px;font-size:11px}
+  .chart-wrap{height:180px!important}
+  .chart-wrap.tall{height:210px!important}
+}
+
+/* ── NAV (반응형) ── */
+@media(max-width:900px){
+  .nav-menu,.nav-div,.nav-right{display:none}
+  .nav-hamburger{display:flex}
+  .nav-in{padding:0 1rem;overflow:visible}
+}
+@media(min-width:901px){
+  .nav-mobile{display:none!important}
+}
+
+
+#api-notice{display:none;background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;padding:.875rem 1.125rem;margin-bottom:.875rem;flex-direction:row;align-items:flex-start;gap:.75rem}
+</style>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "청약경쟁률 조회",
+    "url": "https://applylab.kr/competition.html",
+    "description": "전국 아파트 청약경쟁률 실시간 조회. 단지명·지역·브랜드 검색, 1순위 경쟁률 분석.",
+    "isPartOf": { "@type": "WebSite", "name": "청약랩 ApplyLab", "url": "https://applylab.kr" },
+    "inLanguage": "ko",
+    "about": { "@type": "Thing", "name": "아파트 청약경쟁률" }
+  }
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300"
+     crossorigin="anonymous"></script>
+
+<!-- ApplyLab C-Direction Override CSS -->
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="/applylab.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300" crossorigin="anonymous"></script>
 </head>
 <body>
-<header class="gnb"><div class="wrap gnb-in">
+<header class="gnb"><div class="gnb-in">
   <a class="logo" href="/home.html"><span class="logo-mk"></span>청약<b>랩</b></a>
-  <nav class="nav">
+  <nav class="gnb-nav">
     <a href="/home.html">HOME</a>
     <a href="/home.html">분양 캘린더</a>
     <a href="/search.html" class="new">단지검색</a>
@@ -52,12 +423,6 @@
   <a href="/unsold.html">미분양</a>
   <a href="/bankbook.html">청약통장</a>
 </div></header>
-<div class="wrap">
-  <div class="page-head">
-    <h1>청약경쟁률</h1>
-    <p>연도별·월별·지역별 청약경쟁률 통계 · 청약홈 데이터</p>
-  </div>
-</div>
 <div class="search-bar" id="search-bar-wrap">
   <div class="search-bar-inner">
     <div class="tab-list">
@@ -311,8 +676,7 @@
 
   </div>
 </main>
-
-<footer><div class="wrap ft">
+<footer class="al-footer"><div class="al-footer-in">
   청약랩 · ApplyLab · 데이터 출처: 한국부동산원 청약홈 · 국토교통부 (공공데이터포털)<br>
   <a href="/privacy.html">개인정보취급방침</a> · <a href="mailto:shake100@gmail.com">문의</a> · © 2026 ApplyLab
 </div></footer>
@@ -1151,21 +1515,107 @@ function changePage(dir) {
   window.scrollTo({top: 0, behavior:'smooth'});
 }
 </script>
+
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-(async()=>{try{
-  const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(FIREBASE_CONFIG);
-  const db=getFirestore(app),today=new Date().toISOString().slice(0,10);
-  const[ts,as]=await Promise.all([getDoc(doc(db,"analytics_daily",today)),getDocs(collection(db,"analytics_daily"))]);
-  const tv=ts.exists()?(ts.data().views||0):0;let tot=50000;as.forEach(d=>{tot+=(d.data().views||0);});
-  const el=document.getElementById("visitor-counter");if(!el)return;
-  const fmt=n=>n.toLocaleString("ko-KR");
-  el.innerHTML=`<span style="display:inline-flex;align-items:center;gap:.4rem;font-size:11px;color:var(--muted);padding:.2rem .6rem;background:#fff;border-radius:20px;border:1px solid var(--line)"><span style="color:var(--faint);font-size:9px">TODAY</span><span style="color:var(--brand);font-weight:700">${fmt(tv)}</span><span>|</span><span style="color:var(--faint);font-size:9px">TOTAL</span><span style="font-weight:700">${fmt(tot)}</span></span>`;
-  el.style.display="flex";
-}catch(e){}})();
+(async () => {
+  try {
+    const app = getApps().find(a=>a.name==='[DEFAULT]') || initializeApp(FIREBASE_CONFIG);
+    const db = getFirestore(app);
+    const today = new Date().toISOString().slice(0,10);
+    const [todaySnap, allSnap] = await Promise.all([
+      getDoc(doc(db,'analytics_daily',today)),
+      getDocs(collection(db,'analytics_daily'))
+    ]);
+    const todayV = todaySnap.exists() ? (todaySnap.data().views||0) : 0;
+    let total = 50000;
+    allSnap.forEach(d => { total += (d.data().views||0); });
+    const el = document.getElementById('visitor-counter');
+    if (!el) return;
+    const fmt = n => n.toLocaleString('ko-KR');
+    el.innerHTML =
+      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
+      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
+      `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
+      `<span style="color:var(--bg3)">|</span>` +
+      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TOTAL</span>` +
+      `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
+      `</span>`;
+    el.style.display = 'flex';
+  } catch(e) {}
+})();
 </script>
-<script src="/js/firebase-config.js"></script>
-<script type="module" src="/js/inquiry.js"></script>
+<script src="js/firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const _app = initializeApp(FIREBASE_CONFIG);
+const _auth = getAuth(_app);
+const _db = getFirestore(_app);
+onAuthStateChanged(_auth, async u => {
+  const right = document.getElementById('gnav-right');
+  if(!right) return;
+  if(u) {
+    const snap = await getDoc(doc(_db,'users',u.uid));
+    const ud = snap.data();
+    const name = ud?.displayName || u.email.split('@')[0];
+    const isAdmin = ud?.role === 'admin';
+    right.innerHTML = `<div style="position:relative" onmouseenter="this.querySelector('.dd').style.display='block'" onmouseleave="this.querySelector('.dd').style.display='none'">
+      <div style="display:flex;align-items:center;gap:.4rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;font-size:12px;color:var(--ink2)">
+        <div style="width:26px;height:26px;background:var(--accent,#1d4ed8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:500">${name[0].toUpperCase()}</div>
+        <span>${name}</span>${isAdmin?'<span style="background:#fef2f2;color:#dc2626;font-size:9px;padding:1px 5px;border-radius:3px;font-family:monospace">관리자</span>':''}▾
+      </div>
+      <div class="dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--bg3,#e5e7eb);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,.08);min-width:150px;padding:.375rem;z-index:300">
+        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px;font-weight:500">⚙ 관리자 대시보드</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
+        <a href="#" onclick="signOut(_auth).then(()=>{location.href='/competition.html';});return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
+      </div>
+    </div>`;
+  } else {
+    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff;border:1px solid #1d4ed8">관리자 로그인</a>`;
+  }
+  // 방문자 추적
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const month = today.slice(0,7);
+    const sk = 'al_v_'+today;
+    if(!sessionStorage.getItem(sk)) {
+      sessionStorage.setItem(sk,'1');
+      await setDoc(doc(_db,'analytics_daily',today),{views:increment(1),date:today,month},{merge:true});
+      await setDoc(doc(_db,'analytics_monthly',month),{views:increment(1),month},{merge:true});
+      const page = location.pathname.replace(/\//g,'_').replace(/^_/,'')||'home';
+      await setDoc(doc(_db,'analytics_pages',page),{views:increment(1),page:location.pathname},{merge:true});
+    }
+  } catch(e) {}
+});
+</script>
+
+<script type="module" src="js/inquiry.js"></script>
+
+<!-- ApplyLab GNB Patch JS -->
+<script>
+(function(){
+  // 단지검색 메뉴 삽입 (기존 nav-menu에 추가)
+  var nm=document.querySelector('.nav-menu');
+  var mm=document.querySelector('.nav-mobile-inner');
+  if(nm && !nm.querySelector('.nav-search-new')){
+    var li=document.createElement('a');
+    li.href='/search.html'; li.className='nav-a nav-search-new'; li.textContent='단지검색';
+    var first=nm.querySelector('a');
+    if(first && first.nextSibling) nm.insertBefore(li, first.nextSibling);
+    else nm.appendChild(li);
+  }
+  if(mm && !mm.querySelector('.nav-search-new')){
+    var mi=document.createElement('a');
+    mi.href='/search.html'; mi.className='nav-mobile-a nav-search-new'; mi.textContent='단지검색';
+    var mfirst=mm.querySelector('a');
+    if(mfirst && mfirst.nextSibling) mm.insertBefore(mi, mfirst.nextSibling);
+    else mm.appendChild(mi);
+  }
+})();
+</script>
+
+</body>
 </body>
 </html>
