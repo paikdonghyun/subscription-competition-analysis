@@ -156,6 +156,7 @@
 
   <!-- 로딩 -->
   <div id="loading-msg"><span class="spin"></span>청약홈 데이터 조회 중…</div>
+  <div id="loading-note" style="display:none;font-size:12px;color:var(--faint);text-align:center;padding:6px"><span class="spin"></span>전체 단지 백그라운드 로딩 중…</div>
   <div id="empty-msg">검색 결과가 없습니다.<br><small>다른 키워드나 필터로 다시 시도해 보세요.</small></div>
 
   <!-- 결과 리스트 -->
@@ -182,13 +183,15 @@ const API_KEY  = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f86
 const API_BASE = 'https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail';
 
 /* ── 상태 ── */
-let allData   = [];   // 전체 로드 데이터
-let filtered  = [];   // 필터 적용 후
-let page      = 0;
-const PER     = 10;   // 페이지당 카드 수
-let statusVal = '';
-let regionVal = '';
-let keyword   = '';
+let allData    = [];   // 전체 로드 데이터
+let filtered   = [];   // 필터 적용 후
+let page       = 0;
+const PER      = 10;   // 페이지당 카드 수
+let statusVal  = '';
+let regionVal  = '';
+let keyword    = '';
+let totalCount = 0;    // API 전체 건수
+let loadedAll  = false; // 전체 로드 완료 여부
 
 /* ── 날짜 유틸 ── */
 const today = new Date();
@@ -223,6 +226,7 @@ async function fetchPage(pg){
   const url = `${API_BASE}?page=${pg}&perPage=100&serviceKey=${API_KEY}`;
   const r = await fetch(url);
   const j = await r.json();
+  if(pg===1) totalCount = j.totalCount || 0;
   return j.data || [];
 }
 
@@ -230,13 +234,36 @@ async function loadAll(){
   document.getElementById('loading-msg').style.display = 'block';
   document.getElementById('resultList').innerHTML = '';
   document.getElementById('moreBtn').style.display = 'none';
+  loadedAll = false;
 
   try {
-    // 최근 3페이지(300건) 로드 — 빠른 초기 로딩
-    const [p1, p2, p3] = await Promise.all([fetchPage(1), fetchPage(2), fetchPage(3)]);
-    allData = [...p1, ...p2, ...p3];
+    // 1단계: 1페이지(100건) 즉시 로드 → 접수중·예정 단지 우선 표시
+    const p1 = await fetchPage(1);
+    allData = [...p1];
     document.getElementById('loading-msg').style.display = 'none';
     applyFilter();
+
+    // 2단계: 나머지 전체 백그라운드 로드 (총 페이지 계산)
+    const totalPages = Math.ceil(totalCount / 100);
+    if(totalPages > 1){
+      const loadingNote = document.getElementById('loading-note');
+      if(loadingNote) loadingNote.style.display = 'block';
+
+      // 5페이지씩 병렬 로드
+      for(let pg=2; pg<=totalPages; pg+=5){
+        const batch = [];
+        for(let i=pg; i<Math.min(pg+5, totalPages+1); i++) batch.push(fetchPage(i));
+        const results = await Promise.all(batch);
+        results.forEach(rows => allData.push(...rows));
+        // 접수중·예정 단지 위주 필터 중이면 중간 업데이트
+        if(!keyword && statusVal !== 'done') applyFilter();
+      }
+      loadedAll = true;
+      if(loadingNote) loadingNote.style.display = 'none';
+      applyFilter(); // 최종 업데이트
+    } else {
+      loadedAll = true;
+    }
   } catch(e) {
     document.getElementById('loading-msg').innerHTML =
       '<span style="color:#e2563f">데이터 조회 실패. 잠시 후 새로고침해 주세요.</span>';
