@@ -319,14 +319,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
       <!-- 카카오맵 (플랫폼 키 등록 후 활성화) -->
       <div class="mapph" id="kakaoMapWrap" style="background:#e8eff4">
         <div id="kakaoMap" style="width:100%;height:270px;border-radius:var(--r)"></div>
-        <div id="mapFallback" style="display:none;width:100%;height:270px;border-radius:var(--r);background:linear-gradient(135deg,#e8eff4,#dce7f0);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;box-sizing:border-box">
-          <div style="font-size:32px">📍</div>
-          <div id="mapAddrText" style="font-size:14px;font-weight:700;color:var(--ink);text-align:center;line-height:1.6"></div>
-          <a id="mapKakaoLink" href="#" target="_blank" rel="noopener"
-             style="font-size:12px;color:var(--brand);font-weight:700;background:var(--brand-soft);padding:6px 14px;border-radius:20px;text-decoration:none;margin-top:4px">
-            카카오맵에서 보기 →
-          </a>
-        </div>
+
         <div class="maptag" id="mapTag">지도 로딩 중…</div>
       </div>
       <!-- POI 실데이터 -->
@@ -591,6 +584,9 @@ async function loadKakaoLocation(address, aptName) {
     // pill 업데이트
     document.getElementById('locPill').textContent = `반경 3km · 실데이터`;
 
+    // ── POI 실데이터 → SUB 입지 점수 반영 ──
+    updateLocScore(rows);
+
     // 4. 카카오맵 렌더 (SDK 즉시 로드 방식)
     try {
       const container = document.getElementById('kakaoMap');
@@ -719,7 +715,37 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt) {
 }
 
 /* 종합 점수 */
-const SUB={교통:88,학교:82,인프라:75,브랜드:80,인기도:78,분양가격:86};
+const SUB={교통:50,학교:50,인프라:50,브랜드:80,인기도:78,분양가격:86}; // 교통·학교·인프라는 POI 실데이터로 덮어씀
+
+function updateLocScore(rows) {
+  // 교통 점수: 역 거리 기반 (100점 만점)
+  const subwayRow = rows.find(r => r.ic === '역');
+  if (subwayRow) {
+    const d = subwayRow.dist;
+    // 500m 이내=95, 1km=85, 1.5km=75, 2km=65, 3km=50
+    SUB['교통'] = d<=300?97 : d<=500?93 : d<=800?87 : d<=1000?82 : d<=1500?74 : d<=2000?65 : d<=2500?57 : 50;
+    FACT['교통'] = `${subwayRow.nm} ${fmtDist(d)} (${subwayRow.time})`;
+  }
+  // 학교 점수: 초등학교 거리 기반
+  const schoolRow = rows.find(r => r.ic === '학');
+  if (schoolRow) {
+    const d = schoolRow.dist;
+    // 300m 이내=96(초품아), 500m=88, 800m=80, 1km=72, 1.5km=62
+    SUB['학교'] = d<=300?96 : d<=500?88 : d<=800?80 : d<=1000?72 : d<=1200?65 : 58;
+    FACT['학교'] = `${schoolRow.nm} ${fmtDist(d)} (${schoolRow.time})`;
+  }
+  // 인프라 점수: 마트 거리 기반
+  const martRow = rows.find(r => r.ic === '상');
+  if (martRow) {
+    const d = martRow.dist;
+    SUB['인프라'] = d<=300?90 : d<=500?83 : d<=800?76 : d<=1000?70 : d<=1500?63 : 55;
+    FACT['인프라'] = `${martRow.nm} ${fmtDist(d)} · 병원 ${rows.find(r=>r.ic==='병') ? fmtDist(rows.find(r=>r.ic==='병').dist) : '-'}`;
+  }
+  // 점수 업데이트 후 렌더 재실행
+  const activeBtn = document.querySelector('.pt-btn.on');
+  const phase = activeBtn ? (activeBtn.dataset.phase || 'main') : 'main';
+  render(phase);
+}
 const FACT={교통:'동탄역 SRT·GTX-A 800m',학교:'초등학교 250m·초품아급',인프라:'호수공원 400m·마트 1.2km',브랜드:'시공능력평가 상위권',인기도:'검색·커뮤니티 관심도 상위',분양가격:'시세 대비 +13% 시세차익 여력'};
 const PHASES={
   pre:{note:'분양 전 · 가격 미반영',weights:{교통:25,학교:15,인프라:15,브랜드:15,인기도:30}},
