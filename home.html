@@ -1,238 +1,831 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/favicon-180.png">
+  <link rel="manifest" href="/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>청약랩 ApplyLab | 분양 캘린더 · 청약 일정 한눈에</title>
-<meta name="description" content="청약홈 분양 일정을 캘린더로 한눈에 확인하세요. 청약경쟁률·분양가격·미분양현황·청약통장 현황을 무료로 제공합니다.">
-<meta name="keywords" content="청약 캘린더, 분양 일정, 청약경쟁률, 청약홈, 아파트 분양, 미분양, 분양가격, 청약통장">
-<meta name="robots" content="index, follow">
-<meta name="author" content="청약랩 ApplyLab">
-<meta name="google-site-verification" content="XSpggCEU8TEWQ88HGp2HRfZi-AEyI3GBDTiJ2Z_Hows">
-<meta name="naver-site-verification" content="77d8d71163a4d6b7ff04b5e58ecf7a3f1beebee1">
-<link rel="canonical" href="https://applylab.kr/home.html">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://applylab.kr/home.html">
-<meta property="og:title" content="청약랩 ApplyLab | 분양 캘린더 · 청약 일정">
-<meta property="og:description" content="청약홈 분양 일정 캘린더. 청약경쟁률·분양가격·미분양현황·청약통장 현황 무료 제공.">
-<meta property="og:image" content="https://applylab.kr/favicon-512.png">
-<meta property="og:site_name" content="청약랩 ApplyLab">
-<meta property="og:locale" content="ko_KR">
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
-<link rel="apple-touch-icon" href="/favicon-180.png">
-<link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="/applylab.css">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300" crossorigin="anonymous"></script>
+  <meta name="description" content="청약홈 분양 일정을 캘린더로 한눈에 확인하세요. 특별공급·1순위·2순위·당첨자발표·계약 일정, 단지별 분양정보를 무료로 제공합니다.">
+  <meta name="keywords" content="청약 캘린더, 분양 일정, 청약 일정, 청약홈, 아파트 분양, 특별공급, 1순위 청약, 당첨자발표, 분양정보">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="청약랩 ApplyLab">
+  <link rel="canonical" href="https://applylab.kr/home.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://applylab.kr/home.html">
+  <meta property="og:title" content="청약랩 | 분양 캘린더 · 청약 일정">
+  <meta property="og:description" content="특별공급·1순위·2순위·당첨자발표·계약 일정을 캘린더로 한눈에. 청약홈 실시간 데이터 연동.">
+  <meta property="og:image" content="https://applylab.kr/favicon-512.png">
+  <meta property="og:site_name" content="청약랩 ApplyLab">
+  <meta property="og:locale" content="ko_KR">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="청약랩 | 분양 캘린더 · 청약 일정">
+  <meta name="twitter:description" content="특별공급·1순위·2순위·당첨자발표·계약 일정을 캘린더로 한눈에. 청약홈 실시간 데이터 연동.">
+  <meta name="twitter:image" content="https://applylab.kr/favicon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
+  --bg:#f9fafb;--bg2:#f3f4f6;--bg3:#e5e7eb;--white:#fff;
+  --accent:#1d4ed8;--accent-l:#eff6ff;--accent-h:#1e40af;
+  --red:#dc2626;--red-l:#fef2f2;--green:#16a34a;--orange:#ea580c;--gold:#b45309;--purple:#7c3aed;
+  --serif:'Noto Serif KR',serif;
+  --sans:'Noto Sans KR',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.08);
+  --r:6px;--rl:10px;
+}
+/* 이벤트 타입 색상 */
+:root{
+  --e-spec:#7c3aed;   /* 특별공급 */
+  --e-r1:#1d4ed8;     /* 1순위 */
+  --e-r2:#0891b2;     /* 2순위 */
+  --e-win:#16a34a;    /* 당첨자발표 */
+  --e-cnt:#ea580c;    /* 계약 */
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
+
+/* ── NAV (반응형) ── */
+.nav{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--sh);position:sticky;top:0;z-index:100}
+.nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
+.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0}
+.logo-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
+.logo-en{font-family:var(--mono);font-size:.68rem;color:var(--ink3);letter-spacing:.05em}
+.nav-div{width:1px;height:16px;background:var(--bg3);flex-shrink:0}
+.nav-menu{display:flex;gap:.125rem;flex:1}
+.nav-a{font-size:13px;color:var(--ink3);padding:.38rem .75rem;border-radius:var(--r);transition:all .12s;text-decoration:none;white-space:nowrap}
+.nav-a:hover{color:var(--ink);background:var(--bg2)}
+.nav-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
+.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
+.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
+/* 햄버거 버튼 */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--r);flex-shrink:0}
+.nav-hamburger span{display:block;height:2px;background:var(--ink2);border-radius:2px;transition:all .25s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+/* 모바일 드롭다운 */
+.nav-mobile{display:none;flex-direction:column;background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
+.nav-mobile.open{display:flex}
+.nav-mobile-inner{max-width:1400px;margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
+.nav-mobile-a{font-size:14px;color:var(--ink2);padding:.65rem .875rem;border-radius:var(--r);text-decoration:none;transition:background .12s;font-weight:300}
+.nav-mobile-a:hover{background:var(--bg2)}
+.nav-mobile-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
+.nav-mobile-divider{height:1px;background:var(--bg2);margin:.35rem 0}
+.nav-mobile-btn{display:none}
+/* 방문자 카운터 */
+#visitor-counter{flex-shrink:0}
+/* 반응형 분기 */
+@media(max-width:900px){
+  .nav-menu,.nav-div,.nav-right{display:none}
+  .nav-hamburger{display:flex}
+  .nav-in{padding:0 1rem}
+}
+@media(min-width:901px){
+  .nav-mobile{display:none!important}
+}
+@media(max-width:480px){
+  .logo-en{display:none}
+}
+
+/* ── 모바일 최적화 ── */
+@media(max-width:768px){
+  *{-webkit-text-size-adjust:100%}
+  body{overflow-x:hidden}
+  /* 레이아웃 */
+  .wrap{padding:.625rem .75rem}
+  .main{padding:0}
+  /* 통계 카드 */
+  .stat-row{grid-template-columns:1fr 1fr;gap:.5rem}
+  .sc{padding:.75rem}
+  .sc-v{font-size:1.25rem}
+  /* 필터 */
+  .filter{padding:.75rem}
+  .filter-row{gap:.5rem}
+  .sel,.inp{font-size:15px}
+  .inp{min-width:0;width:100%}
+  /* 테이블: 가로 스크롤 */
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rl)}
+  .tbl{font-size:12px;min-width:560px}
+  .tbl th,.tbl td{padding:.4rem .5rem;white-space:nowrap}
+  /* 카드 */
+  .card{padding:.875rem}
+  .card-title{font-size:.85rem}
+  /* 차트 그리드 */
+  .chart-grid{grid-template-columns:1fr}
+  /* 페이저 */
+  .pager{gap:.5rem}
+  .pg-btn{padding:.3rem .7rem;font-size:11px}
+  /* region toggle (미분양) */
+  .region-toggle{max-width:100%!important}
+  .rt-btn{font-size:12px;padding:.45rem .5rem}
+  /* 칩 */
+  .chip-row{gap:.3rem}
+  .chip{font-size:10px;padding:2px 8px}
+  /* 캘린더 */
+  .cal-grid{gap:1px}
+  .cal-cell{min-height:60px;padding:.25rem .2rem}
+  .cal-evt{font-size:8.5px;padding:1px 3px}
+  .cal-date{font-size:11px;width:18px;height:18px}
+  .cal-nav{gap:.5rem}
+  .cal-ym{font-size:1rem}
+  .cal-legend{gap:.35rem}
+  .leg-item{font-size:10px}
+  /* 모달 */
+  .modal{padding:1rem;margin:.5rem}
+  .modal-bg{padding:1.5rem .75rem 1rem}
+}
+@media(max-width:480px){
+  .stat-row{grid-template-columns:1fr 1fr}
+  .tbl{min-width:480px}
+  .wrap{padding:.5rem}
+  .filter-row{flex-direction:column;align-items:stretch}
+  .sel{width:100%}
+  .btn-q,.btn-ghost{width:100%;text-align:center}
+}
+
+/* 홈 테이블 모바일 */
+@media(max-width:768px){
+  #list-body tr td:first-child{min-width:100px;white-space:normal;word-break:keep-all}
+  #list-body tr td:nth-child(n+5){font-size:11px}
+  .tbl th:nth-child(n+5),.tbl td:nth-child(n+5){padding:.4rem .3rem}
+}
+
+
+/* LAYOUT */
+.wrap{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start}
+.main{padding:0 1.25rem;min-width:0}
+.ad-col{padding-top:0}
+.ad-sticky{position:sticky;top:66px}
+@media(max-width:1200px){.wrap{grid-template-columns:1fr}.ad-col{display:none}.main{padding:0}}
+
+/* AD */
+.ad-box{background:var(--bg2);border:1px dashed var(--bg3);border-radius:var(--rl);text-align:center;overflow:hidden;margin-bottom:.65rem}
+.ad-lbl{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;padding:.3rem;border-bottom:1px solid var(--bg3);text-transform:uppercase}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh);margin-bottom:.75rem}
+.card-title{font-family:var(--serif);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:.875rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.card-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
+.card-sub{font-size:11px;color:var(--ink4);font-family:var(--mono);margin-left:.375rem;font-weight:400}
+
+/* STAT */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.625rem;margin-bottom:1rem}
+@media(max-width:600px){.stat-row{grid-template-columns:1fr 1fr}}
+.sc{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:.875rem 1rem;border-top:3px solid var(--bg3);box-shadow:var(--sh)}
+.sc.bl{border-top-color:var(--accent)}.sc.gr{border-top-color:var(--green)}
+.sc.or{border-top-color:var(--orange)}.sc.pu{border-top-color:var(--purple)}
+.sc-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.06em;color:var(--ink3);margin-bottom:.35rem;text-transform:uppercase}
+.sc-v{font-family:var(--serif);font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1}
+.sc-u{font-size:.75rem;font-weight:300;color:var(--ink3)}
+.sc-sub{font-size:10px;color:var(--ink4);margin-top:.3rem;font-family:var(--mono)}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.cal-nav-btn{font-size:13px;padding:.4rem .9rem;border-radius:var(--r);border:1.5px solid var(--bg3);background:var(--white);color:var(--ink3);cursor:pointer;font-family:var(--sans);transition:all .12s}
+.cal-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cal-ym{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--ink);flex:1;text-align:center}
+.cal-today-btn{font-size:11px;padding:.3rem .75rem;border-radius:var(--r);border:1.5px solid var(--accent);background:var(--accent-l);color:var(--accent);cursor:pointer;font-family:var(--mono);letter-spacing:.04em}
+
+.cal-legend{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.875rem}
+.leg-item{display:flex;align-items:center;gap:.3rem;font-size:11px;color:var(--ink3);font-family:var(--mono)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-head-cell{text-align:center;font-size:10px;font-family:var(--mono);letter-spacing:.05em;color:var(--ink4);padding:.4rem 0;background:var(--bg2);border-radius:var(--r)}
+.cal-head-cell:first-child{color:var(--red)}.cal-head-cell:last-child{color:var(--accent)}
+.cal-cell{min-height:88px;background:var(--white);border:1px solid var(--bg3);border-radius:var(--r);padding:.4rem .35rem;cursor:pointer;transition:border-color .12s;position:relative;overflow:hidden}
+.cal-cell:hover{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-l)}
+.cal-cell.other-month{background:var(--bg2);opacity:.55}
+.cal-cell.today .cal-date{background:var(--accent);color:#fff;border-radius:50%}
+.cal-cell.has-events{background:var(--white)}
+.cal-date{font-size:12px;font-family:var(--mono);font-weight:500;color:var(--ink3);width:20px;height:20px;display:flex;align-items:center;justify-content:center;margin-bottom:.2rem;flex-shrink:0}
+.cal-date.sun{color:var(--red)}.cal-date.sat{color:var(--accent)}
+.cal-events{display:flex;flex-direction:column;gap:2px}
+.cal-evt{font-size:9.5px;padding:1px 4px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;font-family:var(--sans);font-weight:400;cursor:pointer;line-height:1.5}
+.cal-more{font-size:9px;color:var(--ink4);font-family:var(--mono);padding:0 2px;margin-top:1px}
+
+/* 이벤트 색상 */
+.et-spec{background:var(--e-spec)}.et-r1{background:var(--e-r1)}.et-r2{background:var(--e-r2)}.et-win{background:var(--e-win)}.et-cnt{background:var(--e-cnt)}
+.et-spec-l{background:#f5f3ff;color:var(--e-spec);border:1px solid #ddd6fe}
+.et-r1-l{background:#eff6ff;color:var(--e-r1);border:1px solid #bfdbfe}
+.et-r2-l{background:#ecfeff;color:var(--e-r2);border:1px solid #a5f3fc}
+.et-win-l{background:#f0fdf4;color:var(--e-win);border:1px solid #bbf7d0}
+.et-cnt-l{background:#fff7ed;color:var(--e-cnt);border:1px solid #fed7aa}
+
+/* FILTER */
+.filter{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:.875rem 1.25rem;margin-bottom:1rem;box-shadow:var(--sh)}
+.filter-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.filter-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink4);text-transform:uppercase;white-space:nowrap}
+.sel{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:.4rem .75rem;border-radius:var(--r);font-size:13px;cursor:pointer;outline:none;font-family:var(--sans);transition:border-color .15s}
+.sel:focus{border-color:var(--accent)}
+.inp{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:.4rem .75rem;border-radius:var(--r);font-size:13px;outline:none;font-family:var(--sans);transition:border-color .15s;min-width:160px;flex:1;max-width:260px}
+.inp:focus{border-color:var(--accent);background:var(--white)}
+.evt-chips{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.625rem}
+.chip{font-size:11px;padding:2px 10px;border:1.5px solid var(--bg3);border-radius:20px;cursor:pointer;color:var(--ink3);background:var(--white);transition:all .12s;font-family:var(--mono)}
+.chip.on{color:#fff;border-color:transparent}
+
+/* TABLE */
+.tbl-scroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;font-weight:500;color:var(--ink3);padding:.5rem .75rem;border-bottom:2px solid var(--bg3);background:var(--bg2);text-transform:uppercase;white-space:nowrap;text-align:left}
+.tbl td{padding:.55rem .75rem;border-bottom:1px solid var(--bg2);color:var(--ink2)}
+.tbl tbody tr:hover td{background:var(--accent-l);cursor:pointer}
+.tbl tr:last-child td{border-bottom:none}
+.num{font-family:var(--mono);text-align:right;font-size:12px}
+.badge{display:inline-block;font-size:10px;font-family:var(--mono);padding:1px 7px;border-radius:10px;border:1px solid var(--bg3);color:var(--ink3);white-space:nowrap}
+.pager{display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:.875rem}
+.pg-btn{font-size:12px;padding:.35rem .9rem;border-radius:var(--r);border:1.5px solid var(--bg3);background:var(--white);color:var(--ink3);cursor:pointer;font-family:var(--sans)}
+.pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pg-btn:disabled{opacity:.4;cursor:default}
+.pg-info{font-family:var(--mono);font-size:11px;color:var(--ink4)}
+
+/* LOADING */
+.loading{text-align:center;padding:3rem;color:var(--ink4);font-family:var(--mono);font-size:12px}
+.spin{width:26px;height:26px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .875rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(24,24,27,.45);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:3.5rem 1rem 2rem;overflow-y:auto}
+.modal-bg.show{display:flex}
+.modal{background:var(--white);border-radius:var(--rl);max-width:700px;width:100%;padding:1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.25rem}
+.modal-title{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--ink);line-height:1.4}
+.modal-close{border:none;background:var(--bg2);color:var(--ink3);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0}
+.modal-close:hover{background:var(--bg3)}
+.modal-meta{font-family:var(--mono);font-size:11px;color:var(--ink4);margin-bottom:1rem;line-height:1.9}
+.schedule-row{display:flex;align-items:center;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--bg2)}
+.schedule-row:last-child{border-bottom:none}
+.schedule-lbl{font-size:11px;font-family:var(--mono);color:var(--ink4);width:70px;flex-shrink:0}
+.schedule-val{font-size:13px;font-weight:400;color:var(--ink)}
+.schedule-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;margin-right:.4rem}
+
+/* NOTE */
+.note{background:var(--bg2);border-left:3px solid var(--bg3);padding:.5rem .875rem;border-radius:0 var(--r) var(--r) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6;margin-top:.75rem}
+
+@media(max-width:768px){
+  .scroll-hint{display:block!important}
+}
+</style>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebSite","name":"청약랩 ApplyLab","url":"https://applylab.kr","description":"청약홈 분양 일정 캘린더. 청약경쟁률·분양가격·미분양현황·청약통장 현황 무료 제공."}
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "청약랩 ApplyLab",
+    "url": "https://applylab.kr",
+    "description": "청약홈 분양 일정 캘린더. 특별공급·1순위·2순위·당첨자발표·계약 일정을 한눈에 확인하는 부동산 청약 분석 서비스.",
+    "applicationCategory": "BusinessApplication",
+    "inLanguage": "ko",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+    "publisher": { "@type": "Organization", "name": "청약랩 ApplyLab", "url": "https://applylab.kr" }
+  }
 </script>
+  <!-- 검색엔진 소유권 확인 (Google Search Console / Naver Search Advisor) -->
+  <meta name="google-site-verification" content="XSpggCEU8TEWQ88HGp2HRfZi-AEyI3GBDTiJ2Z_Hows">
+  <meta name="naver-site-verification" content="77d8d71163a4d6b7ff04b5e58ecf7a3f1beebee1">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300"
+     crossorigin="anonymous"></script>
 </head>
 <body>
-<header class="gnb"><div class="wrap gnb-in">
-  <a class="logo" href="/home.html"><span class="logo-mk"></span>청약<b>랩</b></a>
-  <nav class="nav">
-    <a href="/home.html" aria-current="page">HOME</a>
-    <a href="/home.html">분양 캘린더</a>
-    <a href="/search.html" class="new">단지검색</a>
-    <a href="/competition.html">청약경쟁률</a>
-    <a href="/price.html">분양가격</a>
-    <a href="/unsold.html">미분양</a>
-    <a href="/bankbook.html">청약통장</a>
-  </nav>
-  <span id="visitor-counter" style="display:none;margin-left:auto"></span>
-  <button class="navtog" aria-label="메뉴" onclick="document.documentElement.classList.toggle('nav-open')">
-    <span></span><span></span><span></span>
-  </button>
+<nav class="nav">
+  <div class="nav-in">
+    <a href="/home.html" class="logo">
+      <span class="logo-kr">청약랩</span><span class="logo-en">ApplyLab</span>
+    </a>
+    <div class="nav-div"></div>
+    <nav class="nav-menu">
+      <a href="/home.html" class="nav-a on">HOME</a>
+      <a href="/competition.html" class="nav-a">청약경쟁률</a>
+      <a href="/price.html" class="nav-a">분양가격</a>
+      <a href="/unsold.html" class="nav-a">미분양 현황</a>
+      <a href="/bankbook.html" class="nav-a">청약통장 현황</a>
+    </nav>
+    <div class="nav-right">
+      <span id="visitor-counter" style="display:none"></span>
+      <a href="/login.html" class="nav-btn">관리자 로그인</a>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="메뉴 열기">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile">
+  <div class="nav-mobile-inner">
+    <a href="/home.html" class="nav-mobile-a on">HOME</a>
+    <a href="/competition.html" class="nav-mobile-a">청약경쟁률</a>
+    <a href="/price.html" class="nav-mobile-a">분양가격</a>
+    <a href="/unsold.html" class="nav-mobile-a">미분양 현황</a>
+    <a href="/bankbook.html" class="nav-mobile-a">청약통장 현황</a>
+
+  </div>
 </div>
-<div class="drawer">
-  <a href="/home.html" aria-current="page">HOME</a>
-  <a href="/home.html">분양 캘린더</a>
-  <a href="/search.html">단지검색</a>
-  <a href="/competition.html">청약경쟁률</a>
-  <a href="/price.html">분양가격</a>
-  <a href="/unsold.html">미분양</a>
-  <a href="/bankbook.html">청약통장</a>
-</div></header>
+<script>
+(function(){
+  var btn=document.getElementById('nav-hamburger');
+  var mob=document.getElementById('nav-mobile');
+  if(!btn||!mob) return;
+  btn.addEventListener('click',function(){
+    var open=mob.classList.toggle('open');
+    btn.classList.toggle('open',open);
+    btn.setAttribute('aria-label', open?'메뉴 닫기':'메뉴 열기');
+  });
+  document.addEventListener('click',function(e){
+    if(!btn.contains(e.target)&&!mob.contains(e.target)){
+      mob.classList.remove('open'); btn.classList.remove('open');
+    }
+  });
+  window.addEventListener('resize',function(){
+    if(window.innerWidth>900){ mob.classList.remove('open'); btn.classList.remove('open'); }
+  });
+})();
+</script>
+  </div>
+</nav>
 
 <div class="wrap">
-  <div class="page-head">
-    <p class="eyebrow">청약을 쉽게</p>
-    <h1>오늘의 청약, 한눈에</h1>
-    <p>일정·경쟁률·분양가·단지 분석까지. 흩어진 청약 정보를 청약랩에서 한 번에 확인하세요.</p>
-  </div>
+  <!-- 좌측 광고 -->
+  <div class="ad-col"><div class="ad-sticky">
+    <div class="ad-box"><div class="ad-lbl">Ad</div>
+      <ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+    </div>
+  </div></div>
 
-  <a href="/search.html" class="searchbar" style="margin-top:14px" aria-label="단지 검색으로 이동">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.5" stroke="#9AA6B2" stroke-width="2"/><path d="M14 14l4 4" stroke="#9AA6B2" stroke-width="2" stroke-linecap="round"/></svg>
-    <span style="color:#9AA6B2;font-size:16px">단지명·지역으로 검색 (예: 동탄, 마곡 르엘)</span>
-  </a>
+  <div class="main">
 
-  <div class="hero-card reveal" style="margin-top:14px">
-    <div class="lbl">이번달 전국 청약 온도</div>
-    <div class="big" id="avgComp">--<small>:1</small></div>
-    <div class="delta" id="avgDesc">데이터 로딩 중…</div>
-    <div class="bar"><i id="tempBar"></i></div>
-    <div class="scale"><span>차분</span><span>보통</span><span>과열</span></div>
-  </div>
+    <!-- 통계 카드 -->
+    <div class="stat-row">
+      <div class="sc bl"><div class="sc-lbl">이번 달 분양</div><div class="sc-v" id="st-month">–</div><div class="sc-sub" id="st-month-sub">단지 수</div></div>
+      <div class="sc pu"><div class="sc-lbl">특별공급</div><div class="sc-v" id="st-spec">–</div><div class="sc-sub" id="st-spec-sub">이번 달 일정</div></div>
+      <div class="sc gr"><div class="sc-lbl">당첨자 발표</div><div class="sc-v" id="st-win">–</div><div class="sc-sub" id="st-win-sub">이번 달 예정</div></div>
+      <div class="sc or"><div class="sc-lbl">계약</div><div class="sc-v" id="st-cnt">–</div><div class="sc-sub" id="st-cnt-sub">이번 달 일정</div></div>
+    </div>
 
-  <div class="grid4 reveal" style="margin-top:12px">
-    <a class="scard c-sky" href="/home.html"><div class="ic">◷</div><div class="v">분양 캘린더</div><div class="k">청약 일정 보기</div></a>
-    <a class="scard c-mint" href="/competition.html"><div class="ic">↑</div><div class="v">청약경쟁률</div><div class="k">경쟁률 통계</div></a>
-    <a class="scard c-lilac" href="/price.html"><div class="ic">₩</div><div class="v">분양가격</div><div class="k">시세 비교</div></a>
-    <a class="scard c-peach" href="/unsold.html"><div class="ic">!</div><div class="v">미분양</div><div class="k">현황 확인</div></a>
-  </div>
+    <!-- 로딩 -->
+    <div class="loading" id="loading"><div class="spin"></div>청약홈 분양 일정 조회 중…</div>
 
-  <!-- 분양 캘린더 (기존 로직 유지) -->
-  <section class="sec reveal">
-    <div class="card">
-      <div class="sec-h">
-        <h2>분양 캘린더</h2>
-        <div style="display:flex;gap:8px;margin-left:auto;align-items:center">
-          <button id="prevBtn" onclick="changeMonth(-1)" style="border:none;background:var(--bg);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px">‹</button>
-          <span id="calTitle" style="font-size:14px;font-weight:700;min-width:80px;text-align:center"></span>
-          <button id="nextBtn" onclick="changeMonth(1)" style="border:none;background:var(--bg);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px">›</button>
+    <div id="content" style="display:none">
+      <!-- 캘린더 -->
+      <div class="card">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="moveCal(-1)">← 이전달</button>
+          <div class="cal-ym" id="cal-ym"></div>
+          <button class="cal-nav-btn" onclick="moveCal(1)">다음달 →</button>
+          <button class="cal-today-btn" onclick="goToday()">오늘</button>
+        </div>
+        <div class="cal-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--e-spec)"></div>특별공급</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--e-r1)"></div>1순위</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--e-r2)"></div>2순위</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--e-win)"></div>당첨자발표</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--e-cnt)"></div>계약</div>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <div class="cal-head-cell">일</div><div class="cal-head-cell">월</div><div class="cal-head-cell">화</div>
+          <div class="cal-head-cell">수</div><div class="cal-head-cell">목</div><div class="cal-head-cell">금</div><div class="cal-head-cell">토</div>
+        </div>
+        <div class="note" id="cal-note"></div>
+      </div>
+
+      <!-- 분양 목록 필터 -->
+      <div class="filter">
+        <div class="filter-row">
+          <span class="filter-lbl">지역</span>
+          <select class="sel" id="sel-area" onchange="renderList()">
+            <option value="">전체</option>
+          </select>
+          <span class="filter-lbl">유형</span>
+          <select class="sel" id="sel-type" onchange="renderList()">
+            <option value="">전체</option>
+            <option value="APT">아파트</option>
+            <option value="OTH">아파트 외</option>
+          </select>
+          <input class="inp" id="inp-q" type="search" placeholder="단지명 검색" onkeydown="if(event.key==='Enter')renderList()">
+          <button onclick="renderList()" style="font-size:12px;font-weight:500;padding:.4rem 1rem;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--sans)">조회</button>
+        </div>
+        <div class="evt-chips" id="evt-chips">
+          <span class="filter-lbl" style="align-self:center">일정</span>
+          <button class="chip on et-spec-l" data-et="spec" onclick="toggleChip(this)">특별공급</button>
+          <button class="chip on et-r1-l" data-et="r1" onclick="toggleChip(this)">1순위</button>
+          <button class="chip on et-r2-l" data-et="r2" onclick="toggleChip(this)">2순위</button>
+          <button class="chip on et-win-l" data-et="win" onclick="toggleChip(this)">당첨자발표</button>
+          <button class="chip on et-cnt-l" data-et="cnt" onclick="toggleChip(this)">계약</button>
         </div>
       </div>
-      <div id="calendarWrap"></div>
-    </div>
-  </section>
 
-  <!-- 단지 상세 모달 (기존 유지) -->
-  <div id="modal-bg" style="position:fixed;inset:0;background:rgba(25,35,44,.5);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:3rem 1rem 2rem;overflow-y:auto" onclick="if(event.target===this)closeModal()">
-    <div style="background:#fff;border-radius:20px;max-width:680px;width:100%;padding:24px;box-shadow:0 16px 48px rgba(25,35,44,.18)">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:8px">
-        <div id="md-title" style="font-size:17px;font-weight:800;letter-spacing:-.02em"></div>
-        <button onclick="closeModal()" style="border:none;background:var(--bg);color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0">✕</button>
-      </div>
-      <div id="md-meta" style="font-size:12px;color:var(--faint);margin-bottom:16px;line-height:2"></div>
-      <div id="md-body"></div>
-      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span>※ 샘플 데이터 포함 · 청약홈 원문 확인 권장</span>
-        <a href="mailto:shake100@gmail.com" style="color:var(--muted)">문의: shake100@gmail.com</a>
+      <!-- 분양 목록 -->
+      <div class="card">
+        <div class="card-title">분양 단지 현황<span class="card-sub" id="list-sub"></span></div>
+        <div class="tbl-scroll" style="position:relative">
+          <div style="display:none" class="scroll-hint" id="scroll-hint" style="text-align:right;font-size:10px;color:var(--ink4);font-family:var(--mono);padding:.2rem .2rem .4rem;text-align:right">← 좌우 스크롤</div>
+          <table class="tbl" style="min-width:640px">
+            <thead><tr>
+              <th style="min-width:100px">단지명</th><th>지역</th><th>유형</th>
+              <th class="num">공급세대</th>
+              <th>특공</th><th>1순위</th><th>2순위</th><th>당첨발표</th><th>계약</th>
+            </tr></thead>
+            <tbody id="list-body"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="pager">
+          <button class="pg-btn" id="pg-prev" onclick="movePage(-1)">← 이전</button>
+          <span class="pg-info" id="pg-info"></span>
+          <button class="pg-btn" id="pg-next" onclick="movePage(1)">다음 →</button>
+        </div>
+        <div class="note">※ 출처: 한국부동산원 청약홈_분양정보 상세 (공공데이터포털) · 최근 3개월~향후 분양 단지 기준 · 캘린더 날짜 클릭 시 해당일 단지 일정 표시</div>
       </div>
     </div>
   </div>
 
-  <div class="ad ad-infeed reveal" style="margin-top:18px">
-    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5133871958265300" data-ad-slot="" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <!-- 우측 광고 -->
+  <div class="ad-col"><div class="ad-sticky">
+    <div class="ad-box"><div class="ad-lbl">Ad</div>
+      <ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="ca-pub-XXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+    </div>
+  </div></div>
+</div>
+
+<!-- 단지 상세 모달 -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="md-title"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-meta" id="md-meta"></div>
+    <div id="md-schedule"></div>
+    <div style="margin-top:1rem;text-align:right">
+      <a id="md-link" href="#" target="_blank" rel="noopener" style="font-size:12px;font-family:var(--mono);color:var(--accent);text-decoration:none">청약홈에서 공고 보기 →</a>
+    </div>
   </div>
 </div>
 
-<footer><div class="wrap ft">
-  청약랩 · ApplyLab · 데이터 출처: 한국부동산원 청약홈 (공공데이터포털)<br>
-  <a href="/privacy.html">개인정보취급방침</a> · <a href="mailto:shake100@gmail.com">문의</a> · © 2026 ApplyLab
-</div></footer>
-
-<style>
-/* 캘린더 */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-head{text-align:center;font-size:11px;font-weight:700;color:var(--faint);padding:6px 0;letter-spacing:.04em}
-.cal-day{min-height:72px;background:var(--bg);border-radius:10px;padding:6px 6px 4px;cursor:default}
-.cal-day.other{opacity:.35}
-.cal-day.today{background:var(--brand-soft);outline:2px solid var(--brand)}
-.cal-num{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px}
-.cal-day.today .cal-num{color:var(--brand)}
-.ev{font-size:10.5px;font-weight:600;border-radius:5px;padding:2px 5px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-.ev:hover{opacity:.8}
-.ev-spec{background:#EDE9FE;color:#7C3AED}
-.ev-r1{background:var(--brand-soft);color:var(--brand)}
-.ev-r2{background:#E0F2FE;color:#0369A1}
-.ev-win{background:var(--mint);color:var(--mint-ink)}
-.ev-cnt{background:var(--peach);color:var(--peach-ink)}
-.cal-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:12px}
-.cal-legend span{display:flex;align-items:center;gap:5px}
-.leg-dot{width:8px;height:8px;border-radius:3px}
-</style>
+<footer style="background:#18181b;padding:1.5rem;margin-top:2rem">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">
+      <span style="font-family:var(--serif);font-size:13px;color:#e4e4e7;font-weight:600">청약랩</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#52525b">·</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#71717a">ApplyLab</span>
+      <span style="font-family:var(--mono);font-size:11px;color:#52525b">·</span>
+      <span style="font-family:var(--mono);font-size:10px;color:#71717a">데이터 출처: 한국부동산원 청약홈 (공공데이터포털)</span>
+    </div>
+    <div style="text-align:center;font-family:var(--mono);font-size:10px;color:#52525b">
+      <a href="/privacy.html" style="color:#71717a">개인정보취급방침</a> &nbsp;|&nbsp;
+      <a href="mailto:shake100@gmail.com" style="color:#71717a">문의: shake100@gmail.com</a><br>
+      © 2026 청약랩 ApplyLab. All rights reserved.
+    </div>
+  </div>
+</footer>
 
 <script>
-const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
-const PROXY = 'https://corsproxy.io/?';
-let state = { calYear:0, calMonth:0, data:[] };
+/* ============================================================
+   분양 캘린더 — 청약홈 분양정보 상세 API
+   ============================================================ */
+const API_KEY  = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+const API_BASE = 'https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail';
 
+const EVT_CFG = {
+  spec: { label:'특별공급', cls:'et-spec', lcls:'et-spec-l', start:'SPSPLY_RCEPT_BGNDE', end:'SPSPLY_RCEPT_ENDDE' },
+  r1:   { label:'1순위',    cls:'et-r1',   lcls:'et-r1-l',   start:'GNRL_RNK1_CRSPAREA_RCPTDE', end:'GNRL_RNK1_CRSPAREA_ENDDE' },
+  r2:   { label:'2순위',    cls:'et-r2',   lcls:'et-r2-l',   start:'GNRL_RNK2_CRSPAREA_RCPTDE', end:'GNRL_RNK2_CRSPAREA_ENDDE' },
+  win:  { label:'당첨자발표', cls:'et-win', lcls:'et-win-l',  start:'PRZWNER_PRESNATN_DE', end:'PRZWNER_PRESNATN_DE' },
+  cnt:  { label:'계약',     cls:'et-cnt',  lcls:'et-cnt-l',   start:'CNTRCT_CNCLS_BGNDE', end:'CNTRCT_CNCLS_ENDDE' },
+};
+
+const state = {
+  raw: [],          // API 원본
+  events: [],       // 캘린더 이벤트 [{date, etKey, apt}]
+  filtered: [],     // 필터된 APT 목록
+  calYear: 0, calMonth: 0,
+  clickDate: null,
+  activeEt: new Set(['spec','r1','r2','win','cnt']),
+  page: 1, perPage: 20,
+};
+
+const fmt = (d) => { if(!d) return '-'; const [y,m,dd] = d.split('-'); return `${m}.${dd}`; };
+const fmtFull = (d) => { if(!d) return '-'; const [y,m,dd] = d.split('-'); return `${y}년 ${m}월 ${dd}일`; };
+const toYMD = (d) => d?.slice(0,10) || '';
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => (s||'').replace(/\s+/g,'').toLowerCase();
+
+/* ---------- API 수집 (최신 3페이지 = 300건, 최근 3개월~향후) ---------- */
 async function loadData() {
-  const y = state.calYear, m = String(state.calMonth+1).padStart(2,'0');
-  const url = `https://api.odcloud.kr/api/ApplyhomeInfoSvc/v1/getAPTLttotPblancList?page=1&perPage=100&cond[RCRIT_PBLANC_DE::GTE]=${y}${m}01&cond[RCRIT_PBLANC_DE::LTE]=${y}${m}31&serviceKey=${API_KEY}`;
   try {
-    const r = await fetch(PROXY + encodeURIComponent(url));
-    const j = await r.json();
-    state.data = (j.data||[]);
-  } catch(e) { state.data = []; }
-  renderCal();
-}
-
-function changeMonth(d) {
-  state.calMonth += d;
-  if(state.calMonth > 11){state.calMonth=0;state.calYear++;}
-  if(state.calMonth < 0){state.calMonth=11;state.calYear--;}
-  loadData();
-}
-
-function renderCal() {
-  const y=state.calYear, m=state.calMonth;
-  document.getElementById('calTitle').textContent = `${y}.${String(m+1).padStart(2,'0')}`;
-  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
-  const today=new Date(), ty=today.getFullYear(), tm=today.getMonth(), td=today.getDate();
-  const evMap={};
-  state.data.forEach(d=>{
-    const push=(dt,type,nm)=>{if(!dt)return;const key=dt.replace(/-/g,'').slice(0,8);(evMap[key]=evMap[key]||[]).push({type,nm});};
-    push(d.SPSPLY_RCEPT_BGNDE,'spec',d.HOUSE_NM);
-    push(d.GNRL_RNK1_CRSPAREA_RCEPT_PD?.split('~')[0],'r1',d.HOUSE_NM);
-    push(d.GNRL_RNK2_CRSPAREA_RCEPT_PD?.split('~')[0],'r2',d.HOUSE_NM);
-    push(d.PRZWNER_PRESNATN_DE,'win',d.HOUSE_NM);
-    push(d.CNTRCT_CNCLS_BGNDE,'cnt',d.HOUSE_NM);
-  });
-  const days_ko=['일','월','화','수','목','금','토'];
-  let html='<div class="cal-grid">';
-  days_ko.forEach(d=>html+=`<div class="cal-head">${d}</div>`);
-  for(let i=0;i<first;i++) html+='<div class="cal-day other"><div class="cal-num"></div></div>';
-  for(let day=1;day<=days;day++){
-    const isToday=(y===ty&&m===tm&&day===td);
-    const key=`${y}${String(m+1).padStart(2,'0')}${String(day).padStart(2,'0')}`;
-    const evs=evMap[key]||[];
-    html+=`<div class="cal-day${isToday?' today':''}"><div class="cal-num">${day}</div>`;
-    evs.slice(0,3).forEach(e=>html+=`<span class="ev ev-${e.type}" onclick="openModal('${e.nm.replace(/'/g,'')}')">${e.nm}</span>`);
-    if(evs.length>3)html+=`<span style="font-size:10px;color:var(--faint)">+${evs.length-3}개</span>`;
-    html+='</div>';
+    const pages = await Promise.all([1,2,3].map(p =>
+      fetch(`${API_BASE}?page=${p}&perPage=100&serviceKey=${API_KEY}`).then(r => r.json())
+    ));
+    const today = new Date().toISOString().slice(0,10);
+    const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 2);
+    const cutStr = cutoff.toISOString().slice(0,10);
+    let rows = [];
+    pages.forEach(d => { if(d.data) rows = rows.concat(d.data); });
+    // 최근 2개월 이후 데이터만 (오래된 건 제외)
+    state.raw = rows.filter(r => {
+      const bgnde = r.SPSPLY_RCEPT_BGNDE || r.GNRL_RNK1_CRSPAREA_RCPTDE || r.RCEPT_BGNDE || '';
+      return bgnde >= cutStr;
+    });
+    buildEvents();
+    buildAreaOptions();
+    updateStats();
+    renderCal();
+    renderList();
+    if (!state.raw.length) throw new Error('API_MAINTENANCE');
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  } catch(e) {
+    if (e.message === 'API_MAINTENANCE') {
+      document.getElementById('loading').innerHTML = `
+        <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;max-width:540px;margin:0 auto;text-align:left;display:flex;gap:.75rem;align-items:flex-start">
+          <span style="font-size:1.2rem;flex-shrink:0">⚠</span>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#92400e;margin-bottom:.3rem">청약홈 분양정보 API 임시 점검 중</div>
+            <div style="font-size:12px;color:#a16207;line-height:1.7">
+              공공데이터포털의 청약홈 분양정보 상세 서비스가 현재 데이터를 반환하지 않고 있습니다.<br>
+              공급자(한국부동산원) 측 서버 점검으로 추정되며, 복구 시 캘린더가 자동으로 정상화됩니다.
+            </div>
+          </div>
+        </div>`;
+    } else {
+      document.getElementById('loading').innerHTML = `<div style="color:var(--red)">데이터 조회 실패 (${e.message})</div>`;
+    }
   }
-  const remain=(7-(first+days)%7)%7;
-  for(let i=0;i<remain;i++) html+='<div class="cal-day other"></div>';
-  html+='</div>';
-  html+=`<div class="cal-legend">
-    <span><span class="leg-dot" style="background:#7C3AED"></span>특별공급</span>
-    <span><span class="leg-dot" style="background:var(--brand)"></span>1순위</span>
-    <span><span class="leg-dot" style="background:#0369A1"></span>2순위</span>
-    <span><span class="leg-dot" style="background:var(--mint-ink)"></span>당첨발표</span>
-    <span><span class="leg-dot" style="background:var(--peach-ink)"></span>계약</span>
-  </div>`;
-  document.getElementById('calendarWrap').innerHTML=html;
 }
 
-function openModal(nm){
-  const d=state.data.find(x=>x.HOUSE_NM===nm)||{};
-  document.getElementById('md-title').textContent=nm;
-  document.getElementById('md-meta').innerHTML=
-    `지역: ${d.SUBSCRPT_AREA_CODE_NM||'-'} &nbsp;|&nbsp; 공급유형: ${d.HOUSE_SECD_NM||'-'} &nbsp;|&nbsp; 세대: ${d.TOT_SUPLY_HSHLDCO||'-'}세대`;
-  document.getElementById('md-body').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-      <div style="background:var(--bg);border-radius:12px;padding:12px"><div style="color:var(--faint);font-size:11px;margin-bottom:4px">특별공급 접수</div><b>${d.SPSPLY_RCEPT_BGNDE||'-'}</b></div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px"><div style="color:var(--faint);font-size:11px;margin-bottom:4px">1순위 접수</div><b>${d.GNRL_RNK1_CRSPAREA_RCEPT_PD||'-'}</b></div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px"><div style="color:var(--faint);font-size:11px;margin-bottom:4px">당첨자 발표</div><b>${d.PRZWNER_PRESNATN_DE||'-'}</b></div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px"><div style="color:var(--faint);font-size:11px;margin-bottom:4px">계약일</div><b>${d.CNTRCT_CNCLS_BGNDE||'-'}</b></div>
-    </div>`;
-  document.getElementById('modal-bg').style.display='flex';
-  document.body.style.overflow='hidden';
+function buildEvents() {
+  state.events = [];
+  state.raw.forEach(apt => {
+    Object.entries(EVT_CFG).forEach(([key, cfg]) => {
+      const s = toYMD(apt[cfg.start]), e = toYMD(apt[cfg.end] || apt[cfg.start]);
+      if (!s) return;
+      // 기간이 있으면 시작일만 대표 이벤트로 (캘린더)
+      state.events.push({ date: s, endDate: e || s, etKey: key, apt });
+    });
+  });
 }
-function closeModal(){document.getElementById('modal-bg').style.display='none';document.body.style.overflow='';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
-const now=new Date(); state.calYear=now.getFullYear(); state.calMonth=now.getMonth();
+function buildAreaOptions() {
+  const areas = [...new Set(state.raw.map(r => r.SUBSCRPT_AREA_CODE_NM).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+  const sel = document.getElementById('sel-area');
+  sel.innerHTML = '<option value="">전체</option>' + areas.map(a => `<option>${esc(a)}</option>`).join('');
+}
+
+/* ---------- 통계 카드 ---------- */
+function updateStats() {
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthEvt = k => state.events.filter(e => e.etKey===k && e.date.startsWith(ym));
+  const monthApt = new Set(state.events.filter(e => e.date.startsWith(ym)).map(e=>e.apt.HOUSE_MANAGE_NO));
+  document.getElementById('st-month').innerHTML = monthApt.size + '<span class="sc-u"> 단지</span>';
+  document.getElementById('st-month-sub').textContent = `${now.getMonth()+1}월 청약 접수 단지`;
+  document.getElementById('st-spec').innerHTML = monthEvt('spec').length + '<span class="sc-u"> 건</span>';
+  document.getElementById('st-spec-sub').textContent = `${now.getMonth()+1}월 특별공급 일정`;
+  document.getElementById('st-win').innerHTML = monthEvt('win').length + '<span class="sc-u"> 건</span>';
+  document.getElementById('st-win-sub').textContent = `${now.getMonth()+1}월 당첨자 발표`;
+  document.getElementById('st-cnt').innerHTML = monthEvt('cnt').length + '<span class="sc-u"> 건</span>';
+  document.getElementById('st-cnt-sub').textContent = `${now.getMonth()+1}월 계약 일정`;
+}
+
+/* ---------- 캘린더 ---------- */
+function renderCal() {
+  const { calYear: y, calMonth: m } = state;
+  document.getElementById('cal-ym').textContent = `${y}년 ${m+1}월`;
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  const firstDay = new Date(y, m, 1).getDay();
+  const lastDate = new Date(y, m+1, 0).getDate();
+  const prevLast = new Date(y, m, 0).getDate();
+
+  // 날짜별 이벤트 맵
+  const evtMap = {};
+  state.events.filter(e => state.activeEt.has(e.etKey)).forEach(e => {
+    // 시작일만 표시 (기간 전체 채우면 너무 복잡)
+    const d = e.date;
+    if (!d.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)) return;
+    if (!evtMap[d]) evtMap[d] = [];
+    evtMap[d].push(e);
+  });
+
+  const $grid = document.getElementById('cal-grid');
+  // 헤더 7개 유지 후 기존 셀 제거
+  const cells = $grid.querySelectorAll('.cal-cell');
+  cells.forEach(c => c.remove());
+
+  const totalCells = Math.ceil((firstDay + lastDate) / 7) * 7;
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    let dateStr = '';
+    if (i < firstDay) {
+      const d = prevLast - firstDay + i + 1;
+      const prevM = m === 0 ? 11 : m - 1;
+      const prevY = m === 0 ? y - 1 : y;
+      dateStr = `${prevY}-${String(prevM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      cell.classList.add('other-month');
+      cell.innerHTML = `<div class="cal-date" style="color:var(--ink4)">${d}</div>`;
+    } else if (i >= firstDay + lastDate) {
+      const d = i - firstDay - lastDate + 1;
+      const nextM = m === 11 ? 0 : m + 1;
+      const nextY = m === 11 ? y + 1 : y;
+      dateStr = `${nextY}-${String(nextM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      cell.classList.add('other-month');
+      cell.innerHTML = `<div class="cal-date" style="color:var(--ink4)">${d}</div>`;
+    } else {
+      const d = i - firstDay + 1;
+      const dow = (firstDay + d - 1) % 7;
+      dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isTd = dateStr === todayStr;
+      if (isTd) cell.classList.add('today');
+      const clsCls = dow === 0 ? 'sun' : dow === 6 ? 'sat' : '';
+      const evts = evtMap[dateStr] || [];
+      const MAX_SHOW = 3;
+      const shown = evts.slice(0, MAX_SHOW);
+      const more = evts.length - MAX_SHOW;
+      cell.innerHTML = `<div class="cal-date ${clsCls}">${d}</div>
+        <div class="cal-events">
+          ${shown.map(e => `<div class="cal-evt ${EVT_CFG[e.etKey].cls}" title="${esc(e.apt.HOUSE_NM)}">${esc(e.apt.HOUSE_NM)}</div>`).join('')}
+          ${more > 0 ? `<div class="cal-more">+${more}개</div>` : ''}
+        </div>`;
+    }
+    // 클릭: 해당 날짜 단지 필터
+    cell.dataset.date = dateStr;
+    cell.addEventListener('click', () => onDateClick(dateStr));
+    $grid.appendChild(cell);
+  }
+
+  // 선택된 날짜 하이라이트
+  if (state.clickDate) {
+    const sel = $grid.querySelector(`[data-date="${state.clickDate}"]`);
+    if (sel) sel.style.border = '2px solid var(--accent)';
+  }
+
+  const noteEl = document.getElementById('cal-note');
+  if (state.clickDate) {
+    const cnt = state.events.filter(e => e.date === state.clickDate && state.activeEt.has(e.etKey)).length;
+    noteEl.textContent = `✓ ${fmtFull(state.clickDate)} 선택 중 (${cnt}건) — 아래 목록에 해당 날짜 일정이 표시됩니다. 빈 날짜 클릭 시 전체 보기로 돌아갑니다.`;
+  } else {
+    noteEl.textContent = '※ 날짜를 클릭하면 해당일 단지 일정만 표시됩니다.';
+  }
+}
+
+function onDateClick(dateStr) {
+  if (state.clickDate === dateStr) {
+    state.clickDate = null;
+  } else {
+    state.clickDate = dateStr;
+    // 클릭한 월이 현재 캘린더 월과 다르면 이동
+    const [cy, cm] = dateStr.split('-').map(Number);
+    if (cy !== state.calYear || cm-1 !== state.calMonth) {
+      state.calYear = cy; state.calMonth = cm - 1;
+    }
+  }
+  state.page = 1;
+  renderCal();
+  renderList();
+  // 목록으로 스크롤
+  document.querySelector('.filter')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function moveCal(d) { state.clickDate = null; state.calMonth += d; if(state.calMonth > 11){state.calMonth=0;state.calYear++;} if(state.calMonth<0){state.calMonth=11;state.calYear--;} renderCal(); renderList(); }
+function goToday() { const n=new Date(); state.calYear=n.getFullYear();state.calMonth=n.getMonth();state.clickDate=null; renderCal(); renderList(); }
+
+/* ---------- 이벤트 타입 칩 ---------- */
+function toggleChip(btn) {
+  const et = btn.dataset.et;
+  const cfg = EVT_CFG[et];
+  if (state.activeEt.has(et)) { state.activeEt.delete(et); btn.classList.remove('on'); }
+  else { state.activeEt.add(et); btn.classList.add('on'); }
+  state.page = 1; renderCal(); renderList();
+}
+
+/* ---------- 목록 필터 + 렌더 ---------- */
+function renderList() {
+  const area = document.getElementById('sel-area').value;
+  const type = document.getElementById('sel-type').value;
+  const q = norm(document.getElementById('inp-q').value);
+
+  // 날짜 클릭 시: 해당 날짜에 이벤트 있는 단지만
+  let apts;
+  if (state.clickDate) {
+    const nos = new Set(
+      state.events
+        .filter(e => e.date === state.clickDate && state.activeEt.has(e.etKey))
+        .map(e => e.apt.HOUSE_MANAGE_NO)
+    );
+    apts = state.raw.filter(r => nos.has(r.HOUSE_MANAGE_NO));
+  } else {
+    // 선택된 이벤트 타입 중 하나라도 해당 달에 있는 단지
+    const ym = `${state.calYear}-${String(state.calMonth+1).padStart(2,'0')}`;
+    const activeNos = new Set(
+      state.events
+        .filter(e => state.activeEt.has(e.etKey) && e.date.startsWith(ym))
+        .map(e => e.apt.HOUSE_MANAGE_NO)
+    );
+    apts = state.raw.filter(r => activeNos.has(r.HOUSE_MANAGE_NO));
+  }
+
+  apts = apts.filter(r => {
+    if (area && r.SUBSCRPT_AREA_CODE_NM !== area) return false;
+    if (type === 'APT' && r.HOUSE_SECD_NM !== 'APT') return false;
+    if (type === 'OTH' && r.HOUSE_SECD_NM === 'APT') return false;
+    if (q && !norm(r.HOUSE_NM+r.HSSPLY_ADRES+r.SUBSCRPT_AREA_CODE_NM).includes(q)) return false;
+    return true;
+  });
+
+  // 최신 청약 시작일 순 정렬
+  apts.sort((a,b) => {
+    const da = a.GNRL_RNK1_CRSPAREA_RCPTDE || a.SPSPLY_RCEPT_BGNDE || '';
+    const db = b.GNRL_RNK1_CRSPAREA_RCPTDE || b.SPSPLY_RCEPT_BGNDE || '';
+    return da.localeCompare(db);
+  });
+
+  state.filtered = apts;
+  const maxPage = Math.max(1, Math.ceil(apts.length / state.perPage));
+  if (state.page > maxPage) state.page = maxPage;
+  const slice = apts.slice((state.page-1)*state.perPage, state.page*state.perPage);
+
+  const prefix = state.clickDate ? `${fmtFull(state.clickDate)} 일정` : `${state.calYear}년 ${state.calMonth+1}월`;
+  document.getElementById('list-sub').textContent = ` ${prefix} · ${apts.length}개 단지`;
+
+  const body = document.getElementById('list-body');
+  if (!slice.length) {
+    body.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2.5rem;color:var(--ink4)">해당 조건의 단지가 없습니다</td></tr>`;
+  } else {
+    body.innerHTML = slice.map(r => {
+      const dateCell = (start, end) => {
+        if (!start) return '<td style="color:var(--ink4);font-size:12px">–</td>';
+        const s = fmt(start), e = fmt(end);
+        return `<td style="font-family:var(--mono);font-size:11px">${s}${(e && e!==s) ? '~'+e : ''}</td>`;
+      };
+      return `<tr onclick="openModal('${r.HOUSE_MANAGE_NO}')">
+        <td><div style="font-weight:400;color:var(--ink)">${esc(r.HOUSE_NM)}</div>
+            <div style="font-size:11px;color:var(--ink4)">${esc(r.HSSPLY_ADRES||'')}</div></td>
+        <td><span class="badge">${esc(r.SUBSCRPT_AREA_CODE_NM||'-')}</span></td>
+        <td><span class="badge">${esc(r.HOUSE_SECD_NM||'-')}</span></td>
+        <td class="num">${Number(r.TOT_SUPLY_HSHLDCO||0).toLocaleString()}</td>
+        ${dateCell(r.SPSPLY_RCEPT_BGNDE, r.SPSPLY_RCEPT_ENDDE)}
+        ${dateCell(r.GNRL_RNK1_CRSPAREA_RCPTDE, r.GNRL_RNK1_CRSPAREA_ENDDE)}
+        ${dateCell(r.GNRL_RNK2_CRSPAREA_RCPTDE, r.GNRL_RNK2_CRSPAREA_ENDDE)}
+        ${dateCell(r.PRZWNER_PRESNATN_DE, r.PRZWNER_PRESNATN_DE)}
+        ${dateCell(r.CNTRCT_CNCLS_BGNDE, r.CNTRCT_CNCLS_ENDDE)}
+      </tr>`;
+    }).join('');
+  }
+
+  // 페이지네이션
+  document.getElementById('pg-info').textContent = `${state.page} / ${maxPage}`;
+  document.getElementById('pg-prev').disabled = state.page <= 1;
+  document.getElementById('pg-next').disabled = state.page >= maxPage;
+  document.getElementById('pager').style.display = apts.length > state.perPage ? 'flex' : 'none';
+}
+
+function movePage(d) { state.page = Math.max(1, Math.min(Math.ceil(state.filtered.length/state.perPage), state.page+d)); renderList(); }
+
+/* ---------- 단지 상세 모달 ---------- */
+function openModal(no) {
+  const r = state.raw.find(x => x.HOUSE_MANAGE_NO === no);
+  if (!r) return;
+  document.getElementById('md-title').textContent = r.HOUSE_NM;
+  document.getElementById('md-meta').innerHTML =
+    `📍 ${esc(r.HSSPLY_ADRES||'-')} · ${esc(r.SUBSCRPT_AREA_CODE_NM||'-')} · ${esc(r.HOUSE_SECD_NM||'-')}<br>` +
+    `🏗 시공: ${esc(r.CNSTRCT_ENTRPS_NM||'-')} · 시행: ${esc(r.BSNS_MBY_NM||'-')}<br>` +
+    `🏠 공급세대: ${Number(r.TOT_SUPLY_HSHLDCO||0).toLocaleString()}세대`;
+
+  const schedRows = [
+    ['특별공급', r.SPSPLY_RCEPT_BGNDE, r.SPSPLY_RCEPT_ENDDE, 'et-spec'],
+    ['1순위(해당지역)', r.GNRL_RNK1_CRSPAREA_RCPTDE, r.GNRL_RNK1_CRSPAREA_ENDDE, 'et-r1'],
+    ['1순위(기타지역)', r.GNRL_RNK1_ETC_AREA_RCPTDE, r.GNRL_RNK1_ETC_AREA_ENDDE, 'et-r1'],
+    ['2순위(해당지역)', r.GNRL_RNK2_CRSPAREA_RCPTDE, r.GNRL_RNK2_CRSPAREA_ENDDE, 'et-r2'],
+    ['당첨자 발표', r.PRZWNER_PRESNATN_DE, null, 'et-win'],
+    ['계약', r.CNTRCT_CNCLS_BGNDE, r.CNTRCT_CNCLS_ENDDE, 'et-cnt'],
+  ].filter(([,s]) => s);
+
+  document.getElementById('md-schedule').innerHTML = schedRows.map(([lbl, s, e, cls]) =>
+    `<div class="schedule-row">
+      <span class="schedule-lbl">${lbl}</span>
+      <span class="schedule-badge ${cls}" style="font-size:11px;padding:2px 8px;border-radius:4px;color:#fff">${fmtFull(s)}${e&&e!==s?' ~ '+fmtFull(e):''}</span>
+    </div>`
+  ).join('');
+
+  const link = r.PBLANC_URL || `https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=${no}&pblancNo=${r.PBLANC_NO||no}`;
+  document.getElementById('md-link').href = link;
+
+  document.getElementById('modal-bg').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() { document.getElementById('modal-bg').classList.remove('show'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+/* ---------- 시작 ---------- */
+const now = new Date();
+state.calYear = now.getFullYear();
+state.calMonth = now.getMonth();
 loadData();
-
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.1});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -251,12 +844,19 @@ import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gsta
     const el = document.getElementById('visitor-counter');
     if (!el) return;
     const fmt = n => n.toLocaleString('ko-KR');
-    el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:.5rem;font-size:11px;color:var(--muted);padding:.2rem .6rem;background:#fff;border-radius:20px;border:1px solid var(--line)"><span style="color:var(--faint);font-size:9px;letter-spacing:.05em">TODAY</span><span style="color:var(--brand);font-weight:700">${fmt(todayV)}</span><span style="color:var(--line2)">|</span><span style="color:var(--faint);font-size:9px;letter-spacing:.05em">TOTAL</span><span style="font-weight:700">${fmt(total)}</span></span>`;
-    el.style.display='flex';
+    el.innerHTML =
+      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
+      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
+      `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
+      `<span style="color:var(--bg3)">|</span>` +
+      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TOTAL</span>` +
+      `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
+      `</span>`;
+    el.style.display = 'flex';
   } catch(e) {}
 })();
 </script>
-<script src="/js/firebase-config.js"></script>
-<script type="module" src="/js/inquiry.js"></script>
+<script src="js/firebase-config.js"></script>
+<script type="module" src="js/inquiry.js"></script>
 </body>
 </html>
