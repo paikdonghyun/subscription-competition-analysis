@@ -90,33 +90,45 @@ header.gnb .logo-mk::after {
 }
 /* 네비 — search.html이 쓰는 .nav 클래스 */
 header.gnb .nav {
-  display: flex;
-  gap: 2px;
-  font-size: 13.5px;
-  flex: 1;
-  overflow-x: auto;
+  display: flex !important;
+  gap: 2px !important;
+  font-size: 13.5px !important;
+  flex: 1 !important;
+  overflow-x: auto !important;
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  position: static !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: auto !important;
 }
 header.gnb .nav a {
-  color: var(--muted);
-  padding: 7px 11px;
-  border-radius: 10px;
-  white-space: nowrap;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background .15s, color .15s;
-  display: inline-block;
+  color: var(--muted) !important;
+  padding: 7px 11px !important;
+  border-radius: 10px !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: background .15s, color .15s !important;
+  display: inline-block !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 13.5px !important;
+  line-height: normal !important;
 }
-header.gnb .nav a:hover { background: #fff; color: var(--ink); }
+header.gnb .nav a:hover { background: #fff !important; color: var(--ink) !important; }
 header.gnb .nav a[aria-current] {
-  background: #fff;
-  color: var(--ink);
-  font-weight: 700;
-  box-shadow: var(--sh);
+  background: #fff !important;
+  color: var(--ink) !important;
+  font-weight: 700 !important;
+  box-shadow: var(--sh) !important;
 }
 header.gnb .nav a.new {
-  color: var(--brand);
-  font-weight: 700;
-  position: relative;
+  color: var(--brand) !important;
+  font-weight: 700 !important;
+  position: relative !important;
 }
 header.gnb .nav a.new::after {
   content: "";
