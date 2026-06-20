@@ -8,6 +8,8 @@
 <meta name="robots" content="index, follow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="applylab.css">
+<script>window.kakaoMapKey='559cfc83b21afe7a9f359160ec2fe48d';</script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=559cfc83b21afe7a9f359160ec2fe48d&libraries=services&autoload=false"></script>
 <style>
 .crumb{font-size:12px;color:var(--faint);padding:14px 0 0;display:flex;gap:6px;flex-wrap:wrap}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
@@ -312,27 +314,19 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 
   <!-- 입지 -->
   <section class="sec reveal">
-    <div class="sec-h"><h2>입지 분석</h2><span class="pill">반경 1.5km</span></div>
+    <div class="sec-h"><h2>입지 분석</h2><span class="pill" id="locPill">반경 1.5km</span></div>
     <div class="locsplit">
-      <div class="mapph">
-        <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="단지 위치 지도">
-          <defs><pattern id="mg" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#cdd9e2" stroke-width="1"/></pattern></defs>
-          <rect width="400" height="300" fill="#e1ebf1"/><rect width="400" height="300" fill="url(#mg)"/>
-          <path d="M-10 210 Q120 175 210 205 T420 195" fill="none" stroke="#b9d4e6" stroke-width="22" opacity=".8"/>
-          <ellipse cx="305" cy="95" rx="55" ry="34" fill="#bfe0d4" opacity=".75"/>
-          <path d="M40 0 L60 300" stroke="#c8d6de" stroke-width="9"/><path d="M0 130 L400 110" stroke="#c8d6de" stroke-width="7"/>
-          <g transform="translate(178,150)"><circle r="13" fill="#3478F6"/><circle r="13" fill="none" stroke="#3478F6" stroke-width="2" opacity=".35"><animate attributeName="r" values="13;22;13" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".4;0;.4" dur="2.4s" repeatCount="indefinite"/></circle><path d="M-5 -2 h10 v8 h-10z M-3 -2 v-3 h6 v3" fill="#fff"/></g>
-          <circle cx="232" cy="172" r="5" fill="#D9772E"/><text x="240" y="176" font-size="11" fill="#19232C">SRT</text>
-          <circle cx="150" cy="128" r="5" fill="#0E9B6E"/><text x="112" y="124" font-size="11" fill="#19232C">초등</text>
-          <circle cx="120" cy="210" r="5" fill="#6A7682"/><text x="60" y="214" font-size="11" fill="#19232C">마트</text>
-        </svg>
-        <div class="maptag">지도 영역 · 실서비스: 카카오맵 SDK</div>
+      <!-- 카카오맵 실지도 -->
+      <div class="mapph" id="kakaoMapWrap" style="background:#e8eff4">
+        <div id="kakaoMap" style="width:100%;height:270px;border-radius:var(--r)"></div>
+        <div class="maptag" id="mapTag">지도 로딩 중…</div>
       </div>
-      <div class="card" style="padding:8px 18px">
-        <div class="poi"><div class="ic">역</div><div><div class="nm">동탄역 (SRT·GTX-A)</div><div class="ds">광역 교통 거점</div></div><div class="dist"><b>800m</b><span>도보 11분</span></div></div>
-        <div class="poi"><div class="ic">학</div><div><div class="nm">○○초등학교</div><div class="ds">단지 인접</div></div><div class="dist"><b>250m</b><span>도보 4분</span></div></div>
-        <div class="poi"><div class="ic">상</div><div><div class="nm">대형마트·몰</div><div class="ds">생활 편의</div></div><div class="dist"><b>1.2km</b><span>차 5분</span></div></div>
-        <div class="poi"><div class="ic">원</div><div><div class="nm">호수공원</div><div class="ds">조망·산책</div></div><div class="dist"><b>400m</b><span>도보 6분</span></div></div>
+      <!-- POI 실데이터 -->
+      <div class="card" style="padding:8px 18px" id="poiList">
+        <div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">
+          <span style="display:block;width:18px;height:18px;border:2.5px solid var(--line2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px"></span>
+          주변 정보 로딩 중…
+        </div>
       </div>
     </div>
   </section>
@@ -464,6 +458,10 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
       scoreSection.insertBefore(banner, scoreSection.firstChild);
     }
 
+    // ── 카카오 입지 분석 ──
+    if (d.HSSPLY_ADRES) {
+      loadKakaoLocation(d.HSSPLY_ADRES, d.HOUSE_NM || '단지');
+    }
 
     if (d.PBLANC_URL) {
       const link = document.createElement('a');
@@ -478,6 +476,138 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 })();
 </script>
 <script>
+/* ── 카카오 입지 분석 함수 ── */
+const KAKAO_KEY = '559cfc83b21afe7a9f359160ec2fe48d';
+
+async function kakaoFetch(url) {
+  const res = await fetch(url, { headers: { Authorization: 'KakaoAK ' + KAKAO_KEY } });
+  return res.json();
+}
+
+function walkMin(m) {
+  const min = Math.round(m / 67);  // 도보 67m/분
+  return min <= 1 ? '도보 1분' : `도보 ${min}분`;
+}
+function driveMin(m) {
+  const min = Math.round(m / 400); // 차량 400m/분
+  return min <= 1 ? '차 1분' : `차 ${min}분`;
+}
+function fmtDist(m) {
+  return m >= 1000 ? (m/1000).toFixed(1)+'km' : m+'m';
+}
+
+async function loadKakaoLocation(address, aptName) {
+  try {
+    // 1. 주소 → 좌표
+    const addrRes = await kakaoFetch(
+      `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`
+    );
+    let x, y;
+    if (addrRes.documents && addrRes.documents.length > 0) {
+      x = addrRes.documents[0].x;
+      y = addrRes.documents[0].y;
+    } else {
+      // 키워드 검색으로 fallback
+      const kwRes = await kakaoFetch(
+        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(aptName)}&size=1`
+      );
+      if (!kwRes.documents || !kwRes.documents.length) return;
+      x = kwRes.documents[0].x;
+      y = kwRes.documents[0].y;
+    }
+
+    // 2. 카테고리별 POI 병렬 호출
+    const [subway, school, mart, hospital] = await Promise.all([
+      kakaoFetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=SW8&x=${x}&y=${y}&radius=3000&sort=distance&size=3`),
+      kakaoFetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=SC4&x=${x}&y=${y}&radius=1500&sort=distance&size=3`),
+      kakaoFetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=MT1&x=${x}&y=${y}&radius=2000&sort=distance&size=2`),
+      kakaoFetch(`https://dapi.kakao.com/v2/local/search/category.json?category_group_code=HP8&x=${x}&y=${y}&radius=2000&sort=distance&size=1`),
+    ]);
+
+    // 3. POI 렌더
+    const poiList = document.getElementById('poiList');
+    const rows = [];
+
+    const subItems = subway.documents || [];
+    if (subItems.length) {
+      const s = subItems[0];
+      const dist = parseInt(s.distance);
+      rows.push({ ic:'역', nm: s.place_name, ds: s.category_name.split('>').pop().trim(), dist, time: dist<=600?walkMin(dist):driveMin(dist), color:'var(--sky)', icolor:'var(--sky-ink)' });
+    }
+    const schoolItems = (school.documents||[]).filter(s=>s.category_name.includes('초등학교'));
+    if (schoolItems.length) {
+      const s = schoolItems[0];
+      const dist = parseInt(s.distance);
+      rows.push({ ic:'학', nm: s.place_name, ds:'초등학교', dist, time: walkMin(dist), color:'var(--mint)', icolor:'var(--mint-ink)' });
+    } else if ((school.documents||[]).length) {
+      const s = school.documents[0];
+      const dist = parseInt(s.distance);
+      rows.push({ ic:'학', nm: s.place_name, ds: s.category_name.split('>').pop().trim(), dist, time: walkMin(dist), color:'var(--mint)', icolor:'var(--mint-ink)' });
+    }
+    const martItems = mart.documents || [];
+    if (martItems.length) {
+      const s = martItems[0];
+      const dist = parseInt(s.distance);
+      rows.push({ ic:'상', nm: s.place_name, ds:'생활 편의', dist, time: dist<=800?walkMin(dist):driveMin(dist), color:'var(--peach)', icolor:'var(--peach-ink)' });
+    }
+    const hospItems = hospital.documents || [];
+    if (hospItems.length) {
+      const s = hospItems[0];
+      const dist = parseInt(s.distance);
+      rows.push({ ic:'병', nm: s.place_name, ds: s.category_name.split('>').pop().trim(), dist, time: dist<=800?walkMin(dist):driveMin(dist), color:'var(--lilac)', icolor:'var(--lilac-ink)' });
+    }
+    // 지하철 2번째가 다른 노선이면 추가
+    if (subItems.length > 1) {
+      const s = subItems[1];
+      const dist = parseInt(s.distance);
+      if (s.place_name !== subItems[0].place_name) {
+        rows.push({ ic:'역', nm: s.place_name, ds: s.category_name.split('>').pop().trim(), dist, time: dist<=600?walkMin(dist):driveMin(dist), color:'var(--sky)', icolor:'var(--sky-ink)' });
+      }
+    }
+
+    if (rows.length) {
+      poiList.innerHTML = rows.map(r =>
+        `<div class="poi">
+          <div class="ic" style="background:${r.color};color:${r.icolor}">${r.ic}</div>
+          <div><div class="nm">${r.nm}</div><div class="ds">${r.ds}</div></div>
+          <div class="dist"><b>${fmtDist(r.dist)}</b><span>${r.time}</span></div>
+        </div>`
+      ).join('');
+    }
+
+    // pill 업데이트
+    document.getElementById('locPill').textContent = `반경 3km · 실데이터`;
+
+    // 4. 카카오맵 렌더
+    kakao.maps.load(() => {
+      const container = document.getElementById('kakaoMap');
+      const coords = new kakao.maps.LatLng(y, x);
+      const map = new kakao.maps.Map(container, { center: coords, level: 4 });
+
+      // 단지 마커
+      const marker = new kakao.maps.Marker({ position: coords, map });
+      const infoWindow = new kakao.maps.InfoWindow({
+        content: `<div style="padding:6px 10px;font-size:13px;font-weight:700;white-space:nowrap">${aptName}</div>`,
+        removable: false
+      });
+      infoWindow.open(map, marker);
+
+      // POI 마커
+      const icons = { '역':'🚇', '학':'🏫', '상':'🛒', '병':'🏥' };
+      rows.forEach(r => {
+        // 키워드로 각 장소 좌표 가져오기는 이미 documents에 있음
+      });
+
+      document.getElementById('mapTag').style.display = 'none';
+    });
+
+  } catch(e) {
+    console.warn('카카오 입지 분석 실패:', e);
+    document.getElementById('poiList').innerHTML =
+      '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">주변 정보를 불러올 수 없습니다.</div>';
+  }
+}
+
 /* 종합 점수 */
 const SUB={교통:88,학교:82,인프라:75,브랜드:80,인기도:78,분양가격:86};
 const FACT={교통:'동탄역 SRT·GTX-A 800m',학교:'초등학교 250m·초품아급',인프라:'호수공원 400m·마트 1.2km',브랜드:'시공능력평가 상위권',인기도:'검색·커뮤니티 관심도 상위',분양가격:'시세 대비 +13% 안전마진'};
