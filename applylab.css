@@ -1,0 +1,162 @@
+/* ===========================================================
+   ApplyLab Design System — Direction C (Soft Utility)
+   전 페이지 공통. 토큰·컴포넌트·레이아웃.
+   =========================================================== */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --ink:#19232C; --muted:#6A7682; --faint:#9AA6B2;
+  --line:#EAEFF4; --line2:#DFE6ED;
+  --brand:#3478F6; --brand-d:#2563EB; --brand-soft:#E9F1FE;
+  --mint:#E6F7F0; --mint-ink:#0E9B6E;
+  --sky:#E8F1FE; --sky-ink:#2E6FE0;
+  --peach:#FFF0E7; --peach-ink:#D9772E;
+  --lilac:#F0ECFB; --lilac-ink:#7A52D6;
+  --rose:#FDECEF; --rose-ink:#D14D6A;
+  --pos:#0E9B6E; --neg:#E2563F; --warn:#D9772E;
+  --r:18px; --r-sm:12px; --r-lg:22px;
+  --sh:0 2px 10px rgba(25,35,44,.05);
+  --sh2:0 6px 20px rgba(25,35,44,.08);
+  --maxw:1040px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+.mono{font-variant-numeric:tabular-nums}
+
+/* ---------- GNB ---------- */
+.gnb{position:sticky;top:0;z-index:40;background:rgba(242,245,248,.9);backdrop-filter:blur(12px)}
+.gnb-in{display:flex;align-items:center;gap:22px;height:60px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.03em;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.logo b{color:var(--brand)}
+.logo-mk{width:20px;height:20px;background:var(--brand);border-radius:7px;display:grid;place-items:center}
+.logo-mk::after{content:"";width:8px;height:8px;background:#fff;border-radius:3px}
+.nav{display:flex;gap:4px;margin-left:auto;font-size:13.5px}
+.nav a{color:var(--muted);padding:7px 12px;border-radius:10px;white-space:nowrap;transition:.15s}
+.nav a:hover{background:#fff;color:var(--ink)}
+.nav a[aria-current]{background:#fff;color:var(--ink);font-weight:700;box-shadow:var(--sh)}
+.nav .new{color:var(--brand);font-weight:700}
+.nav .new::after{content:"";display:inline-block;width:5px;height:5px;background:var(--brand);border-radius:50%;margin-left:5px;vertical-align:middle}
+.navtog{display:none;margin-left:auto;width:40px;height:40px;border:none;background:#fff;border-radius:11px;box-shadow:var(--sh);cursor:pointer;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+.navtog span{width:17px;height:2px;background:var(--ink);border-radius:2px;transition:.2s}
+.drawer{display:none}
+
+/* ---------- 페이지 헤드 ---------- */
+.page-head{padding:24px 0 4px}
+.page-head h1{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.page-head p{font-size:14px;color:var(--muted);margin-top:4px}
+.eyebrow{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.02em}
+
+/* ---------- 카드 ---------- */
+.card{background:var(--surface);border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh)}
+.sec{margin-top:18px}
+.sec-h{display:flex;align-items:center;margin-bottom:15px}
+.sec-h h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.sec-h .pill{margin-left:auto;font-size:12px;color:var(--brand);background:var(--brand-soft);font-weight:700;padding:5px 11px;border-radius:999px}
+.sec-h a.pill:hover{background:#dbe8fd}
+
+/* ---------- 브랜드 그라데이션 카드 (시그니처) ---------- */
+.hero-card{background:linear-gradient(135deg,#3478F6,#5B93FF);border-radius:24px;padding:26px;color:#fff;box-shadow:0 12px 30px rgba(52,120,246,.28);position:relative;overflow:hidden}
+.hero-card::after{content:"";position:absolute;right:-46px;top:-46px;width:190px;height:190px;background:rgba(255,255,255,.12);border-radius:50%}
+.hero-card > *{position:relative;z-index:1}
+.hero-card .lbl{font-size:13px;font-weight:600;opacity:.92}
+.hero-card .big{font-size:clamp(42px,9vw,54px);font-weight:800;letter-spacing:-.03em;line-height:1;margin:8px 0 2px}
+.hero-card .big small{font-size:22px;font-weight:700;opacity:.85}
+.hero-card .delta{font-size:13px;font-weight:600;opacity:.92}
+.hero-card .bar{height:10px;background:rgba(255,255,255,.25);border-radius:6px;margin-top:18px;overflow:hidden}
+.hero-card .bar > i{display:block;height:100%;width:0;background:#fff;border-radius:6px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.hero-card .scale{display:flex;justify-content:space-between;font-size:11px;opacity:.8;margin-top:6px}
+
+/* ---------- 틴트 지표 카드 ---------- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.scard{border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--sh)}
+.scard .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:15px;margin-bottom:12px;background:#fff}
+.scard .v{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.scard .v small{font-size:13px;font-weight:600;color:var(--muted)}
+.scard .k{font-size:13px;color:var(--muted);margin-top:4px}
+.c-mint{background:var(--mint)} .c-mint .ic{color:var(--mint-ink)}
+.c-sky{background:var(--sky)} .c-sky .ic{color:var(--sky-ink)}
+.c-peach{background:var(--peach)} .c-peach .ic{color:var(--peach-ink)}
+.c-lilac{background:var(--lilac)} .c-lilac .ic{color:var(--lilac-ink)}
+.c-rose{background:var(--rose)} .c-rose .ic{color:var(--rose-ink)}
+
+/* ---------- 소프트 바 차트 ---------- */
+.chart{display:flex;align-items:flex-end;gap:14px;height:200px;padding-top:10px}
+.cbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.cbar .bar{width:100%;max-width:46px;background:var(--brand-soft);border-radius:10px 10px 6px 6px;transition:height 1s cubic-bezier(.2,.7,.2,1)}
+.cbar.cur .bar{background:var(--brand)}
+.cbar .val{font-size:12px;font-weight:700}
+.cbar.cur .val{color:var(--brand)}
+.cbar .mo{font-size:12px;color:var(--faint)}
+
+/* ---------- 리스트 행 ---------- */
+.row{display:flex;align-items:center;gap:13px;padding:13px 6px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .rk{width:26px;height:26px;border-radius:9px;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0}
+.row.top1 .rk{background:var(--brand);color:#fff}
+.row .nm{font-weight:700;font-size:14.5px}
+.row .rg{font-size:12px;color:var(--faint)}
+.row .meta{margin-left:auto;text-align:right;font-weight:800;font-size:16px}
+.row .meta small{display:block;font-size:11px;color:var(--faint);font-weight:600}
+.morebtn{display:block;text-align:center;margin-top:14px;font-size:14px;color:var(--brand);font-weight:700;background:var(--brand-soft);padding:12px;border-radius:13px}
+.morebtn:hover{background:#dbe8fd}
+
+/* ---------- 칩·뱃지·버튼 ---------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:13px;font-weight:600;color:var(--muted);background:#fff;border:1px solid var(--line2);padding:8px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+.b-live{background:var(--brand);color:#fff}
+.b-soon{background:var(--peach);color:var(--peach-ink)}
+.b-done{background:var(--line);color:var(--muted)}
+.b-pos{background:var(--mint);color:var(--mint-ink)}
+
+/* ---------- 검색바 ---------- */
+.searchbar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:14px 18px;box-shadow:var(--sh2)}
+.searchbar svg{flex-shrink:0}
+.searchbar input{border:none;outline:none;font:inherit;font-size:16px;width:100%;background:none;color:var(--ink)}
+.searchbar input::placeholder{color:var(--faint)}
+
+/* ---------- 광고 ---------- */
+.ad{background:var(--surface);border-radius:var(--r);min-height:104px;display:grid;place-items:center;text-align:center;color:var(--faint);box-shadow:var(--sh);border:1.5px dashed var(--line2)}
+.ad .t{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.ad small{display:block;font-size:11px;margin-top:3px}
+.ad-infeed{margin:6px 0}
+
+/* ---------- 데이터 테이블 (간단) ---------- */
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+table.tbl th,table.tbl td{padding:12px 10px;text-align:right;border-bottom:1px solid var(--line)}
+table.tbl th{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+table.tbl td:first-child,table.tbl th:first-child{text-align:left;font-weight:700}
+table.tbl tr:last-child td{border-bottom:none}
+
+/* ---------- 푸터 ---------- */
+footer{margin-top:30px;padding:28px 0}
+.ft{font-size:12px;color:var(--faint);text-align:center;line-height:1.8}
+.ft a{color:var(--muted)}
+
+/* ---------- 미리보기 플래그 ---------- */
+.flag{position:fixed;left:14px;bottom:14px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:8px 14px;border-radius:999px;z-index:60;box-shadow:var(--sh2);opacity:.9}
+
+/* ---------- 모바일 ---------- */
+@media(max-width:780px){
+  .nav{display:none}
+  .navtog{display:flex}
+  .grid4{grid-template-columns:1fr 1fr}
+  html.nav-open .drawer{display:block;position:fixed;inset:60px 0 0;background:var(--bg);z-index:39;padding:16px 20px;animation:slidein .2s ease}
+  html.nav-open .drawer a{display:block;padding:15px 14px;font-size:16px;font-weight:600;border-radius:13px}
+  html.nav-open .drawer a[aria-current]{background:#fff;color:var(--brand);box-shadow:var(--sh)}
+  html.nav-open .navtog span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  html.nav-open .navtog span:nth-child(2){opacity:0}
+  html.nav-open .navtog span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+  html.nav-open{overflow:hidden}
+}
+@keyframes slidein{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ---------- 스크롤 리빌 ---------- */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
