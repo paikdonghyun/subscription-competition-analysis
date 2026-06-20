@@ -24,8 +24,6 @@
   <meta name="twitter:title" content="분양가격 분석 · 청약랩">
   <meta name="twitter:description" content="전국 아파트 분양가격 지역별·기간별 분석. 3.3㎡당 분양가 추이 및 시도별 비교.">
   <meta name="twitter:image" content="https://applylab.kr/favicon-512.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -34,14 +32,14 @@
   --bg:#f9fafb;--bg2:#f3f4f6;--bg3:#e5e7eb;--white:#fff;
   --accent:#1d4ed8;--accent-l:#eff6ff;
   --red:#dc2626;--green:#16a34a;--orange:#ea580c;--gold:#b45309;
-  --serif:'Noto Serif KR',serif;
-  --sans:'Noto Sans KR',sans-serif;
-  --mono:'IBM Plex Mono',monospace;
+  --serif:'Pretendard',sans-serif;
+  --sans:'Pretendard','Noto Sans KR',sans-serif;
+  --mono:'Pretendard',monospace;
   --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
   --r:6px;--rl:10px;
 }
 html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
+body{font-family:'Pretendard',var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
 
 /* ── NAV (반응형) ── */
 .nav-legacy{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--sh);position:sticky;top:0;z-index:100}
@@ -770,7 +768,7 @@ import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gsta
     if (!el) return;
     const fmt = n => n.toLocaleString('ko-KR');
     el.innerHTML =
-      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
+      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'Pretendard',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
       `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
       `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
       `<span style="color:var(--bg3)">|</span>` +
