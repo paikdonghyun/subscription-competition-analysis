@@ -26,7 +26,6 @@
   <meta name="twitter:image" content="https://applylab.kr/favicon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -235,11 +234,12 @@ footer{background:var(--bg2);border-top:1px solid var(--bg3);padding:1.25rem;tex
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="/applylab.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </head>
 <body>
 <header class="gnb"><div class="gnb-in">
   <a class="logo" href="/home.html"><span class="logo-mk"></span>청약<b>랩</b></a>
-  <nav class="gnb-nav">
+  <nav class="nav">
     <a href="/home.html">HOME</a>
     <a href="/home.html">분양 캘린더</a>
     <a href="/search.html" class="new">단지검색</a>
@@ -249,9 +249,7 @@ footer{background:var(--bg2);border-top:1px solid var(--bg3);padding:1.25rem;tex
     <a href="/bankbook.html">청약통장</a>
   </nav>
   <span id="visitor-counter" style="display:none;margin-left:8px"></span>
-  <button class="navtog" aria-label="메뉴" onclick="document.documentElement.classList.toggle('nav-open')">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="navtog" aria-label="메뉴" onclick="document.documentElement.classList.toggle('nav-open')"><span></span><span></span><span></span></button>
 </div>
 <div class="drawer">
   <a href="/home.html">HOME</a>
@@ -431,364 +429,6 @@ footer{background:var(--bg2);border-top:1px solid var(--bg3);padding:1.25rem;tex
   <a href="/privacy.html">개인정보취급방침</a> · <a href="mailto:shake100@gmail.com">문의</a> · © 2026 ApplyLab
 </div></footer>
 <script>
-const KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
-const EP  = 'https://api.odcloud.kr/api/15061057/v1/uddi:056e87ff-8f04-4d4a-a444-bd73434bb40f';
-const PRX = 'https://corsproxy.io/?url=';
-
-// 시도 순서 & 색상
-const REGIONS = ['서울','경기','인천','부산','대구','대전','광주','울산','세종','강원','충북','충남','전북','전남','경북','경남','제주'];
-const REGION_COLORS = {
-  '서울':'#dc2626','경기':'#1d4ed8','인천':'#0891b2','부산':'#7c3aed',
-  '대구':'#db2777','대전':'#16a34a','광주':'#ea580c','울산':'#0d9488',
-  '세종':'#b45309','강원':'#6366f1','충북':'#84cc16','충남':'#f59e0b',
-  '전북':'#10b981','전남':'#3b82f6','경북':'#8b5cf6','경남':'#ec4899','제주':'#14b8a6'
-};
-
-let raw = [], filtered = [], charts = {};
-let curType = '모든면적', curCompare = 'none', curTab = 'trend', tblPg = 1;
-const PG = 20;
-
-// 면적 칩
-document.getElementById('type-chips').addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if(!b||!b.dataset.t) return;
-  document.querySelectorAll('#type-chips .chip').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on'); curType = b.dataset.t;
-  if(raw.length) applyFilter();
-});
-// 비교 칩
-document.getElementById('compare-chips').addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if(!b||!b.dataset.c) return;
-  document.querySelectorAll('#compare-chips .chip').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on'); curCompare = b.dataset.c;
-  if(filtered.length) renderTrend();
-});
-
-// 지역 변경 시 비교칩 정리
-function onRegionChange() {
-  const r = document.getElementById('sel-region').value;
-  document.querySelectorAll('#compare-chips .chip').forEach(x=>{
-    if(x.dataset.c === r || (r==='ALL' && x.dataset.c==='전국')) x.style.display='none';
-    else x.style.display='';
-  });
-}
-onRegionChange();
-
-// 탭 전환
-window.showTab = (tab) => {
-  curTab = tab;
-  ['trend','region','data'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
-  });
-  document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('on', ['trend','region','data'][i]===tab);
-  });
-  if(tab==='region' && filtered.length) renderRegion();
-  if(tab==='data'   && filtered.length) renderTable();
-};
-
-// 데이터 로드
-async function loadAll() {
-  try {
-    const first = await fetchJSON(1, 1);
-    const total = first.totalCount || 0;
-    const pages = Math.ceil(total / 1000);
-    document.querySelector('#loading').textContent = `데이터 로딩 중... (총 ${total.toLocaleString()}건)`;
-    const results = await Promise.all(Array.from({length:pages},(_,i)=>fetchJSON(i+1,1000)));
-    raw = results.flatMap(r=>r.data||[]).map(it=>({
-      지역: it['지역명']||'',
-      구분: it['규모구분']||'',
-      연도: parseInt(it['연도'])||0,
-      월:   parseInt(it['월'])||0,
-      가격: parseFloat(it['분양가격(제곱미터당 천원)']||it['분양가격(㎡)']||0),
-    })).filter(it=>it.가격>0&&it.연도>0);
-    applyFilter();
-  } catch(e) {
-    document.getElementById('loading').innerHTML = `<p style="color:var(--red)">로드 실패: ${e.message}</p>`;
-  }
-}
-
-async function fetchJSON(page, perPage) {
-  const direct = EP+'?page='+page+'&perPage='+perPage+'&serviceKey='+KEY;
-  const proxy  = PRX+encodeURIComponent(EP+'?page='+page+'&perPage='+perPage)+'&serviceKey='+KEY;
-  for(const url of [direct, proxy]) {
-    try {
-      const ctrl=new AbortController(), t=setTimeout(()=>ctrl.abort(),20000);
-      const res = await fetch(url,{mode:'cors',signal:ctrl.signal});
-      clearTimeout(t);
-      const txt = await res.text();
-      if(!txt||txt.trim().startsWith('<!')) continue;
-      const s=txt.indexOf('{'); let d=0,ei=-1;
-      for(let i=s;i<txt.length;i++){if(txt[i]==='{')d++;else if(txt[i]==='}'){d--;if(d===0){ei=i;break;}}}
-      return JSON.parse(txt.substring(s,ei+1));
-    } catch(e){continue;}
-  }
-  throw new Error('API 연결 실패');
-}
-
-window.applyFilter = applyFilter;
-function applyFilter() {
-  const region = document.getElementById('sel-region').value;
-  const yFrom  = parseInt(document.getElementById('sel-from').value);
-  const yTo    = parseInt(document.getElementById('sel-to').value);
-
-  filtered = raw.filter(it=>{
-    const rOk = region==='ALL' || it.지역===region;
-    const tOk = it.구분===curType;
-    const yOk = it.연도>=yFrom && it.연도<=yTo;
-    return rOk&&tOk&&yOk;
-  }).sort((a,b)=>a.연도!==b.연도?a.연도-b.연도:a.월-b.월);
-
-  // 전국 평균일 때: 같은 연/월의 모든 지역 평균 계산
-  let display = filtered;
-  if(region==='ALL') {
-    const map = {};
-    filtered.forEach(it=>{
-      const k = it.연도+'-'+String(it.월).padStart(2,'0');
-      if(!map[k]){map[k]={연도:it.연도,월:it.월,구분:it.구분,지역:'전국',vals:[]};}
-      map[k].vals.push(it.가격);
-    });
-    display = Object.values(map).map(m=>({...m,가격:m.vals.reduce((s,v)=>s+v,0)/m.vals.length}))
-              .sort((a,b)=>a.연도!==b.연도?a.연도-b.연도:a.월-b.월);
-  }
-  window._display = display;
-
-  tblPg=1;
-  document.getElementById('loading').style.display='none';
-  document.getElementById('result').style.display='block';
-
-  renderStats(display);
-  renderTrend();
-  if(curTab==='region') renderRegion();
-  if(curTab==='data')   renderTable();
-}
-
-// 요약 카드
-function renderStats(data) {
-  if(!data.length) return;
-  const latest = data[data.length-1];
-  const prevYSame = raw.find(p=>p.지역===latest.지역&&p.구분===latest.구분&&p.연도===latest.연도-1&&p.월===latest.월);
-  const yoy = prevYSame ? ((latest.가격-prevYSame.가격)/prevYSame.가격*100) : null;
-  const prices = data.map(d=>d.가격);
-  const avg = prices.reduce((s,v)=>s+v,0)/prices.length;
-  const p3 = v=>(v*3.3/100).toFixed(0);
-  const region = document.getElementById('sel-region').value==='ALL'?'전국':document.getElementById('sel-region').value;
-
-  document.getElementById('stat-row').innerHTML = [
-    {lbl:'최신 분양가', v:latest.가격.toLocaleString(), u:'천원/㎡', sub:`${p3(latest.가격)}만원/평 · ${latest.연도}.${String(latest.월).padStart(2,'0')}`, cls:'bl'},
-    {lbl:'전년 동월 대비', v:yoy!=null?(yoy>=0?'+':'')+yoy.toFixed(1):'—', u:'%', sub:prevYSame?`${prevYSame.연도}.${String(prevYSame.월).padStart(2,'0')} 대비`:'비교 데이터 없음', cls:yoy>0?'re':yoy<0?'gr':'bl'},
-    {lbl:'기간 평균가', v:avg.toFixed(0), u:'천원/㎡', sub:`${p3(avg)}만원/평 · ${region}`, cls:'or'},
-    {lbl:'최고 vs 최저', v:`${Math.max(...prices).toLocaleString()} / ${Math.min(...prices).toLocaleString()}`, u:'', sub:'천원/㎡ (기간 내)', cls:'bl'},
-  ].map(c=>`<div class="sc ${c.cls}"><p class="sc-lbl">${c.lbl}</p><p class="sc-v">${c.v}<span class="sc-u">${c.u}</span></p><p class="sc-sub">${c.sub}</p></div>`).join('');
-}
-
-// 추이 차트
-function renderTrend() {
-  const data = window._display || filtered;
-  if(!data.length) return;
-  const region = document.getElementById('sel-region').value==='ALL'?'전국':document.getElementById('sel-region').value;
-  document.getElementById('trend-sub').textContent = `${region} · ${curType.replace('제곱미터','㎡').replace('전용면적 ','')}`;
-  const labels = data.map(d=>`${d.연도}.${String(d.월).padStart(2,'0')}`);
-  const vals   = data.map(d=>d.가격);
-  const yFrom  = parseInt(document.getElementById('sel-from').value);
-  const yTo    = parseInt(document.getElementById('sel-to').value);
-
-  const ds = [{
-    label: region, data: vals,
-    borderColor:'#1d4ed8', backgroundColor:'rgba(29,78,216,.07)',
-    fill:true, tension:.3, pointRadius:2, pointBackgroundColor:'#1d4ed8', borderWidth:2
-  }];
-
-  // 비교 지역
-  if(curCompare !== 'none') {
-    const cRegion = curCompare==='전국 평균'?'ALL':curCompare;
-    const cData   = curCompare==='전국 평균'
-      ? raw.filter(it=>it.구분===curType&&it.연도>=yFrom&&it.연도<=yTo)
-      : raw.filter(it=>it.지역===cRegion&&it.구분===curType&&it.연도>=yFrom&&it.연도<=yTo);
-    // 전국 평균 계산
-    const cMap = {};
-    cData.forEach(it=>{
-      const k=`${it.연도}.${String(it.월).padStart(2,'0')}`;
-      if(!cMap[k]) cMap[k]={vals:[]};
-      cMap[k].vals.push(it.가격);
-    });
-    const cLabels = labels.filter(l=>cMap[l]);
-    const cVals   = cLabels.map(l=>cMap[l].vals.reduce((s,v)=>s+v,0)/cMap[l].vals.length);
-    if(cVals.length) ds.push({
-      label:curCompare, data:cVals,
-      borderColor:'#dc2626', backgroundColor:'transparent',
-      borderDash:[5,4], tension:.3, pointRadius:1.5, borderWidth:1.5, fill:false
-    });
-  }
-
-  destroyC('trend');
-  charts.trend = new Chart(document.getElementById('c-trend'),{
-    type:'line', data:{labels, datasets:ds},
-    options:{responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:ds.length>1, labels:{font:{size:11},boxWidth:10}},
-        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString()}천원/㎡ (${(c.parsed.y*3.3/100).toFixed(0)}만원/평)`}}},
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:20}},
-        y:{beginAtZero:false,ticks:{font:{size:10},callback:v=>v.toLocaleString()},grid:{color:'rgba(0,0,0,.05)'}}
-      }
-    }
-  });
-
-  // YoY 차트
-  const yoyArr = [];
-  data.forEach(it=>{
-    const prev = raw.find(p=>p.지역===it.지역&&p.구분===it.구분&&p.연도===it.연도-1&&p.월===it.월);
-    if(prev&&prev.가격>0) yoyArr.push({lbl:`${it.연도}.${String(it.월).padStart(2,'0')}`, v:(it.가격-prev.가격)/prev.가격*100});
-  });
-  destroyC('yoy');
-  if(yoyArr.length) charts.yoy = new Chart(document.getElementById('c-yoy'),{
-    type:'bar', data:{
-      labels:yoyArr.map(d=>d.lbl),
-      datasets:[{data:yoyArr.map(d=>d.v),backgroundColor:yoyArr.map(d=>d.v>=0?'rgba(220,38,38,.65)':'rgba(22,163,74,.65)'),borderRadius:2}]
-    },
-    options:{responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%'}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:18}},
-              y:{ticks:{font:{size:10},callback:v=>v.toFixed(0)+'%'},grid:{color:'rgba(0,0,0,.05)'}}}
-    }
-  });
-}
-
-// 지역 비교
-function renderRegion() {
-  const yFrom = parseInt(document.getElementById('sel-from').value);
-  const yTo   = parseInt(document.getElementById('sel-to').value);
-
-  // 각 지역 최신 가격 & 평균
-  const regionStats = REGIONS.map(r=>{
-    const vals = raw.filter(it=>it.지역===r&&it.구분===curType&&it.연도>=yFrom&&it.연도<=yTo).sort((a,b)=>a.연도!==b.연도?a.연도-b.연도:a.월-b.월);
-    const latest = vals[vals.length-1];
-    const avg = vals.length ? vals.reduce((s,d)=>s+d.가격,0)/vals.length : 0;
-    return {r, latest:latest?.가격||0, latestYm:latest?`${latest.연도}.${String(latest.월).padStart(2,'0')}`:'', avg};
-  }).filter(d=>d.latest>0).sort((a,b)=>b.latest-a.latest);
-
-  const selR = document.getElementById('sel-region').value;
-  document.getElementById('region-sub').textContent = `(기준: ${yTo}년 최신 · 천원/㎡)`;
-
-  // 지역 카드
-  document.getElementById('region-grid').innerHTML = regionStats.map(d=>
-    `<div class="region-card ${d.r===selR?'on':''}" onclick="selectRegion('${d.r}')">
-      <div class="region-card-name">${d.r}</div>
-      <div class="region-card-price">${(d.latest*3.3/100).toFixed(0)}<span style="font-size:11px;font-weight:300;color:var(--ink3)">만/평</span></div>
-      <div class="region-card-sub">${d.latest.toLocaleString()}천원/㎡</div>
-      <div class="region-card-sub">${d.latestYm}</div>
-    </div>`
-  ).join('');
-
-  // 지역 순위 차트
-  const sorted = [...regionStats].sort((a,b)=>b.avg-a.avg);
-  destroyC('region');
-  charts.region = new Chart(document.getElementById('c-region'),{
-    type:'bar',
-    data:{
-      labels:sorted.map(d=>d.r),
-      datasets:[{
-        data:sorted.map(d=>(d.avg*3.3/100)),
-        backgroundColor:sorted.map(d=>REGION_COLORS[d.r]||'#94a3b8'),
-        borderRadius:4
-      }]
-    },
-    options:{responsive:true, maintainAspectRatio:false, indexAxis:'y',
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:c=>`${c.parsed.x.toFixed(0)}만원/평 (${(c.parsed.x/3.3*100).toFixed(0)}천원/㎡)`}}},
-      scales:{x:{beginAtZero:true,ticks:{font:{size:10},callback:v=>v.toFixed(0)+'만'},grid:{color:'rgba(0,0,0,.05)'}},
-              y:{ticks:{font:{size:11},color:d=>REGION_COLORS[sorted[d.index]?.r]||'#64748b'},grid:{display:false}}}
-    }
-  });
-}
-
-window.selectRegion = r => {
-  document.getElementById('sel-region').value = r;
-  applyFilter();
-  showTab('trend');
-};
-
-// 상세 테이블
-function renderTable() {
-  const data = (window._display||filtered).slice().reverse();
-  const start = (tblPg-1)*PG;
-  const page  = data.slice(start, start+PG);
-  const maxP  = Math.max(...data.map(d=>d.가격));
-  document.getElementById('tbl-info').textContent = `총 ${data.length.toLocaleString()}건 · ${tblPg}/${Math.ceil(data.length/PG)}페이지`;
-
-  if(!page.length){ document.getElementById('tbl-body').innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--ink4)">데이터 없음</td></tr>'; return; }
-
-  document.getElementById('tbl-body').innerHTML = page.map(it=>{
-    const pct = Math.round((it.가격/maxP)*100);
-    const p33 = (it.가격*3.3/100).toFixed(0);
-    const prev= raw.find(p=>p.지역===it.지역&&p.구분===it.구분&&p.연도===it.연도-1&&p.월===it.월);
-    const chg = prev&&prev.가격>0 ? ((it.가격-prev.가격)/prev.가격*100).toFixed(1) : null;
-    const chgHtml = chg ? (parseFloat(chg)>=0?`<span class="tag-up">▲${chg}%</span>`:`<span class="tag-dn">▼${Math.abs(chg)}%</span>`) : '—';
-    return `<tr>
-      <td style="font-family:var(--mono)">${it.연도}</td>
-      <td style="font-family:var(--mono)">${String(it.월).padStart(2,'0')}</td>
-      <td><span style="color:${REGION_COLORS[it.지역]||'#64748b'};font-weight:500">${it.지역}</span></td>
-      <td style="font-size:11px;color:var(--ink3)">${it.구분.replace('전용면적 ','').replace('제곱미터','㎡')}</td>
-      <td class="num">${it.가격.toLocaleString()}</td>
-      <td class="num" style="font-weight:500">${p33}</td>
-      <td class="num">${chgHtml}</td>
-      <td><div class="bar-w"><div class="bar" style="width:${pct}%;max-width:72px"></div></div></td>
-    </tr>`;
-  }).join('');
-  renderPager(data.length);
-}
-
-function renderPager(total) {
-  const maxPg = Math.ceil(total/PG);
-  const el = document.getElementById('tbl-pager');
-  if(maxPg<=1){el.innerHTML='';return;}
-  let h=`<button style="background:var(--white);border:1px solid var(--bg3);padding:.35rem .7rem;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--mono)" onclick="goTbl(${tblPg-1})" ${tblPg<=1?'disabled':''}>← 이전</button>`;
-  const s=Math.max(1,tblPg-4), e=Math.min(maxPg,tblPg+4);
-  for(let p=s;p<=e;p++) h+=`<button style="background:${p===tblPg?'var(--accent)':' var(--white)'};color:${p===tblPg?'#fff':'var(--ink2)'};border:1px solid ${p===tblPg?'var(--accent)':'var(--bg3)'};padding:.35rem .65rem;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--mono);min-width:32px" onclick="goTbl(${p})">${p}</button>`;
-  h+=`<button style="background:var(--white);border:1px solid var(--bg3);padding:.35rem .7rem;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--mono)" onclick="goTbl(${tblPg+1})" ${tblPg>=maxPg?'disabled':''}>다음 →</button>`;
-  el.innerHTML=h;
-}
-window.goTbl = p=>{tblPg=p;renderTable();window.scrollTo({top:0,behavior:'smooth'});};
-
-function destroyC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
-
-// 시작
-loadAll();
-</script>
-<script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-(async () => {
-  try {
-    const app = getApps().find(a=>a.name==='[DEFAULT]') || initializeApp(FIREBASE_CONFIG);
-    const db = getFirestore(app);
-    const today = new Date().toISOString().slice(0,10);
-    const [todaySnap, allSnap] = await Promise.all([
-      getDoc(doc(db,'analytics_daily',today)),
-      getDocs(collection(db,'analytics_daily'))
-    ]);
-    const todayV = todaySnap.exists() ? (todaySnap.data().views||0) : 0;
-    let total = 50000;
-    allSnap.forEach(d => { total += (d.data().views||0); });
-    const el = document.getElementById('visitor-counter');
-    if (!el) return;
-    const fmt = n => n.toLocaleString('ko-KR');
-    el.innerHTML =
-      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
-      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
-      `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
-      `<span style="color:var(--bg3)">|</span>` +
-      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TOTAL</span>` +
-      `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
-      `</span>`;
-    el.style.display = 'flex';
-  } catch(e) {}
-})();
-</script>
-<script src="js/firebase-config.js"></script>
-<script type="module" src="js/inquiry.js"></script>
-
-<!-- ApplyLab GNB Patch JS -->
-<script>
 (function(){
   // 단지검색 메뉴 삽입 (기존 nav-menu에 추가)
   var nm=document.querySelector('.nav-menu');
@@ -811,5 +451,21 @@ import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gsta
 </script>
 
 </body>
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+(async()=>{try{
+  const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(FIREBASE_CONFIG);
+  const db=getFirestore(app),today=new Date().toISOString().slice(0,10);
+  const[ts,as]=await Promise.all([getDoc(doc(db,"analytics_daily",today)),getDocs(collection(db,"analytics_daily"))]);
+  const tv=ts.exists()?(ts.data().views||0):0;let tot=50000;as.forEach(d=>{tot+=(d.data().views||0);});
+  const el=document.getElementById("visitor-counter");if(!el)return;
+  const fmt=n=>n.toLocaleString("ko-KR");
+  el.innerHTML=`<span style="display:inline-flex;align-items:center;gap:.4rem;font-size:11px;padding:.2rem .6rem;background:#fff;border-radius:20px;border:1px solid #eaeff4"><span style="color:#9aa6b2;font-size:9px">TODAY</span><span style="color:#3478f6;font-weight:700">${fmt(tv)}</span><span style="color:#dfe6ed">|</span><span style="color:#9aa6b2;font-size:9px">TOTAL</span><span style="font-weight:700">${fmt(tot)}</span></span>`;
+  el.style.display="flex";
+}catch(e){}})();
+</script>
+<script src="/js/firebase-config.js"></script>
+<script type="module" src="/js/inquiry.js"></script>
 </body>
 </html>

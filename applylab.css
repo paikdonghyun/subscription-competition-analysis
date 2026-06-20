@@ -1,48 +1,56 @@
 /* ============================================================
-   ApplyLab Design System — Direction C
-   ※ 기존 페이지(competition·price·unsold·bankbook)의
-     CSS와 절대 충돌하지 않도록 .gnb-* 네임스페이스로 격리.
-      전역 reset·body·.nav·.wrap 등 일절 없음.
+   ApplyLab Design System — Direction C (Soft Utility)
+   search.html 기준 변수명·클래스명 통일판
+   기존 페이지(competition·price·unsold·bankbook) CSS 비충돌:
+   - 전역 레이아웃 클래스(.wrap .card .filter .main) 정의 없음
+   - GNB는 header.gnb > .gnb-in 구조로 격리
    ============================================================ */
 
-/* ── CSS 변수 (색상 토큰만, 레이아웃 없음) ── */
+/* ── 1. CSS 변수 (al- 접두사 없이, search·apt 기준) ── */
 :root {
-  --al-bg:       #F2F5F8;
-  --al-surface:  #FFFFFF;
-  --al-ink:      #19232C;
-  --al-muted:    #6A7682;
-  --al-faint:    #9AA6B2;
-  --al-line:     #EAEFF4;
-  --al-line2:    #DFE6ED;
-  --al-brand:    #3478F6;
-  --al-brand-d:  #2563EB;
-  --al-brand-s:  #E9F1FE;
-  --al-mint:     #E6F7F0;
-  --al-mint-ink: #0E9B6E;
-  --al-sky:      #E8F1FE;
-  --al-sky-ink:  #2E6FE0;
-  --al-peach:    #FFF0E7;
-  --al-peach-ink:#D9772E;
-  --al-lilac:    #F0ECFB;
-  --al-lilac-ink:#7A52D6;
-  --al-sh:       0 2px 10px rgba(25,35,44,.05);
-  --al-sh2:      0 6px 20px rgba(25,35,44,.08);
-  --al-r:        16px;
+  --bg:          #F2F5F8;
+  --surface:     #FFFFFF;
+  --ink:         #19232C;
+  --muted:       #6A7682;
+  --faint:       #9AA6B2;
+  --line:        #EAEFF4;
+  --line2:       #DFE6ED;
+  --brand:       #3478F6;
+  --brand-d:     #2563EB;
+  --brand-soft:  #E9F1FE;
+  --mint:        #E6F7F0;
+  --mint-ink:    #0E9B6E;
+  --sky:         #E8F1FE;
+  --sky-ink:     #2E6FE0;
+  --peach:       #FFF0E7;
+  --peach-ink:   #D9772E;
+  --lilac:       #F0ECFB;
+  --lilac-ink:   #7A52D6;
+  --pos:         #0E9B6E;
+  --warn:        #D9772E;
+  --r:           16px;
+  --r-sm:        10px;
+  --r-lg:        22px;
+  --sh:          0 2px 10px rgba(25,35,44,.05);
+  --sh2:         0 6px 20px rgba(25,35,44,.08);
+  --maxw:        1040px;
 }
 
-/* ── Pretendard 폰트 body에만 적용 (기존 스타일보다 낮은 우선순위) ── */
-body { font-family: 'Pretendard', system-ui, sans-serif; }
+/* ── 2. 기본 body (폰트만, 레이아웃 없음) ── */
+body {
+  font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+}
 
-/* ======================================================
-   GNB — .gnb 루트 아래 격리. 기존 .nav와 충돌 없음.
-   ====================================================== */
-.gnb {
+/* ── 3. GNB (header.gnb 스코프로 완전 격리) ── */
+header.gnb {
   position: sticky;
   top: 0;
   z-index: 9999;
   background: rgba(242,245,248,.94);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--al-line);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
   font-family: 'Pretendard', system-ui, sans-serif;
 }
 .gnb-in {
@@ -55,7 +63,7 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   padding: 0 1.25rem;
 }
 /* 로고 */
-.gnb .logo {
+header.gnb .logo {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -63,34 +71,33 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   font-size: 18px;
   letter-spacing: -.03em;
   text-decoration: none;
-  color: var(--al-ink);
+  color: var(--ink);
   flex-shrink: 0;
-  font-family: 'Pretendard', system-ui, sans-serif;
 }
-.gnb .logo b { color: var(--al-brand); }
-.gnb .logo-mk {
+header.gnb .logo b { color: var(--brand); }
+header.gnb .logo-mk {
   width: 20px; height: 20px;
-  background: var(--al-brand);
+  background: var(--brand);
   border-radius: 7px;
   display: grid; place-items: center;
+  flex-shrink: 0;
 }
-.gnb .logo-mk::after {
+header.gnb .logo-mk::after {
   content: "";
   width: 8px; height: 8px;
   background: #fff;
   border-radius: 3px;
 }
-/* 네비 */
-.gnb-nav {
+/* 네비 — search.html이 쓰는 .nav 클래스 */
+header.gnb .nav {
   display: flex;
   gap: 2px;
   font-size: 13.5px;
-  font-family: 'Pretendard', system-ui, sans-serif;
-  overflow-x: auto;
   flex: 1;
+  overflow-x: auto;
 }
-.gnb-nav a {
-  color: var(--al-muted);
+header.gnb .nav a {
+  color: var(--muted);
   padding: 7px 11px;
   border-radius: 10px;
   white-space: nowrap;
@@ -99,26 +106,30 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   transition: background .15s, color .15s;
   display: inline-block;
 }
-.gnb-nav a:hover { background: #fff; color: var(--al-ink); }
-.gnb-nav a[aria-current] {
+header.gnb .nav a:hover { background: #fff; color: var(--ink); }
+header.gnb .nav a[aria-current] {
   background: #fff;
-  color: var(--al-ink);
+  color: var(--ink);
   font-weight: 700;
-  box-shadow: var(--al-sh);
+  box-shadow: var(--sh);
 }
-.gnb-nav a.new { color: var(--al-brand); font-weight: 700; position: relative; }
-.gnb-nav a.new::after {
+header.gnb .nav a.new {
+  color: var(--brand);
+  font-weight: 700;
+  position: relative;
+}
+header.gnb .nav a.new::after {
   content: "";
   display: inline-block;
   width: 5px; height: 5px;
-  background: var(--al-brand);
+  background: var(--brand);
   border-radius: 50%;
   margin-left: 4px;
   vertical-align: middle;
 }
 /* visitor counter */
-#visitor-counter { flex-shrink: 0; }
-/* 햄버거 */
+header.gnb #visitor-counter { flex-shrink: 0; }
+/* 햄버거 버튼 */
 .navtog {
   display: none;
   margin-left: auto;
@@ -126,7 +137,7 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   border: none;
   background: #fff;
   border-radius: 10px;
-  box-shadow: var(--al-sh);
+  box-shadow: var(--sh);
   cursor: pointer;
   flex-direction: column;
   gap: 4px;
@@ -137,17 +148,17 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
 .navtog span {
   display: block;
   width: 16px; height: 2px;
-  background: var(--al-ink);
+  background: var(--ink);
   border-radius: 2px;
   transition: .2s;
 }
 /* 드로어 */
 .drawer { display: none; }
 
-/* ── 푸터 ── */
-.al-footer {
+/* ── 4. 공통 푸터 ── */
+footer.al-footer {
   background: #E4E9EC;
-  border-top: 1px solid var(--al-line);
+  border-top: 1px solid var(--line);
   margin-top: 32px;
   font-family: 'Pretendard', system-ui, sans-serif;
 }
@@ -156,37 +167,38 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   margin: 0 auto;
   padding: 24px 1.25rem;
   font-size: 12px;
-  color: var(--al-faint);
+  color: var(--faint);
   text-align: center;
   line-height: 1.8;
 }
-.al-footer-in a { color: var(--al-muted); text-decoration: none; }
+.al-footer-in a { color: var(--muted); text-decoration: none; }
 
-/* ======================================================
-   search.html / apt.html / home.html 전용 컴포넌트
-   ====================================================== */
-.al-wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+/* ── 5. 래퍼 (search·apt·home 전용) ── */
+.al-wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
+/* ── 6. 페이지 헤드 ── */
 .page-head { padding: 20px 0 4px; }
 .page-head h1 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; }
-.page-head p  { font-size: 14px; color: var(--al-muted); margin-top: 4px; }
-.eyebrow { font-size: 12px; font-weight: 700; color: var(--al-brand); }
+.page-head p  { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--brand); }
 
-/* 섹션 헤드 */
+/* ── 7. 섹션 헤드 ── */
 .sec { margin-top: 18px; }
 .sec-h { display: flex; align-items: center; margin-bottom: 15px; }
 .sec-h h2 { font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
 .pill {
   margin-left: auto;
   font-size: 12px; font-weight: 700;
-  color: var(--al-brand);
-  background: var(--al-brand-s);
-  padding: 5px 11px;
-  border-radius: 999px;
-  text-decoration: none;
+  color: var(--brand); background: var(--brand-soft);
+  padding: 5px 11px; border-radius: 999px;
+  text-decoration: none; white-space: nowrap;
 }
 
-/* 히어로 카드 (home·competition) */
+/* ── 8. 히어로 카드 ── */
 .hero-card {
   background: linear-gradient(135deg, #3478F6, #5B93FF);
   border-radius: 22px; padding: 24px; color: #fff;
@@ -198,6 +210,7 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   right: -40px; top: -40px;
   width: 170px; height: 170px;
   background: rgba(255,255,255,.12); border-radius: 50%;
+  pointer-events: none;
 }
 .hero-card > * { position: relative; z-index: 1; }
 .hero-card .lbl   { font-size: 13px; font-weight: 600; opacity: .92; }
@@ -208,97 +221,104 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
 .hero-card .bar > i { display: block; height: 100%; width: 0; background: #fff; border-radius: 6px; transition: width 1s cubic-bezier(.2,.7,.2,1); }
 .hero-card .scale { display: flex; justify-content: space-between; font-size: 11px; opacity: .75; margin-top: 5px; }
 
-/* 바로가기 그리드 (home) */
+/* ── 9. 바로가기 그리드 (home) ── */
 .al-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
 .al-sc {
-  border-radius: 16px; padding: 16px;
-  box-shadow: var(--al-sh);
-  display: block; text-decoration: none;
-  transition: transform .15s, box-shadow .15s;
+  border-radius: var(--r); padding: 16px;
+  box-shadow: var(--sh); display: block;
+  text-decoration: none; transition: .15s;
 }
-.al-sc:hover { transform: translateY(-1px); box-shadow: var(--al-sh2); }
+.al-sc:hover { transform: translateY(-1px); box-shadow: var(--sh2); }
 .al-sc .al-ic {
   width: 32px; height: 32px; border-radius: 10px;
   background: #fff; display: grid; place-items: center;
   font-size: 15px; font-weight: 800; margin-bottom: 10px;
 }
 .al-sc .al-v { font-size: 14px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
-.al-sc .al-k { font-size: 12px; margin-top: 3px; color: var(--al-muted); }
-.al-c-mint { background: var(--al-mint); } .al-c-mint .al-ic { color: var(--al-mint-ink); }
-.al-c-sky  { background: var(--al-sky);  } .al-c-sky  .al-ic { color: var(--al-sky-ink);  }
-.al-c-lilac{ background: var(--al-lilac);} .al-c-lilac .al-ic{ color: var(--al-lilac-ink);}
-.al-c-peach{ background: var(--al-peach);} .al-c-peach .al-ic{ color: var(--al-peach-ink);}
+.al-sc .al-k { font-size: 12px; margin-top: 3px; color: var(--muted); }
+.al-c-sky   { background: var(--sky);   } .al-c-sky   .al-ic { color: var(--sky-ink);   }
+.al-c-mint  { background: var(--mint);  } .al-c-mint  .al-ic { color: var(--mint-ink);  }
+.al-c-lilac { background: var(--lilac); } .al-c-lilac .al-ic { color: var(--lilac-ink); }
+.al-c-peach { background: var(--peach); } .al-c-peach .al-ic { color: var(--peach-ink); }
 
-/* 검색바 (home·search) */
+/* ── 10. 인라인 카드 ── */
+.al-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  box-shadow: var(--sh);
+}
+
+/* ── 11. 검색바 ── */
 .searchbar {
   display: flex; align-items: center; gap: 10px;
-  background: #fff; border-radius: 16px;
-  padding: 13px 18px; box-shadow: var(--al-sh2);
+  background: var(--surface); border-radius: var(--r);
+  padding: 13px 18px; box-shadow: var(--sh2);
 }
 .searchbar input {
   border: none; outline: none;
   font: inherit; font-size: 16px;
-  width: 100%; background: none; color: var(--al-ink);
+  width: 100%; background: none; color: var(--ink);
 }
-.searchbar input::placeholder { color: var(--al-faint); }
+.searchbar input::placeholder { color: var(--faint); }
 
-/* 인라인 카드 (home 캘린더 래퍼) */
-.al-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: var(--al-sh);
-}
-
-/* 칩 (search) */
+/* ── 12. 칩 ── */
 .al-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .al-chip {
   font-size: 13px; font-weight: 600;
-  color: var(--al-muted);
-  background: #fff;
-  border: 1px solid var(--al-line2);
+  color: var(--muted); background: var(--surface);
+  border: 1px solid var(--line2);
   padding: 7px 14px; border-radius: 999px;
   cursor: pointer; transition: .15s;
-  font-family: 'Pretendard', sans-serif;
 }
-.al-chip:hover { border-color: var(--al-brand); color: var(--al-brand); }
-.al-chip.on { background: var(--al-brand); border-color: var(--al-brand); color: #fff; }
+.al-chip:hover { border-color: var(--brand); color: var(--brand); }
+.al-chip.on { background: var(--brand); border-color: var(--brand); color: #fff; }
 
-/* 뱃지 (search·apt) */
+/* ── 13. 뱃지 ── */
 .al-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 7px; }
-.al-live  { background: var(--al-brand); color: #fff; }
-.al-soon  { background: var(--al-peach); color: var(--al-peach-ink); }
-.al-done  { background: var(--al-line);  color: var(--al-muted); }
-.al-posb  { background: var(--al-mint);  color: var(--al-mint-ink); }
+.al-live  { background: var(--brand);    color: #fff; }
+.al-soon  { background: var(--peach);    color: var(--peach-ink); }
+.al-done  { background: var(--line);     color: var(--muted); }
+.al-posb  { background: var(--mint);     color: var(--mint-ink); }
 
-/* 리스트 행 (search) */
-.al-row { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--al-line); }
+/* ── 14. 리스트 행 ── */
+.al-row { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
 .al-row:last-child { border-bottom: none; }
-.al-rk  { width: 26px; height: 26px; border-radius: 8px; background: var(--al-brand-s); color: var(--al-brand); font-weight: 800; font-size: 13px; display: grid; place-items: center; flex-shrink: 0; }
-.al-row.top1 .al-rk { background: var(--al-brand); color: #fff; }
+.al-rk  { width: 26px; height: 26px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); font-weight: 800; font-size: 13px; display: grid; place-items: center; flex-shrink: 0; }
+.al-row.top1 .al-rk { background: var(--brand); color: #fff; }
 .al-nm  { font-weight: 700; font-size: 14px; }
-.al-rg  { font-size: 12px; color: var(--al-faint); }
+.al-rg  { font-size: 12px; color: var(--faint); }
 .al-meta { margin-left: auto; text-align: right; font-weight: 800; font-size: 15px; }
-.al-meta small { display: block; font-size: 11px; color: var(--al-faint); font-weight: 600; }
+.al-meta small { display: block; font-size: 11px; color: var(--faint); font-weight: 600; }
 .al-morebtn {
   display: block; text-align: center; margin-top: 12px;
-  font-size: 14px; color: var(--al-brand); font-weight: 700;
-  background: var(--al-brand-s); padding: 11px; border-radius: 12px;
+  font-size: 14px; color: var(--brand); font-weight: 700;
+  background: var(--brand-soft); padding: 11px; border-radius: 12px;
   text-decoration: none;
 }
 
-/* 스크롤 리빌 */
+/* ── 15. 광고 자리 ── */
+.ad {
+  border-radius: var(--r); border: 1.5px dashed var(--line2);
+  min-height: 100px; display: grid; place-items: center;
+  background: var(--surface); text-align: center; color: var(--faint);
+}
+.ad .t { font-size: 11px; letter-spacing: .12em; color: var(--muted); font-weight: 700; }
+.ad small { display: block; font-size: 11px; margin-top: 3px; }
+.ad-infeed { margin: 14px 0; }
+
+/* ── 16. 스크롤 리빌 ── */
 .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s, transform .6s; }
 .reveal.in { opacity: 1; transform: none; }
 
-/* ── 모바일 ── */
+/* ── 17. 모바일 ── */
 @media (max-width: 900px) {
-  .gnb-nav { display: none; }
-  .navtog  { display: flex; }
+  header.gnb .nav { display: none; }
+  .navtog { display: flex; }
   html.nav-open .drawer {
     display: block;
     position: fixed; inset: 60px 0 0;
-    background: var(--al-bg); z-index: 9998;
+    background: var(--bg); z-index: 9998;
     padding: 16px 20px; overflow-y: auto;
     animation: al-slidein .2s ease;
     font-family: 'Pretendard', system-ui, sans-serif;
@@ -306,11 +326,11 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   html.nav-open .drawer a {
     display: block; padding: 15px 14px;
     font-size: 16px; font-weight: 600;
-    border-radius: 13px; color: var(--al-ink);
+    border-radius: 13px; color: var(--ink);
     text-decoration: none;
   }
   html.nav-open .drawer a[aria-current] {
-    background: #fff; color: var(--al-brand); box-shadow: var(--al-sh);
+    background: var(--surface); color: var(--brand); box-shadow: var(--sh);
   }
   html.nav-open .navtog span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
   html.nav-open .navtog span:nth-child(2) { opacity: 0; }
@@ -318,7 +338,10 @@ body { font-family: 'Pretendard', system-ui, sans-serif; }
   html.nav-open { overflow: hidden; }
   .al-grid4 { grid-template-columns: 1fr 1fr; }
 }
-@keyframes al-slidein { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+@keyframes al-slidein {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
