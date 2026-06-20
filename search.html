@@ -4,28 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>단지검색 | 청약랩 ApplyLab</title>
-<meta name="description" content="지역·상태·종합점수로 분양 단지를 찾아보세요. 청약랩 단지검색.">
+<meta name="description" content="청약홈 아파트 분양 단지를 단지명·지역으로 실시간 검색. 청약 상태·지역 필터 제공. 청약랩.">
 <meta name="robots" content="index, follow">
+<meta name="author" content="청약랩 ApplyLab">
+<meta name="google-site-verification" content="XSpggCEU8TEWQ88HGp2HRfZi-AEyI3GBDTiJ2Z_Hows">
+<meta name="naver-site-verification" content="77d8d71163a4d6b7ff04b5e58ecf7a3f1beebee1">
+<link rel="canonical" href="https://applylab.kr/search.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://applylab.kr/search.html">
+<meta property="og:title" content="단지검색 | 청약랩 ApplyLab">
+<meta property="og:description" content="청약홈 분양 단지 실시간 검색. 단지명·지역·청약상태 필터.">
+<meta property="og:image" content="https://applylab.kr/favicon-512.png">
+<meta property="og:site_name" content="청약랩 ApplyLab">
+<meta property="og:locale" content="ko_KR">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/favicon-180.png">
+<link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="applylab.css">
+<link rel="stylesheet" href="/applylab.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300" crossorigin="anonymous"></script>
 <style>
-.aptcard{display:block;background:var(--surface);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);margin-bottom:12px;transition:.15s}
-.aptcard:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
-.aptcard .top{display:flex;align-items:center;gap:9px;margin-bottom:12px}
-.aptcard .nm{font-weight:800;font-size:15.5px;letter-spacing:-.02em}
-.aptcard .rg{font-size:12px;color:var(--faint);margin-left:auto}
-.aptcard .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.aptcard .st{background:var(--bg);border-radius:11px;padding:9px 10px;text-align:center}
-.aptcard .st .sv{font-weight:800;font-size:16px;letter-spacing:-.02em}
-.aptcard .st .sv.g{color:var(--mint-ink)}.aptcard .st .sv.b{color:var(--brand)}.aptcard .st .sv.o{color:var(--peach-ink)}
-.aptcard .st .sk{font-size:10.5px;color:var(--faint);margin-top:2px}
-.rankcard{background:var(--surface);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
-.rankcard h3{font-size:13px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:7px}
-.rankcard .dot{width:8px;height:8px;border-radius:3px}
-.rankcard .rr{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px}
-.rankcard .rr b{margin-left:auto;font-weight:800}
-.rankrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:680px){.rankrow{grid-template-columns:1fr}.aptcard .stats{grid-template-columns:1fr 1fr}}
+/* ── 검색바 ── */
+.srch-bar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:13px 18px;box-shadow:0 4px 18px rgba(25,35,44,.08);margin-top:12px}
+.srch-bar input{border:none;outline:none;font:inherit;font-size:16px;width:100%;background:none;color:var(--ink)}
+.srch-bar input::placeholder{color:var(--faint)}
+.srch-btn{flex-shrink:0;border:none;background:var(--brand);color:#fff;border-radius:11px;padding:9px 18px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.srch-btn:hover{background:var(--brand-d)}
+
+/* ── 필터 칩 ── */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:13px;font-weight:600;color:var(--muted);background:#fff;border:1px solid var(--line2);padding:6px 14px;border-radius:999px;cursor:pointer;transition:.15s;user-select:none}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip-group{display:flex;gap:8px;flex-wrap:wrap}
+.chip-label{font-size:12px;color:var(--faint);font-weight:600;align-self:center;white-space:nowrap}
+
+/* ── 카드 ── */
+.aptcard{display:block;background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 2px 10px rgba(25,35,44,.05);margin-bottom:10px;transition:.15s;text-decoration:none;color:inherit}
+.aptcard:hover{box-shadow:0 6px 20px rgba(25,35,44,.09);transform:translateY(-1px)}
+.card-top{display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap}
+.card-nm{font-weight:800;font-size:15px;letter-spacing:-.02em}
+.card-rg{font-size:12px;color:var(--faint);margin-left:auto}
+.card-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.st{background:var(--bg);border-radius:11px;padding:9px 10px;text-align:center}
+.sv{font-weight:800;font-size:15px;letter-spacing:-.02em}
+.sv.c-blue{color:var(--brand)}.sv.c-green{color:var(--mint-ink)}.sv.c-orange{color:var(--peach-ink)}
+.sk{font-size:10.5px;color:var(--faint);margin-top:2px}
+
+/* ── 상태 뱃지 ── */
+.bdg{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
+.bdg-live{background:var(--brand);color:#fff}
+.bdg-soon{background:var(--peach);color:var(--peach-ink)}
+.bdg-done{background:var(--line);color:var(--muted)}
+
+/* ── 로딩·빈 상태 ── */
+.spin{display:inline-block;width:18px;height:18px;border:2.5px solid var(--line2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading-msg{text-align:center;padding:32px;color:var(--muted);font-size:14px}
+#empty-msg{text-align:center;padding:32px;color:var(--faint);font-size:14px;display:none}
+
+/* ── 결과 헤더 ── */
+.result-head{display:flex;align-items:baseline;gap:10px;margin:16px 0 10px}
+.result-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.result-count{font-size:13px;color:var(--muted)}
+.sort-sel{margin-left:auto;font:inherit;font-size:13px;border:1px solid var(--line2);border-radius:9px;padding:5px 10px;background:#fff;color:var(--ink);cursor:pointer;outline:none}
+
+/* ── 더보기 ── */
+.more-btn{display:block;width:100%;text-align:center;margin-top:12px;font-size:14px;color:var(--brand);font-weight:700;background:var(--brand-soft);padding:13px;border-radius:13px;border:none;cursor:pointer;font-family:inherit}
+.more-btn:hover{background:#dbe8fd}
+.more-btn:disabled{opacity:.4;cursor:default}
+
+@media(max-width:640px){.card-stats{grid-template-columns:1fr 1fr}.card-rg{display:none}}
 </style>
 </head>
 <body>
@@ -40,7 +90,9 @@
     <a href="/bankbook.html">청약통장</a>
   </nav>
   <span id="visitor-counter" style="display:none;margin-left:8px"></span>
-  <button class="navtog" aria-label="메뉴" onclick="document.documentElement.classList.toggle('nav-open')"><span></span><span></span><span></span></button>
+  <button class="navtog" aria-label="메뉴" onclick="document.documentElement.classList.toggle('nav-open')">
+    <span></span><span></span><span></span>
+  </button>
 </div>
 <div class="drawer">
   <a href="/home.html">분양 캘린더</a>
@@ -52,98 +104,294 @@
 </div></header>
 
 <div class="al-wrap">
-  <div class="page-head"><h1>단지검색</h1><p>지역·상태·분석 점수로 분양 단지를 찾아보세요.</p></div>
-
-  <div class="searchbar" style="margin-top:12px">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.5" stroke="#9AA6B2" stroke-width="2"/><path d="M14 14l4 4" stroke="#9AA6B2" stroke-width="2" stroke-linecap="round"/></svg>
-    <input type="text" placeholder="단지명·지역으로 검색" aria-label="단지 검색">
+  <div class="page-head">
+    <h1>단지검색</h1>
+    <p>청약홈 분양 단지를 단지명·지역으로 실시간 검색하세요.</p>
   </div>
 
-  <div class="al-chips" style="margin-top:14px">
-    <span class="al-chip on">전체</span><span class="al-chip">접수중</span><span class="al-chip">청약예정</span><span class="al-chip">무순위·잔여</span>
-    <span class="al-chip">서울</span><span class="al-chip">경기</span><span class="al-chip">인천</span>
+  <!-- 검색바 -->
+  <div class="srch-bar">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6.5" stroke="#9AA6B2" stroke-width="2"/>
+      <path d="M14 14l4 4" stroke="#9AA6B2" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <input id="searchInput" type="text" placeholder="단지명·지역 입력 (예: 동탄, 더샵, 서울)" aria-label="단지 검색">
+    <button class="srch-btn" onclick="doSearch()">검색</button>
   </div>
 
-  <!-- 분석 랭킹 -->
-  <section class="sec">
-    <div class="sec-h"><h2>분석 랭킹</h2><span class="pill">청약랩 단독 지표</span></div>
-    <div class="rankrow">
-      <div class="rankcard">
-        <h3><span class="dot" style="background:var(--brand)"></span>종합점수 TOP</h3>
-        <a class="rr" href="/apt.html">🥇 리버파크 센트럴시티 <b>83</b></a>
-        <div class="rr">🥈 송도 더샵 마리나 <b>81</b></div>
-        <div class="rr">🥉 수원 매교 푸르지오 <b>78</b></div>
-      </div>
-      <div class="rankcard">
-        <h3><span class="dot" style="background:var(--mint-ink)"></span>안전마진 TOP</h3>
-        <a class="rr" href="/apt.html">🥇 리버파크 센트럴시티 <b>+13%</b></a>
-        <div class="rr">🥈 광명 센트럴자이 <b>+9%</b></div>
-        <div class="rr">🥉 송도 더샵 마리나 <b>+7%</b></div>
-      </div>
-      <div class="rankcard">
-        <h3><span class="dot" style="background:var(--peach-ink)"></span>노려볼 만한 단지</h3>
-        <div class="rr">예상경쟁률 낮음 · 점수 높음</div>
-        <div class="rr">🔹 평택 고덕 ○○ <b>5.2:1</b></div>
-        <div class="rr">🔹 천안 성성 ○○ <b>6.8:1</b></div>
-      </div>
+  <!-- 상태 필터 -->
+  <div style="margin-top:14px">
+    <div class="chips" id="statusChips">
+      <span class="chip-label">상태</span>
+      <span class="chip on" data-type="status" data-val="">전체</span>
+      <span class="chip" data-type="status" data-val="live">접수중</span>
+      <span class="chip" data-type="status" data-val="soon">청약예정</span>
+      <span class="chip" data-type="status" data-val="done">마감</span>
     </div>
-  </section>
+    <div class="chips" style="margin-top:8px" id="regionChips">
+      <span class="chip-label">지역</span>
+      <span class="chip on" data-type="region" data-val="">전체</span>
+      <span class="chip" data-type="region" data-val="서울">서울</span>
+      <span class="chip" data-type="region" data-val="경기">경기</span>
+      <span class="chip" data-type="region" data-val="인천">인천</span>
+      <span class="chip" data-type="region" data-val="부산">부산</span>
+      <span class="chip" data-type="region" data-val="대구">대구</span>
+      <span class="chip" data-type="region" data-val="대전">대전</span>
+      <span class="chip" data-type="region" data-val="광주">광주</span>
+      <span class="chip" data-type="region" data-val="충남">충남</span>
+      <span class="chip" data-type="region" data-val="충북">충북</span>
+    </div>
+  </div>
 
-  <div class="ad ad-infeed"><div><span class="t">AD · 반응형</span><small>인피드 광고 (카드 흐름 사이)</small></div></div>
+  <!-- 결과 헤더 -->
+  <div class="result-head">
+    <h2>단지 목록</h2>
+    <span class="result-count" id="resultCount"></span>
+    <select class="sort-sel" id="sortSel" onchange="renderList()">
+      <option value="date">청약일 임박순</option>
+      <option value="name">단지명순</option>
+      <option value="area">지역순</option>
+    </select>
+  </div>
 
-  <!-- 단지 결과 리스트 -->
-  <section class="sec">
-    <div class="sec-h"><h2>전체 단지</h2><span class="pill">종합점수순</span></div>
+  <!-- 로딩 -->
+  <div id="loading-msg"><span class="spin"></span>청약홈 데이터 조회 중…</div>
+  <div id="empty-msg">검색 결과가 없습니다.<br><small>다른 키워드나 필터로 다시 시도해 보세요.</small></div>
 
-    <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="al-badge al-live">접수중</span><span class="nm">리버파크 센트럴시티</span><span class="rg">경기 화성 · D-1</span></div>
-      <div class="stats">
-        <div class="st"><div class="sv b">83</div><div class="sk">종합 A</div></div>
-        <div class="st"><div class="sv">10.0:1</div><div class="sk">예상 경쟁률</div></div>
-        <div class="st"><div class="sv g">+13%</div><div class="sk">안전마진</div></div>
-        <div class="st"><div class="sv o">6.85억</div><div class="sk">분양가 84㎡</div></div>
-      </div>
-    </a>
+  <!-- 결과 리스트 -->
+  <div id="resultList"></div>
 
-    <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="al-badge al-soon">예정</span><span class="nm">송도 더샵 마리나</span><span class="rg">인천 연수 · D-5</span></div>
-      <div class="stats">
-        <div class="st"><div class="sv b">81</div><div class="sk">종합 A</div></div>
-        <div class="st"><div class="sv">12.5:1</div><div class="sk">예상 경쟁률</div></div>
-        <div class="st"><div class="sv g">+7%</div><div class="sk">안전마진</div></div>
-        <div class="st"><div class="sv o">7.20억</div><div class="sk">분양가 84㎡</div></div>
-      </div>
-    </a>
+  <!-- 더보기 -->
+  <button class="more-btn" id="moreBtn" onclick="loadMore()" style="display:none">더 보기</button>
 
-    <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="al-badge al-soon">예정</span><span class="nm">수원 매교 푸르지오</span><span class="rg">경기 수원 · D-3</span></div>
-      <div class="stats">
-        <div class="st"><div class="sv b">78</div><div class="sk">종합 B</div></div>
-        <div class="st"><div class="sv">9.1:1</div><div class="sk">예상 경쟁률</div></div>
-        <div class="st"><div class="sv g">+5%</div><div class="sk">안전마진</div></div>
-        <div class="st"><div class="sv o">6.40억</div><div class="sk">분양가 84㎡</div></div>
-      </div>
-    </a>
-
-    <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="al-badge al-done">마감</span><span class="nm">마곡 르엘</span><span class="rg">서울 강서 · 청약완료</span></div>
-      <div class="stats">
-        <div class="st"><div class="sv b">90</div><div class="sk">종합 S</div></div>
-        <div class="st"><div class="sv">84.2:1</div><div class="sk">실제 경쟁률</div></div>
-        <div class="st"><div class="sv g">+18%</div><div class="sk">안전마진</div></div>
-        <div class="st"><div class="sv o">11.9억</div><div class="sk">분양가 84㎡</div></div>
-      </div>
-    </a>
-
-    <a class="al-morebtn" href="#">더 많은 단지 보기</a>
-  </section>
+  <!-- 광고 -->
+  <div style="margin-top:18px">
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5133871958265300" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+  </div>
 </div>
 
-<footer class="al-footer"><div class="al-footer-in">청약랩 · ApplyLab<br>데이터 출처: 한국부동산원 청약홈 · 국토교통부 (공공데이터포털) · © 2026</div></footer>
-
+<footer class="al-footer"><div class="al-footer-in">
+  청약랩 · ApplyLab · 데이터 출처: 한국부동산원 청약홈 (공공데이터포털)<br>
+  <a href="/privacy.html">개인정보취급방침</a> · <a href="mailto:shake100@gmail.com">문의</a> · © 2026 ApplyLab
+</div></footer>
 
 <script>
-document.querySelectorAll('.al-chip').forEach(c=>c.addEventListener('click',()=>{c.classList.toggle('on')}));
+/* ── API 설정 ── */
+const API_KEY  = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+const PROXY    = 'https://corsproxy.io/?';
+const API_BASE = 'https://api.odcloud.kr/api/ApplyhomeInfoSvc/v1/getAPTLttotPblancList';
+
+/* ── 상태 ── */
+let allData   = [];   // 전체 로드 데이터
+let filtered  = [];   // 필터 적용 후
+let page      = 0;
+const PER     = 10;   // 페이지당 카드 수
+let statusVal = '';
+let regionVal = '';
+let keyword   = '';
+
+/* ── 날짜 유틸 ── */
+const today = new Date();
+const todayStr = today.toISOString().slice(0,10).replace(/-/g,'');
+
+function parseDate(s){ return s ? s.replace(/-/g,'') : ''; }
+
+function getStatus(row){
+  const rcptS = parseDate(row.RCRIT_PBLANC_DE || row.RCEPT_BGNDE || '');
+  const rcptE = parseDate(row.SBSCPT_RCEPT_ENDDE || row.RCEPT_ENDDE || '');
+  if(!rcptS) return 'soon';
+  if(todayStr < rcptS) return 'soon';
+  if(todayStr <= rcptE) return 'live';
+  return 'done';
+}
+
+function dday(row){
+  const rcptS = parseDate(row.RCRIT_PBLANC_DE || row.RCEPT_BGNDE || '');
+  if(!rcptS) return null;
+  const diff = Math.ceil((new Date(rcptS.slice(0,4)+'-'+rcptS.slice(4,6)+'-'+rcptS.slice(6,8)) - today) / 86400000);
+  return diff;
+}
+
+function fmtDate(s){
+  if(!s) return '-';
+  const d = s.replace(/-/g,'');
+  return `${d.slice(0,4)}.${d.slice(4,6)}.${d.slice(6,8)}`;
+}
+
+/* ── API 로드 ── */
+async function fetchPage(pg){
+  const url = `${API_BASE}?page=${pg}&perPage=100&serviceKey=${API_KEY}`;
+  const r = await fetch(PROXY + encodeURIComponent(url));
+  const j = await r.json();
+  return j.data || [];
+}
+
+async function loadAll(){
+  document.getElementById('loading-msg').style.display = 'block';
+  document.getElementById('resultList').innerHTML = '';
+  document.getElementById('moreBtn').style.display = 'none';
+
+  try {
+    // 최근 3페이지(300건) 로드 — 빠른 초기 로딩
+    const [p1, p2, p3] = await Promise.all([fetchPage(1), fetchPage(2), fetchPage(3)]);
+    allData = [...p1, ...p2, ...p3];
+    document.getElementById('loading-msg').style.display = 'none';
+    applyFilter();
+  } catch(e) {
+    document.getElementById('loading-msg').innerHTML =
+      '<span style="color:#e2563f">데이터 조회 실패. 잠시 후 새로고침해 주세요.</span>';
+  }
+}
+
+/* ── 필터·검색 ── */
+function applyFilter(){
+  const kw = keyword.replace(/\s/g,'').toLowerCase();
+  filtered = allData.filter(row => {
+    const nm   = (row.HOUSE_NM || '').replace(/\s/g,'').toLowerCase();
+    const area = (row.SUBSCRPT_AREA_CODE_NM || row.HSSPLY_ADRES || '');
+    const st   = getStatus(row);
+
+    if(kw && !nm.includes(kw) && !area.includes(keyword)) return false;
+    if(statusVal && st !== statusVal) return false;
+    if(regionVal && !area.includes(regionVal)) return false;
+    return true;
+  });
+
+  // 정렬
+  sortData();
+  page = 0;
+  renderList();
+}
+
+function sortData(){
+  const sel = document.getElementById('sortSel').value;
+  filtered.sort((a,b)=>{
+    if(sel === 'name') return (a.HOUSE_NM||'').localeCompare(b.HOUSE_NM||'','ko');
+    if(sel === 'area') return (a.SUBSCRPT_AREA_CODE_NM||'').localeCompare(b.SUBSCRPT_AREA_CODE_NM||'','ko');
+    // date: 임박순 (접수중 > 예정 > 마감, 같은 그룹은 날짜 오름차순)
+    const stA = getStatus(a), stB = getStatus(b);
+    const order = {live:0, soon:1, done:2};
+    if(order[stA] !== order[stB]) return order[stA] - order[stB];
+    return (parseDate(a.RCRIT_PBLANC_DE||a.RCEPT_BGNDE||'9') > parseDate(b.RCRIT_PBLANC_DE||b.RCEPT_BGNDE||'9')) ? 1 : -1;
+  });
+}
+
+/* ── 렌더 ── */
+function renderList(){
+  sortData();
+  const list  = document.getElementById('resultList');
+  const empty = document.getElementById('empty-msg');
+  const count = document.getElementById('resultCount');
+  const btn   = document.getElementById('moreBtn');
+
+  const slice = filtered.slice(0, (page+1)*PER);
+  count.textContent = `총 ${filtered.length}건`;
+
+  if(!filtered.length){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    btn.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = slice.map(row => {
+    const st    = getStatus(row);
+    const dd    = dday(row);
+    const area  = row.SUBSCRPT_AREA_CODE_NM || (row.HSSPLY_ADRES||'').split(' ').slice(0,2).join(' ');
+    const rcptS = fmtDate(row.RCRIT_PBLANC_DE || row.RCEPT_BGNDE);
+    const rcptE = fmtDate(row.SBSCPT_RCEPT_ENDDE || row.RCEPT_ENDDE);
+    const tot   = row.TOT_SUPLY_HSHLDCO ? Number(row.TOT_SUPLY_HSHLDCO).toLocaleString()+'세대' : '-';
+
+    const bdg = st==='live'
+      ? `<span class="bdg bdg-live">접수중</span>`
+      : st==='soon'
+      ? `<span class="bdg bdg-soon">${dd!=null&&dd>=0?'D-'+dd:'청약예정'}</span>`
+      : `<span class="bdg bdg-done">마감</span>`;
+
+    const houseType = row.HOUSE_SECD_NM || '';
+
+    return `<div class="aptcard">
+      <div class="card-top">
+        ${bdg}
+        <span class="card-nm">${row.HOUSE_NM||'-'}</span>
+        <span class="card-rg">${area}</span>
+      </div>
+      <div class="card-stats">
+        <div class="st"><div class="sv c-blue">${tot}</div><div class="sk">공급 세대</div></div>
+        <div class="st"><div class="sv">${houseType||'-'}</div><div class="sk">주택구분</div></div>
+        <div class="st"><div class="sv c-green">${rcptS}</div><div class="sk">접수 시작</div></div>
+        <div class="st"><div class="sv c-orange">${rcptE}</div><div class="sk">접수 마감</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  btn.style.display = filtered.length > (page+1)*PER ? 'block' : 'none';
+}
+
+function loadMore(){
+  page++;
+  renderList();
+  // 스크롤 부드럽게
+  window.scrollBy({top: 300, behavior:'smooth'});
+}
+
+function doSearch(){
+  keyword = document.getElementById('searchInput').value.trim();
+  page = 0;
+  applyFilter();
+}
+
+/* ── 칩 이벤트 ── */
+document.querySelectorAll('.chip[data-type="status"]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-type="status"]').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    statusVal = c.dataset.val;
+    page = 0;
+    applyFilter();
+  });
+});
+document.querySelectorAll('.chip[data-type="region"]').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-type="region"]').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    regionVal = c.dataset.val;
+    page = 0;
+    applyFilter();
+  });
+});
+
+// 엔터키 검색
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') doSearch();
+});
+
+// 정렬 변경 시 재렌더
+document.getElementById('sortSel').addEventListener('change', () => {
+  page = 0; renderList();
+});
+
+/* ── 초기 로드 ── */
+loadAll();
 </script>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+(async()=>{try{
+  const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(FIREBASE_CONFIG);
+  const db=getFirestore(app),today=new Date().toISOString().slice(0,10);
+  const[ts,as]=await Promise.all([getDoc(doc(db,"analytics_daily",today)),getDocs(collection(db,"analytics_daily"))]);
+  const tv=ts.exists()?(ts.data().views||0):0;let tot=50000;as.forEach(d=>{tot+=(d.data().views||0);});
+  const el=document.getElementById("visitor-counter");if(!el)return;
+  const fmt=n=>n.toLocaleString("ko-KR");
+  el.innerHTML=`<span style="display:inline-flex;align-items:center;gap:.4rem;font-size:11px;padding:.2rem .6rem;background:#fff;border-radius:20px;border:1px solid #eaeff4"><span style="color:#9aa6b2;font-size:9px">TODAY</span><span style="color:#3478f6;font-weight:700">${fmt(tv)}</span><span style="color:#dfe6ed">|</span><span style="color:#9aa6b2;font-size:9px">TOTAL</span><span style="font-weight:700">${fmt(tot)}</span></span>`;
+  el.style.display="flex";
+}catch(e){}})();
+</script>
+<script src="/js/firebase-config.js"></script>
+<script type="module" src="/js/inquiry.js"></script>
 </body>
 </html>
