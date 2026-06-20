@@ -1,372 +1,63 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
-  <link rel="apple-touch-icon" href="/favicon-180.png">
-  <link rel="manifest" href="/manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>분양가격 분석 · 청약랩 ApplyLab | 전국 아파트 분양가 조회</title>
-  <meta name="description" content="전국 아파트 분양가격을 지역별·기간별로 분석하세요. 3.3㎡당 분양가 추이, 시도별·규모별 분양가 비교, 한국부동산원 공식 데이터 제공.">
-  <meta name="keywords" content="분양가격, 아파트 분양가, 3.3㎡ 분양가, 분양가 조회, 분양가 비교, 전국 분양가, 한국부동산원">
-  <meta name="robots" content="index, follow">
-  <meta name="author" content="청약랩 ApplyLab">
-  <link rel="canonical" href="https://applylab.kr/price.html">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://applylab.kr/price.html">
-  <meta property="og:title" content="분양가격 분석 · 청약랩">
-  <meta property="og:description" content="전국 아파트 분양가격 지역별·기간별 분석. 3.3㎡당 분양가 추이 및 시도별 비교.">
-  <meta property="og:image" content="https://applylab.kr/favicon-512.png">
-  <meta property="og:site_name" content="청약랩 ApplyLab">
-  <meta property="og:locale" content="ko_KR">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="분양가격 분석 · 청약랩">
-  <meta name="twitter:description" content="전국 아파트 분양가격 지역별·기간별 분석. 3.3㎡당 분양가 추이 및 시도별 비교.">
-  <meta name="twitter:image" content="https://applylab.kr/favicon-512.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#18181b;--ink2:#3f3f46;--ink3:#71717a;--ink4:#a1a1aa;
-  --bg:#f9fafb;--bg2:#f3f4f6;--bg3:#e5e7eb;--white:#fff;
-  --accent:#1d4ed8;--accent-l:#eff6ff;
-  --red:#dc2626;--green:#16a34a;--orange:#ea580c;--gold:#b45309;
-  --serif:'Noto Serif KR',serif;
-  --sans:'Noto Sans KR',sans-serif;
-  --mono:'IBM Plex Mono',monospace;
-  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
-  --r:6px;--rl:10px;
-}
-html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
-
-/* ── NAV (반응형) ── */
-.nav{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--sh);position:sticky;top:0;z-index:100}
-.nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
-.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0}
-.logo-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
-.logo-en{font-family:var(--mono);font-size:.68rem;color:var(--ink3);letter-spacing:.05em}
-.nav-div{width:1px;height:16px;background:var(--bg3);flex-shrink:0}
-.nav-menu{display:flex;gap:.125rem;flex:1}
-.nav-a{font-size:13px;color:var(--ink3);padding:.38rem .75rem;border-radius:var(--r);transition:all .12s;text-decoration:none;white-space:nowrap}
-.nav-a:hover{color:var(--ink);background:var(--bg2)}
-.nav-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
-.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
-.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
-/* 햄버거 버튼 */
-.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--r);flex-shrink:0}
-.nav-hamburger span{display:block;height:2px;background:var(--ink2);border-radius:2px;transition:all .25s}
-.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.nav-hamburger.open span:nth-child(2){opacity:0}
-.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-/* 모바일 드롭다운 */
-.nav-mobile{display:none;flex-direction:column;background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
-.nav-mobile.open{display:flex}
-.nav-mobile-inner{max-width:1400px;margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
-.nav-mobile-a{font-size:14px;color:var(--ink2);padding:.65rem .875rem;border-radius:var(--r);text-decoration:none;transition:background .12s;font-weight:300}
-.nav-mobile-a:hover{background:var(--bg2)}
-.nav-mobile-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
-.nav-mobile-divider{height:1px;background:var(--bg2);margin:.35rem 0}
-.nav-mobile-btn{display:none}
-/* 방문자 카운터 */
-#visitor-counter{flex-shrink:0}
-/* 반응형 분기 */
-@media(max-width:900px){
-  .nav-menu,.nav-div,.nav-right{display:none}
-  .nav-hamburger{display:flex}
-  .nav-in{padding:0 1rem}
-}
-@media(min-width:901px){
-  .nav-mobile{display:none!important}
-}
-@media(max-width:480px){
-  .logo-en{display:none}
-}
-
-/* ── 모바일 최적화 ── */
-@media(max-width:768px){
-  *{-webkit-text-size-adjust:100%}
-  body{overflow-x:hidden}
-  /* 레이아웃 */
-  .wrap{padding:.625rem .75rem}
-  .main{padding:0}
-  /* 통계 카드 */
-  .stat-row{grid-template-columns:1fr 1fr;gap:.5rem}
-  .sc{padding:.75rem}
-  .sc-v{font-size:1.25rem}
-  /* 필터 */
-  .filter{padding:.75rem}
-  .filter-row{gap:.5rem}
-  .sel,.inp{font-size:15px}
-  .inp{min-width:0;width:100%}
-  /* 테이블: 가로 스크롤 */
-  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rl)}
-  .tbl{font-size:12px;min-width:560px}
-  .tbl th,.tbl td{padding:.4rem .5rem;white-space:nowrap}
-  /* 카드 */
-  .card{padding:.875rem}
-  .card-title{font-size:.85rem}
-  /* 차트 그리드 */
-  .chart-grid{grid-template-columns:1fr}
-  /* 페이저 */
-  .pager{gap:.5rem}
-  .pg-btn{padding:.3rem .7rem;font-size:11px}
-  /* region toggle (미분양) */
-  .region-toggle{max-width:100%!important}
-  .rt-btn{font-size:12px;padding:.45rem .5rem}
-  /* 칩 */
-  .chip-row{gap:.3rem}
-  .chip{font-size:10px;padding:2px 8px}
-  /* 캘린더 */
-  .cal-grid{gap:1px}
-  .cal-cell{min-height:60px;padding:.25rem .2rem}
-  .cal-evt{font-size:8.5px;padding:1px 3px}
-  .cal-date{font-size:11px;width:18px;height:18px}
-  .cal-nav{gap:.5rem}
-  .cal-ym{font-size:1rem}
-  .cal-legend{gap:.35rem}
-  .leg-item{font-size:10px}
-  /* 모달 */
-  .modal{padding:1rem;margin:.5rem}
-  .modal-bg{padding:1.5rem .75rem 1rem}
-}
-@media(max-width:480px){
-  .stat-row{grid-template-columns:1fr 1fr}
-  .tbl{min-width:480px}
-  .wrap{padding:.5rem}
-  .filter-row{flex-direction:column;align-items:stretch}
-  .sel{width:100%}
-  .btn-q,.btn-ghost{width:100%;text-align:center}
-}
-
-
-/* LAYOUT */
-.wrap{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem;display:grid;grid-template-columns:160px 1fr 160px;gap:0;align-items:start}
-.main{padding:0 1.25rem;min-width:0}
-.ad-col{padding-top:0}
-.ad-sticky{position:sticky;top:66px}
-@media(max-width:1200px){.wrap{grid-template-columns:1fr}.ad-col{display:none}.main{padding:0}}
-@media(max-width:600px){.stat-row{grid-template-columns:1fr 1fr!important}}
-
-/* AD */
-.ad-box{background:var(--bg2);border:1px dashed var(--bg3);border-radius:var(--rl);text-align:center;overflow:hidden;margin-bottom:.65rem}
-.ad-lbl{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;padding:.3rem;border-bottom:1px solid var(--bg3);text-transform:uppercase}
-
-/* FILTER */
-.filter{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:var(--sh)}
-.filter-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
-.filter-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink4);text-transform:uppercase;white-space:nowrap}
-.sel{background:var(--bg2);border:1.5px solid var(--bg3);color:var(--ink2);padding:.45rem .8rem;border-radius:var(--r);font-size:13px;cursor:pointer;outline:none;font-family:var(--sans);transition:border-color .15s}
-.sel:focus{border-color:var(--accent)}
-.btn-q{font-size:12px;font-weight:500;padding:.45rem 1rem;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:#fff;transition:all .12s;font-family:var(--sans)}
-.btn-q:hover{background:var(--accent-h,#1e40af)}
-.chip-row{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.65rem}
-.chip{font-size:11px;padding:3px 10px;border:1.5px solid var(--bg3);border-radius:20px;cursor:pointer;color:var(--ink3);background:var(--white);transition:all .12s;font-family:var(--mono)}
-.chip:hover,.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-/* STAT */
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.625rem;margin-bottom:1rem}
-.sc{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:.875rem 1rem;border-top:3px solid var(--bg3);box-shadow:var(--sh)}
-.sc.bl{border-top-color:var(--accent)}.sc.re{border-top-color:var(--red)}
-.sc.gr{border-top-color:var(--green)}.sc.or{border-top-color:var(--orange)}
-.sc-lbl{font-size:10px;font-family:var(--mono);letter-spacing:.06em;color:var(--ink3);margin-bottom:.35rem;text-transform:uppercase}
-.sc-v{font-family:var(--serif);font-size:1.5rem;font-weight:600;color:var(--ink);line-height:1}
-.sc-u{font-size:.75rem;font-weight:300;color:var(--ink3)}
-.sc-sub{font-size:10px;color:var(--ink4);margin-top:.3rem;font-family:var(--mono)}
-
-/* TABS */
-.tabs{display:flex;background:var(--bg2);border-radius:var(--rl);padding:.25rem;margin-bottom:1rem;gap:.25rem}
-.tab{flex:1;text-align:center;padding:.5rem;border-radius:var(--r);font-size:12px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:var(--sans)}
-.tab.on{background:var(--white);color:var(--accent);box-shadow:var(--sh)}
-
-/* CARD */
-.card{background:var(--white);border:1px solid var(--bg3);border-radius:var(--rl);padding:1.25rem;box-shadow:var(--sh);margin-bottom:.75rem}
-.card-title{font-family:var(--serif);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:.875rem;display:flex;align-items:center;gap:.4rem}
-.card-title::before{content:'';display:inline-block;width:3px;height:.85em;background:var(--accent);border-radius:2px;flex-shrink:0}
-.card-sub{font-size:11px;color:var(--ink4);font-family:var(--mono);margin-left:.375rem;font-weight:400}
-
-/* TABLE */
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;font-weight:500;color:var(--ink3);padding:.5rem .75rem;border-bottom:2px solid var(--bg3);background:var(--bg2);text-transform:uppercase;white-space:nowrap;text-align:left}
-.tbl td{padding:.55rem .75rem;border-bottom:1px solid var(--bg2);color:var(--ink2)}
-.tbl tbody tr:hover td{background:var(--accent-l)}
-.tbl tr:last-child td{border-bottom:none}
-.num{font-family:var(--mono);text-align:right;font-size:12px}
-.tag-up{color:var(--red);font-size:11px;font-family:var(--mono)}
-.tag-dn{color:var(--green);font-size:11px;font-family:var(--mono)}
-.bar-w{display:flex;align-items:center;gap:.4rem}
-.bar{height:5px;border-radius:3px;background:var(--accent);min-width:2px}
-
-/* REGION GRID */
-.region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem}
-.region-card{background:var(--bg2);border:1.5px solid var(--bg3);border-radius:var(--r);padding:.75rem;cursor:pointer;transition:all .15s;text-align:center}
-.region-card:hover,.region-card.on{background:var(--accent-l);border-color:var(--accent)}
-.region-card-name{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:.3rem}
-.region-card-price{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--accent)}
-.region-card-sub{font-size:10px;color:var(--ink4);font-family:var(--mono);margin-top:.2rem}
-
-/* LOADING */
-.loading{text-align:center;padding:3rem;color:var(--ink4);font-family:var(--mono);font-size:12px}
-.spin{width:26px;height:26px;border:2px solid var(--bg3);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .875rem}
-@keyframes sp{to{transform:rotate(360deg)}}
-
-/* NOTE */
-.note{background:var(--bg2);border-left:3px solid var(--bg3);padding:.55rem .875rem;border-radius:0 var(--r) var(--r) 0;font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.6;margin-top:.75rem}
-footer{background:var(--bg2);border-top:1px solid var(--bg3);padding:1.25rem;text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink4);margin-top:2rem}
-</style>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "분양가격 분석",
-    "url": "https://applylab.kr/price.html",
-    "description": "전국 아파트 분양가격 지역별·기간별 분석. 3.3㎡당 분양가 추이 제공.",
-    "isPartOf": { "@type": "WebSite", "name": "청약랩 ApplyLab", "url": "https://applylab.kr" },
-    "inLanguage": "ko"
-  }
-</script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300"
-     crossorigin="anonymous"></script>
-
-<!-- ApplyLab C-Direction Override CSS -->
+<title>분양가격 | 청약랩 ApplyLab</title>
+<meta name="description" content="아파트 분양가격 추이·지역별 비교. 청약랩.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="청약랩 ApplyLab">
+<meta name="google-site-verification" content="XSpggCEU8TEWQ88HGp2HRfZi-AEyI3GBDTiJ2Z_Hows">
+<meta name="naver-site-verification" content="77d8d71163a4d6b7ff04b5e58ecf7a3f1beebee1">
+<link rel="canonical" href="https://applylab.kr/price.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://applylab.kr/price.html">
+<meta property="og:title" content="분양가격 | 청약랩 ApplyLab">
+<meta property="og:description" content="아파트 분양가격 추이·지역별 비교. 청약랩.">
+<meta property="og:image" content="https://applylab.kr/favicon-512.png">
+<meta property="og:site_name" content="청약랩 ApplyLab">
+<meta property="og:locale" content="ko_KR">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/favicon-180.png">
+<link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<style id="al-override">
-/* ── 배경·본문 ── */
-html,body{font-family:'Pretendard',var(--sans,'Noto Sans KR'),system-ui,sans-serif!important;background:#F2F5F8!important}
-:root{
-  --bg:#F2F5F8!important;--bg2:#E8EDF2!important;--bg3:#DFE6ED!important;
-  --white:#FFFFFF;--accent:#3478F6!important;--accent-l:#E9F1FE!important;--accent-h:#2563EB!important;
-  --brand:#3478F6;--brand-soft:#E9F1FE;
-  --mint:#E6F7F0;--mint-ink:#0E9B6E;
-  --peach:#FFF0E7;--peach-ink:#D9772E;
-  --lilac:#F0ECFB;--lilac-ink:#7A52D6;
-  --sh:0 2px 10px rgba(25,35,44,.05)!important;
-  --sh2:0 6px 20px rgba(25,35,44,.08)!important;
-}
-/* ── GNB ── */
-.nav{background:rgba(242,245,248,.92)!important;backdrop-filter:blur(12px)!important;border-bottom:1px solid #EAEFF4!important;box-shadow:none!important}
-.nav-in{height:60px!important;gap:18px!important}
-.logo-kr{font-family:'Pretendard',sans-serif!important;font-size:18px!important;font-weight:800!important;letter-spacing:-.03em!important}
-.logo-en{font-family:'Pretendard',sans-serif!important;font-size:12px!important;font-weight:700!important;color:#3478F6!important;letter-spacing:.01em!important}
-.nav-a{font-size:13.5px!important;border-radius:10px!important;transition:.15s!important;padding:7px 12px!important}
-.nav-a:hover{background:#fff!important;color:#19232C!important}
-.nav-a.on{color:#3478F6!important;font-weight:700!important;background:#E9F1FE!important}
-.nav-btn{border-radius:11px!important;font-weight:700!important;font-size:12px!important;background:#3478F6!important;padding:7px 13px!important}
-/* 단지검색 뱃지 */
-.nav-search-new::after{content:"N";position:absolute;top:-6px;right:-10px;font-size:8px;font-weight:800;background:#3478F6;color:#fff;width:13px;height:13px;border-radius:50%;display:grid;place-items:center}
-.nav-search-new{position:relative;color:#3478F6!important;font-weight:700!important}
-/* 모바일 nav */
-.nav-mobile{background:#fff!important;border-bottom:1px solid #EAEFF4!important;box-shadow:0 6px 20px rgba(25,35,44,.08)!important;top:60px!important}
-.nav-mobile-a{font-size:15px!important;border-radius:12px!important;font-weight:500!important}
-.nav-mobile-a.on{color:#3478F6!important;background:#E9F1FE!important}
-.nav-hamburger span{background:#19232C!important}
-/* ── 카드·섹션 ── */
-.card,.chart-box,.stat-card,.filter,.tbl-wrap{background:#fff!important;border-radius:18px!important;box-shadow:0 2px 10px rgba(25,35,44,.05)!important;border:none!important}
-/* ── 통계 카드 ── */
-.sc,.stat-c{background:#E9F1FE!important;border-radius:16px!important;border:none!important}
-/* ── 테이블 ── */
-.tbl th{background:#F2F5F8!important;font-size:11px!important;letter-spacing:.04em!important}
-.tbl td{border-bottom:1px solid #EAEFF4!important}
-/* ── 버튼 ── */
-.btn-q,.btn,.btn-primary{background:#3478F6!important;border-radius:12px!important;font-family:'Pretendard',sans-serif!important;font-weight:700!important}
-.btn-ghost,.btn-outline{border-color:#EAEFF4!important;border-radius:12px!important;font-family:'Pretendard',sans-serif!important}
-/* ── 입력·셀렉트 ── */
-input,select,.inp,.sel{border-radius:12px!important;border-color:#EAEFF4!important;font-family:'Pretendard',sans-serif!important}
-input:focus,select:focus{border-color:#3478F6!important;box-shadow:0 0 0 3px rgba(52,120,246,.15)!important}
-/* ── 차트 박스 ── */
-.chart-box{padding:20px!important}
-/* ── 탭 ── */
-.tab-btn,.tab,.chip{border-radius:10px!important;font-family:'Pretendard',sans-serif!important}
-.tab-btn.on,.tab.on,.chip.on{background:#3478F6!important;color:#fff!important;border-color:#3478F6!important}
-/* ── footer ── */
-footer{background:#E4E9EC!important;border-top:1px solid #DFE6ED!important}
-footer *{font-family:'Pretendard',sans-serif!important}
-/* ── 모달 ── */
-.modal{border-radius:20px!important}
-/* ── 광고 ── */
-.ad-box{border-radius:14px!important;border-color:#DFE6ED!important}
-/* ── hero 온도카드 (home.html) ── */
-.al-hero{background:linear-gradient(135deg,#3478F6,#5B93FF);border-radius:22px;padding:24px;color:#fff;box-shadow:0 12px 30px rgba(52,120,246,.25);margin-bottom:14px;position:relative;overflow:hidden}
-.al-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:170px;height:170px;background:rgba(255,255,255,.12);border-radius:50%;pointer-events:none}
-.al-hero>*{position:relative;z-index:1}
-.al-hero .ah-lbl{font-size:13px;font-weight:600;opacity:.92}
-.al-hero .ah-num{font-size:50px;font-weight:800;letter-spacing:-.03em;line-height:1;margin:8px 0 2px}
-.al-hero .ah-num small{font-size:22px;opacity:.85}
-.al-hero .ah-sub{font-size:13px;font-weight:600;opacity:.92}
-.al-hero .ah-bar{height:10px;background:rgba(255,255,255,.25);border-radius:6px;margin-top:18px;overflow:hidden}
-.al-hero .ah-bar i{display:block;height:100%;width:0;background:#fff;border-radius:6px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
-.al-hero .ah-scale{display:flex;justify-content:space-between;font-size:11px;opacity:.75;margin-top:5px}
-/* ── 검색바 ── */
-.al-searchbar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:14px 18px;box-shadow:0 4px 18px rgba(25,35,44,.07);margin-bottom:14px;text-decoration:none}
-.al-searchbar span{color:#9AA6B2;font-size:16px}
-/* ── 바로가기 그리드 ── */
-.al-shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.al-sc{border-radius:16px;padding:16px;text-decoration:none;display:block;box-shadow:0 2px 10px rgba(25,35,44,.05);transition:.15s}
-.al-sc:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(25,35,44,.09)}
-.al-sc .al-ic{width:32px;height:32px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;margin-bottom:10px}
-.al-sc .al-v{font-size:14px;font-weight:800;letter-spacing:-.02em}
-.al-sc .al-k{font-size:12px;margin-top:3px}
-@media(max-width:640px){.al-shortcuts{grid-template-columns:1fr 1fr}}
-</style>
-
+<link rel="stylesheet" href="/applylab.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300" crossorigin="anonymous"></script>
 </head>
 <body>
-<nav class="nav">
-  <div class="nav-in">
-    <a href="/home.html" class="logo">
-      <span class="logo-kr">청약랩</span><span class="logo-en">ApplyLab</span>
-    </a>
-    <div class="nav-div"></div>
-    <nav class="nav-menu">
-      <a href="/home.html" class="nav-a">HOME</a>
-      <a href="/competition.html" class="nav-a">청약경쟁률</a>
-      <a href="/price.html" class="nav-a on">분양가격</a>
-      <a href="/unsold.html" class="nav-a">미분양 현황</a>
-      <a href="/bankbook.html" class="nav-a">청약통장 현황</a>
-    </nav>
-    <div class="nav-right">
-      <span id="visitor-counter" style="display:none"></span>
-      <a href="/login.html" class="nav-btn">관리자 로그인</a>
-    </div>
-    <button class="nav-hamburger" id="nav-hamburger" aria-label="메뉴 열기">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-<div class="nav-mobile" id="nav-mobile">
-  <div class="nav-mobile-inner">
-    <a href="/home.html" class="nav-mobile-a">HOME</a>
-    <a href="/competition.html" class="nav-mobile-a">청약경쟁률</a>
-    <a href="/price.html" class="nav-mobile-a on">분양가격</a>
-    <a href="/unsold.html" class="nav-mobile-a">미분양 현황</a>
-    <a href="/bankbook.html" class="nav-mobile-a">청약통장 현황</a>
-
+<header class="gnb"><div class="wrap gnb-in">
+  <a class="logo" href="/home.html"><span class="logo-mk"></span>청약<b>랩</b></a>
+  <nav class="nav">
+    <a href="/home.html">HOME</a>
+    <a href="/home.html">분양 캘린더</a>
+    <a href="/search.html" class="new">단지검색</a>
+    <a href="/competition.html">청약경쟁률</a>
+    <a href="/price.html" aria-current="page">분양가격</a>
+    <a href="/unsold.html">미분양</a>
+    <a href="/bankbook.html">청약통장</a>
+  </nav>
+  <span id="visitor-counter" style="display:none;margin-left:8px"></span>
+  <button class="navtog" aria-label="메뉴" onclick="document.documentElement.classList.toggle('nav-open')">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="drawer">
+  <a href="/home.html">HOME</a>
+  <a href="/home.html">분양 캘린더</a>
+  <a href="/search.html">단지검색</a>
+  <a href="/competition.html">청약경쟁률</a>
+  <a href="/price.html" aria-current="page">분양가격</a>
+  <a href="/unsold.html">미분양</a>
+  <a href="/bankbook.html">청약통장</a>
+</div></header>
+<div class="wrap">
+  <div class="page-head">
+    <h1>분양가격</h1>
+    <p>지역별 분양가격 추이 · HUG·청약홈 데이터</p>
   </div>
 </div>
-<script>
-(function(){
-  var btn=document.getElementById('nav-hamburger');
-  var mob=document.getElementById('nav-mobile');
-  if(!btn||!mob) return;
-  btn.addEventListener('click',function(){
-    var open=mob.classList.toggle('open');
-    btn.classList.toggle('open',open);
-    btn.setAttribute('aria-label', open?'메뉴 닫기':'메뉴 열기');
-  });
-  document.addEventListener('click',function(e){
-    if(!btn.contains(e.target)&&!mob.contains(e.target)){
-      mob.classList.remove('open'); btn.classList.remove('open');
-    }
-  });
-  window.addEventListener('resize',function(){
-    if(window.innerWidth>900){ mob.classList.remove('open'); btn.classList.remove('open'); }
-  });
-})();
-</script>
-
 <div class="wrap">
   <!-- 좌측 광고 -->
   <div class="ad-col"><div class="ad-sticky">
@@ -532,32 +223,10 @@ footer *{font-family:'Pretendard',sans-serif!important}
   </div></div>
 </div>
 
-<footer style="background:#18181b;padding:1.5rem;margin-top:2rem">
-  <div style="max-width:1400px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem">
-      <span style="font-family:var(--serif);font-size:13px;color:#e4e4e7;font-weight:600">청약랩</span>
-      <span style="font-family:var(--mono);font-size:11px;color:#52525b">·</span>
-      <span style="font-family:var(--mono);font-size:11px;color:#71717a">ApplyLab</span>
-      <span style="font-family:var(--mono);font-size:11px;color:#52525b">·</span>
-      <span style="font-family:var(--mono);font-size:10px;color:#71717a">데이터 출처: 주택도시보증공사(HUG)</span>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:1.25rem;flex-wrap:wrap">
-      <a href="/privacy.html"
-        style="font-family:var(--mono);font-size:11px;color:#a1a1aa;text-decoration:none;border-bottom:1px solid #3f3f46;padding-bottom:1px">
-        개인정보취급방침
-      </a>
-      <span style="font-family:var(--mono);font-size:10px;color:#52525b">|</span>
-      <a href="mailto:shake100@gmail.com"
-        style="font-family:var(--mono);font-size:11px;color:#a1a1aa;text-decoration:none">
-        문의: shake100@gmail.com
-      </a>
-    </div>
-    <div style="text-align:center;margin-top:.75rem">
-      <span style="font-family:var(--mono);font-size:10px;color:#3f3f46">© 2026 청약랩 ApplyLab. All rights reserved.</span>
-    </div>
-  </div>
-</footer>
-
+<footer><div class="wrap ft">
+  청약랩 · ApplyLab · 데이터 출처: 한국부동산원 청약홈 · 국토교통부 (공공데이터포털)<br>
+  <a href="/privacy.html">개인정보취급방침</a> · <a href="mailto:shake100@gmail.com">문의</a> · © 2026 ApplyLab
+</div></footer>
 <script>
 const KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
 const EP  = 'https://api.odcloud.kr/api/15061057/v1/uddi:056e87ff-8f04-4d4a-a444-bd73434bb40f';
@@ -885,58 +554,18 @@ loadAll();
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-(async () => {
-  try {
-    const app = getApps().find(a=>a.name==='[DEFAULT]') || initializeApp(FIREBASE_CONFIG);
-    const db = getFirestore(app);
-    const today = new Date().toISOString().slice(0,10);
-    const [todaySnap, allSnap] = await Promise.all([
-      getDoc(doc(db,'analytics_daily',today)),
-      getDocs(collection(db,'analytics_daily'))
-    ]);
-    const todayV = todaySnap.exists() ? (todaySnap.data().views||0) : 0;
-    let total = 50000;
-    allSnap.forEach(d => { total += (d.data().views||0); });
-    const el = document.getElementById('visitor-counter');
-    if (!el) return;
-    const fmt = n => n.toLocaleString('ko-KR');
-    el.innerHTML =
-      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
-      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
-      `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
-      `<span style="color:var(--bg3)">|</span>` +
-      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TOTAL</span>` +
-      `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
-      `</span>`;
-    el.style.display = 'flex';
-  } catch(e) {}
-})();
+(async()=>{try{
+  const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(FIREBASE_CONFIG);
+  const db=getFirestore(app),today=new Date().toISOString().slice(0,10);
+  const[ts,as]=await Promise.all([getDoc(doc(db,"analytics_daily",today)),getDocs(collection(db,"analytics_daily"))]);
+  const tv=ts.exists()?(ts.data().views||0):0;let tot=50000;as.forEach(d=>{tot+=(d.data().views||0);});
+  const el=document.getElementById("visitor-counter");if(!el)return;
+  const fmt=n=>n.toLocaleString("ko-KR");
+  el.innerHTML=`<span style="display:inline-flex;align-items:center;gap:.4rem;font-size:11px;color:var(--muted);padding:.2rem .6rem;background:#fff;border-radius:20px;border:1px solid var(--line)"><span style="color:var(--faint);font-size:9px">TODAY</span><span style="color:var(--brand);font-weight:700">${fmt(tv)}</span><span>|</span><span style="color:var(--faint);font-size:9px">TOTAL</span><span style="font-weight:700">${fmt(tot)}</span></span>`;
+  el.style.display="flex";
+}catch(e){}})();
 </script>
-<script src="js/firebase-config.js"></script>
-<script type="module" src="js/inquiry.js"></script>
-
-<!-- ApplyLab GNB Patch JS -->
-<script>
-(function(){
-  // 단지검색 메뉴 삽입 (기존 nav-menu에 추가)
-  var nm=document.querySelector('.nav-menu');
-  var mm=document.querySelector('.nav-mobile-inner');
-  if(nm && !nm.querySelector('.nav-search-new')){
-    var li=document.createElement('a');
-    li.href='/search.html'; li.className='nav-a nav-search-new'; li.textContent='단지검색';
-    var first=nm.querySelector('a');
-    if(first && first.nextSibling) nm.insertBefore(li, first.nextSibling);
-    else nm.appendChild(li);
-  }
-  if(mm && !mm.querySelector('.nav-search-new')){
-    var mi=document.createElement('a');
-    mi.href='/search.html'; mi.className='nav-mobile-a nav-search-new'; mi.textContent='단지검색';
-    var mfirst=mm.querySelector('a');
-    if(mfirst && mfirst.nextSibling) mm.insertBefore(mi, mfirst.nextSibling);
-    else mm.appendChild(mi);
-  }
-})();
-</script>
-
+<script src="/js/firebase-config.js"></script>
+<script type="module" src="/js/inquiry.js"></script>
 </body>
 </html>
