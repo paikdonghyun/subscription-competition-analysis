@@ -149,6 +149,19 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 .sources li::before{content:"·";color:var(--brand);font-weight:800;margin-right:7px}
 
 @media(max-width:760px){.scorewrap,.split,.locsplit{grid-template-columns:1fr}}
+
+/* ── 상단 4개 지표 카드 (grid4·scard) ── */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+.scard{border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(25,35,44,.05)}
+.scard .ic{font-size:18px;margin-bottom:8px;display:block}
+.scard .v{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.2;display:block}
+.scard .v small{font-size:13px;font-weight:600;opacity:.8}
+.scard .k{font-size:12px;color:var(--muted);margin-top:5px;display:block}
+.c-sky  {background:var(--sky)}   .c-sky  .v{color:var(--sky-ink)}
+.c-mint {background:var(--mint)}  .c-mint .v{color:var(--mint-ink)}
+.c-lilac{background:var(--lilac)} .c-lilac .v{color:var(--lilac-ink)}
+.c-peach{background:var(--peach)} .c-peach .v{color:var(--peach-ink)}
+@media(max-width:640px){.grid4{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -188,10 +201,10 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
   </div>
 
   <div class="grid4" style="margin-top:8px">
-    <div class="scard c-sky"><div class="ic">₩</div><div class="v">6.85<small>억</small></div><div class="k">분양가 · 84㎡</div></div>
-    <div class="scard c-mint"><div class="ic">↑</div><div class="v">+13<small>%</small></div><div class="k">안전마진</div></div>
-    <div class="scard c-lilac"><div class="ic">≈</div><div class="v">10.0<small>:1</small></div><div class="k">예상 경쟁률</div></div>
-    <div class="scard c-peach"><div class="ic">★</div><div class="v">54<small>점</small></div><div class="k">가점 커트라인 84A</div></div>
+    <div class="scard c-sky"><span class="ic">₩</span><span class="v" id="kpi1">6.85<small>억</small></span><span class="k">분양가 · 84㎡</span></div>
+    <div class="scard c-mint"><span class="ic">↑</span><span class="v" id="kpi2">+13<small>%</small></span><span class="k">안전마진</span></div>
+    <div class="scard c-lilac"><span class="ic">≈</span><span class="v" id="kpi3">10.0<small>:1</small></span><span class="k">예상 경쟁률</span></div>
+    <div class="scard c-peach"><span class="ic">★</span><span class="v" id="kpi4">54<small>점</small></span><span class="k">가점 커트라인 84A</span></div>
   </div>
 
   <!-- 종합 분석 점수 -->
@@ -421,7 +434,37 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
       });
     }
 
-    // ── 청약홈 원문 링크 ──
+    // ── KPI 카드 실데이터 반영 ──
+    // kpi1: 총 세대수 (분양가는 공공 API에 없어 세대수로 대체)
+    const kpi1 = document.getElementById('kpi1');
+    if (kpi1 && d.TOT_SUPLY_HSHLDCO) {
+      kpi1.innerHTML = Number(d.TOT_SUPLY_HSHLDCO).toLocaleString() + '<small>세대</small>';
+      kpi1.closest('.scard').querySelector('.k').textContent = '총 공급 세대';
+    }
+    // kpi3: 지역 표시
+    const kpi3 = document.getElementById('kpi3');
+    if (kpi3 && d.SUBSCRPT_AREA_CODE_NM) {
+      kpi3.innerHTML = d.SUBSCRPT_AREA_CODE_NM + '<small>지역</small>';
+      kpi3.closest('.scard').querySelector('.k').textContent = '청약 지역';
+    }
+    // kpi4: 입주예정연월
+    const kpi4 = document.getElementById('kpi4');
+    if (kpi4 && d.MVN_PREARNGE_YM) {
+      const mv = d.MVN_PREARNGE_YM;
+      kpi4.innerHTML = mv.slice(0,4) + '.' + mv.slice(4,6) + '<small>입주</small>';
+      kpi4.closest('.scard').querySelector('.k').textContent = '입주 예정';
+    }
+
+    // ── 분석 섹션 샘플 안내 배너 ──
+    const scoreSection = document.getElementById('scoreSection');
+    if (scoreSection) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:var(--peach);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--peach-ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;';
+      banner.innerHTML = '<span style="font-size:16px">⚠</span><span><b>아래 분석 점수·경쟁률은 샘플 데이터입니다.</b> 실거래가·입지·가점 데이터 연동 후 실제 수치로 업데이트될 예정입니다.</span>';
+      scoreSection.insertBefore(banner, scoreSection.firstChild);
+    }
+
+
     if (d.PBLANC_URL) {
       const link = document.createElement('a');
       link.href = d.PBLANC_URL; link.target = '_blank'; link.rel = 'noopener';
