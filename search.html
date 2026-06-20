@@ -312,7 +312,7 @@ function renderList(){
 
     const houseType = row.HOUSE_SECD_NM || '';
 
-    return `<div class="aptcard">
+    return `<a class="aptcard" href="/apt.html?no=${row.HOUSE_MANAGE_NO}&pbno=${row.PBLANC_NO}">
       <div class="card-top">
         ${bdg}
         <span class="card-nm">${row.HOUSE_NM||'-'}</span>
@@ -324,7 +324,7 @@ function renderList(){
         <div class="st"><div class="sv c-green">${rcptS}</div><div class="sk">접수 시작</div></div>
         <div class="st"><div class="sv c-orange">${rcptE}</div><div class="sk">접수 마감</div></div>
       </div>
-    </div>`;
+    </a>`;
   }).join('');
 
   btn.style.display = filtered.length > (page+1)*PER ? 'block' : 'none';

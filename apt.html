@@ -175,16 +175,16 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 </div></header>
 
 <div class="al-wrap">
-  <nav class="crumb"><a href="/home.html">HOME</a><span>›</span><a href="/search.html">단지검색</a><span>›</span>경기 화성<span>›</span>리버파크 센트럴시티</nav>
+  <nav class="crumb"><a href="/home.html">HOME</a><span>›</span><a href="/search.html">단지검색</a><span>›</span><span id="crumbArea">경기 화성</span><span>›</span><span id="crumbName">리버파크 센트럴시티</span></nav>
 
   <div class="page-head" style="padding-top:10px">
     <div class="badges">
-      <span class="b-tag b-on">청약 진행중</span>
-      <span class="b-tag">민영 · 일반분양</span>
-      <span class="b-tag">전용 74·84·99㎡</span>
+      <span class="b-tag b-on" id="aptStatus">청약 진행중</span>
+      <span class="b-tag" id="aptType">민영 · 일반분양</span>
+      <span class="b-tag" id="aptSize">전용 74·84·99㎡</span>
     </div>
-    <h1 class="apt">리버파크 센트럴시티</h1>
-    <div class="loc"><span>◷ 모집공고 2026.06.10</span><span>⬡ 공급 1,024세대</span><span>⌂ 동탄2신도시</span></div>
+    <h1 class="apt" id="aptName">리버파크 센트럴시티</h1>
+    <div class="loc"><span id="aptPblanc">◷ 모집공고 2026.06.10</span><span id="aptTotal">⬡ 공급 1,024세대</span><span id="aptAddr">⌂ 동탄2신도시</span></div>
   </div>
 
   <div class="grid4" style="margin-top:8px">
@@ -352,6 +352,88 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 <footer class="al-footer"><div class="al-footer-in">청약랩 · ApplyLab<br>데이터 출처: 한국부동산원 청약홈 · 국토교통부 (공공데이터포털) · © 2026</div></footer>
 
 
+<script>
+/* ── URL 파라미터로 실제 API 데이터 로드 ── */
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const no   = params.get('no');
+  const pbno = params.get('pbno');
+  if (!no && !pbno) return; // 파라미터 없으면 샘플 데이터 유지
+
+  const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+
+  try {
+    // 단지 상세 API 호출
+    const url = `https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail?page=1&perPage=100&cond[HOUSE_MANAGE_NO::EQ]=${no}&serviceKey=${API_KEY}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    const d = (json.data || [])[0];
+    if (!d) return;
+
+    // 날짜 포맷
+    const fmt = s => s ? s.replace(/-/g,'').replace(/(\d{4})(\d{2})(\d{2})/,'$1.$2.$3') : '-';
+    const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const r1s = (d.GNRL_RNK1_CRSPAREA_RCPTDE||'').replace(/-/g,'');
+    const r2e = (d.GNRL_RNK2_CRSPAREA_ENDDE||'').replace(/-/g,'');
+
+    // 상태 판단
+    let statusTxt = '청약예정', statusCls = '';
+    if (r1s && r2e) {
+      if (today < r1s)       { statusTxt = '청약예정'; statusCls = ''; }
+      else if (today <= r2e) { statusTxt = '접수중';   statusCls = 'b-on'; }
+      else                   { statusTxt = '청약마감'; statusCls = ''; }
+    }
+
+    // ── DOM 채우기 ──
+    const set = (id, v) => { const el = document.getElementById(id); if(el && v) el.textContent = v; };
+    const setH = (id, v) => { const el = document.getElementById(id); if(el && v) el.innerHTML = v; };
+
+    set('crumbArea', d.SUBSCRPT_AREA_CODE_NM || '');
+    set('crumbName', d.HOUSE_NM || '');
+    set('aptName',   d.HOUSE_NM || '');
+    set('aptAddr',   '⌂ ' + (d.HSSPLY_ADRES || '').split(' ').slice(0,4).join(' '));
+    set('aptPblanc', '◷ 모집공고 ' + fmt(d.RCRIT_PBLANC_DE));
+    set('aptTotal',  '⬡ 공급 ' + (d.TOT_SUPLY_HSHLDCO ? Number(d.TOT_SUPLY_HSHLDCO).toLocaleString()+'세대' : '-'));
+    set('aptType',   (d.HOUSE_DTL_SECD_NM||'') + ' · ' + (d.RENT_SECD_NM||'분양주택'));
+    set('aptSize',   d.CNSTRCT_ENTRPS_NM || '');
+
+    const stEl = document.getElementById('aptStatus');
+    if (stEl) { stEl.textContent = statusTxt; stEl.className = 'b-tag ' + statusCls; }
+
+    // 문서 제목 업데이트
+    document.title = (d.HOUSE_NM||'단지') + ' 청약 분석 | 청약랩 ApplyLab';
+
+    // ── 청약 일정 타임라인 업데이트 ──
+    const tlData = [
+      { label:'특별공급', date: fmt(d.SPSPLY_RCEPT_BGNDE) },
+      { label:'1순위',   date: fmt(d.GNRL_RNK1_CRSPAREA_RCPTDE) },
+      { label:'2순위',   date: fmt(d.GNRL_RNK2_CRSPAREA_RCPTDE) },
+      { label:'당첨발표', date: fmt(d.PRZWNER_PRESNATN_DE) },
+      { label:'정당계약', date: fmt(d.CNTRCT_CNCLS_BGNDE) },
+    ];
+    const tlWrap = document.querySelector('.tl');
+    if (tlWrap) {
+      const steps = tlWrap.querySelectorAll('.s');
+      tlData.forEach((item, i) => {
+        if (!steps[i]) return;
+        const lb = steps[i].querySelector('.lb'); if(lb) lb.textContent = item.label;
+        const dt = steps[i].querySelector('.dt'); if(dt) dt.textContent = item.date;
+      });
+    }
+
+    // ── 청약홈 원문 링크 ──
+    if (d.PBLANC_URL) {
+      const link = document.createElement('a');
+      link.href = d.PBLANC_URL; link.target = '_blank'; link.rel = 'noopener';
+      link.textContent = '청약홈 공고 원문 보기 →';
+      link.style.cssText = 'display:inline-block;margin-top:10px;font-size:13px;color:var(--brand);font-weight:700;';
+      const src = document.querySelector('.sources');
+      if (src) src.appendChild(link);
+    }
+
+  } catch(e) { console.warn('단지 데이터 로드 실패:', e); }
+})();
+</script>
 <script>
 /* 종합 점수 */
 const SUB={교통:88,학교:82,인프라:75,브랜드:80,인기도:78,분양가격:86};
