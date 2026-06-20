@@ -1,6 +1,6 @@
 /* ===========================================================
    ApplyLab Design System — Direction C (Soft Utility)
-   전 페이지 공통. 토큰·컴포넌트·레이아웃.
+   ※ GNB · 공통 컴포넌트만 정의. 기존 페이지 클래스 비충돌.
    =========================================================== */
 :root{
   --bg:#F2F5F8; --surface:#FFFFFF; --ink:#19232C; --muted:#6A7682; --faint:#9AA6B2;
@@ -19,135 +19,284 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Pretendard',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+.al-wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+body{
+  font-family:'Pretendard',system-ui,-apple-system,sans-serif;
+  background:#F2F5F8;
+  color:#19232C;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
-.mono{font-variant-numeric:tabular-nums}
 
-/* ---------- GNB ---------- */
-.gnb{position:sticky;top:0;z-index:40;background:rgba(242,245,248,.9);backdrop-filter:blur(12px)}
-.gnb-in{display:flex;align-items:center;gap:22px;height:60px}
+/* ── GNB (search.html·apt.html 전용 구조) ── */
+.gnb{
+  position:sticky;top:0;z-index:40;
+  background:rgba(242,245,248,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.gnb-in{display:flex;align-items:center;gap:18px;height:60px;max-width:var(--maxw);margin:0 auto;padding:0 20px}
 .logo{font-weight:800;font-size:18px;letter-spacing:-.03em;display:flex;align-items:center;gap:7px;flex-shrink:0}
 .logo b{color:var(--brand)}
-.logo-mk{width:20px;height:20px;background:var(--brand);border-radius:7px;display:grid;place-items:center}
+.logo-mk{width:20px;height:20px;background:var(--brand);border-radius:7px;display:grid;place-items:center;flex-shrink:0}
 .logo-mk::after{content:"";width:8px;height:8px;background:#fff;border-radius:3px}
-.nav{display:flex;gap:4px;margin-left:auto;font-size:13.5px}
-.nav a{color:var(--muted);padding:7px 12px;border-radius:10px;white-space:nowrap;transition:.15s}
-.nav a:hover{background:#fff;color:var(--ink)}
-.nav a[aria-current]{background:#fff;color:var(--ink);font-weight:700;box-shadow:var(--sh)}
-.nav .new{color:var(--brand);font-weight:700}
-.nav .new::after{content:"";display:inline-block;width:5px;height:5px;background:var(--brand);border-radius:50%;margin-left:5px;vertical-align:middle}
-.navtog{display:none;margin-left:auto;width:40px;height:40px;border:none;background:#fff;border-radius:11px;box-shadow:var(--sh);cursor:pointer;flex-direction:column;gap:4px;align-items:center;justify-content:center}
-.navtog span{width:17px;height:2px;background:var(--ink);border-radius:2px;transition:.2s}
+
+/* nav: search.html·apt.html의 .nav 클래스 */
+.gnb .nav{display:flex;gap:4px;font-size:13.5px;overflow-x:auto}
+.gnb .nav a{color:var(--muted);padding:7px 11px;border-radius:10px;white-space:nowrap;transition:.15s;font-weight:500}
+.gnb .nav a:hover{background:#fff;color:var(--ink)}
+.gnb .nav a[aria-current]{background:#fff;color:var(--ink);font-weight:700;box-shadow:var(--sh)}
+.gnb .nav a.new{color:var(--brand);font-weight:700;position:relative}
+.gnb .nav a.new::after{content:"";display:inline-block;width:5px;height:5px;background:var(--brand);border-radius:50%;margin-left:4px;vertical-align:middle}
+
+/* navtog (모바일 햄버거) */
+.navtog{display:none;margin-left:auto;width:38px;height:38px;border:none;background:#fff;border-radius:10px;box-shadow:var(--sh);cursor:pointer;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+.navtog span{width:16px;height:2px;background:var(--ink);border-radius:2px;transition:.2s;display:block}
+
+/* drawer (모바일 전체화면 메뉴) */
 .drawer{display:none}
 
-/* ---------- 페이지 헤드 ---------- */
-.page-head{padding:24px 0 4px}
+/* visitor counter */
+#visitor-counter{flex-shrink:0}
+
+/* ── 기존 GNB 페이지(.nav.nav-a 구조) 스타일 override ── */
+/* home·competition·price·unsold·bankbook 에서 쓰는 .nav .nav-a 스타일 */
+.nav{
+  background:rgba(242,245,248,.92)!important;
+  backdrop-filter:blur(12px)!important;
+  border-bottom:1px solid var(--line)!important;
+  box-shadow:none!important;
+}
+.nav-in{height:60px!important;font-family:'Pretendard',sans-serif!important}
+.logo-kr{
+  font-family:'Pretendard',sans-serif!important;
+  font-size:18px!important;
+  font-weight:800!important;
+  letter-spacing:-.03em!important;
+}
+.logo-en{
+  font-family:'Pretendard',sans-serif!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  color:var(--brand)!important;
+}
+.nav-a{
+  font-family:'Pretendard',sans-serif!important;
+  font-size:13.5px!important;
+  border-radius:10px!important;
+  padding:7px 11px!important;
+  transition:.15s!important;
+}
+.nav-a:hover{background:#fff!important;color:#19232C!important}
+.nav-a.on{
+  color:var(--brand)!important;
+  font-weight:700!important;
+  background:var(--brand-soft)!important;
+}
+.nav-btn{
+  background:var(--brand)!important;
+  border-radius:11px!important;
+  font-weight:700!important;
+  font-size:12px!important;
+  font-family:'Pretendard',sans-serif!important;
+  padding:7px 13px!important;
+}
+.nav-hamburger span{background:#19232C!important}
+.nav-mobile{
+  background:#fff!important;
+  border-bottom:1px solid var(--line)!important;
+  box-shadow:var(--sh2)!important;
+  top:60px!important;
+}
+.nav-mobile-a{
+  font-family:'Pretendard',sans-serif!important;
+  font-size:15px!important;
+  border-radius:12px!important;
+  font-weight:500!important;
+}
+.nav-mobile-a.on{color:var(--brand)!important;background:var(--brand-soft)!important}
+
+/* ── 단지검색 신규 메뉴 뱃지 ── */
+.nav-search-new{color:var(--brand)!important;font-weight:700!important;position:relative}
+.nav-search-new::after{
+  content:"N";
+  position:absolute;top:-6px;right:-10px;
+  font-size:8px;font-weight:800;
+  background:var(--brand);color:#fff;
+  width:13px;height:13px;border-radius:50%;
+  display:grid;place-items:center;
+}
+
+/* ── 기존 본문 스타일 개선 (충돌 없이) ── */
+body{font-family:'Pretendard',system-ui,sans-serif}
+
+/* filter, stat-card, chart-box 계열 — 카드감 */
+.filter{font-family:'Pretendard',sans-serif!important}
+.stat-card,.sc,.card-box{
+  background:#fff!important;
+  border-radius:16px!important;
+  box-shadow:var(--sh)!important;
+  border:none!important;
+}
+.chart-box{
+  background:#fff!important;
+  border-radius:16px!important;
+  box-shadow:var(--sh)!important;
+  border:none!important;
+}
+.tbl-wrap,.tbl-scroll{border-radius:16px!important;overflow:hidden}
+
+/* 버튼 */
+.btn-q,.btn-primary{
+  background:var(--brand)!important;
+  border-radius:11px!important;
+  font-family:'Pretendard',sans-serif!important;
+  font-weight:700!important;
+  border:none!important;
+}
+.btn-ghost,.btn-outline{
+  border-radius:11px!important;
+  font-family:'Pretendard',sans-serif!important;
+  border-color:var(--line2)!important;
+}
+
+/* 입력·셀렉트 */
+.inp,.sel,input[type="text"],input[type="search"],select{
+  border-radius:10px!important;
+  border-color:var(--line2)!important;
+  font-family:'Pretendard',sans-serif!important;
+}
+.inp:focus,.sel:focus,input:focus,select:focus{
+  border-color:var(--brand)!important;
+  outline:none!important;
+  box-shadow:0 0 0 3px rgba(52,120,246,.12)!important;
+}
+
+/* 탭 */
+.tab-btn{font-family:'Pretendard',sans-serif!important}
+.tab-btn.active{color:var(--brand)!important;border-bottom-color:var(--brand)!important;font-weight:700!important}
+
+/* 칩 */
+.chip-row .chip,.chip-row .chip:hover{font-family:'Pretendard',sans-serif!important}
+
+/* 페이저 */
+.pg-btn,.pager button{border-radius:8px!important;font-family:'Pretendard',sans-serif!important}
+
+/* 리전 토글 */
+.rt-btn{border-radius:20px!important;font-family:'Pretendard',sans-serif!important}
+.rt-btn.on{background:var(--brand)!important;border-color:var(--brand)!important;color:#fff!important}
+
+/* 푸터 */
+footer{background:#E4E9EC!important;border-top:1px solid var(--line)!important;margin-top:32px!important}
+footer *{font-family:'Pretendard',sans-serif!important}
+.ft{padding:24px 0;font-size:12px;color:var(--faint);text-align:center;line-height:1.8}
+.ft a{color:var(--muted)}
+
+/* ── search.html·apt.html 전용 (wrap 클래스 재정의) ── */
+/* search/apt는 .wrap을 직접 쓰므로 별도 스코프 없이 정의 */
+/* 기존 페이지의 .wrap은 max-width:1400px grid 구조 → 건드리지 않음 */
+
+/* page-head (search·apt·home용) */
+.page-head{padding:20px 0 4px}
 .page-head h1{font-size:26px;font-weight:800;letter-spacing:-.03em}
 .page-head p{font-size:14px;color:var(--muted);margin-top:4px}
 .eyebrow{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.02em}
 
-/* ---------- 카드 ---------- */
-.card{background:var(--surface);border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh)}
+/* 카드 (search·apt 전용, .card 클래스 — 기존 페이지는 .card-box 씀) */
+/* ※ 기존 페이지 .card 와 충돌 방지: gnb 하위에만 적용 대신 search/apt에서 인라인으로 처리 */
+
+/* sec·sec-h (search·apt 전용) */
 .sec{margin-top:18px}
 .sec-h{display:flex;align-items:center;margin-bottom:15px}
 .sec-h h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
 .sec-h .pill{margin-left:auto;font-size:12px;color:var(--brand);background:var(--brand-soft);font-weight:700;padding:5px 11px;border-radius:999px}
 .sec-h a.pill:hover{background:#dbe8fd}
 
-/* ---------- 브랜드 그라데이션 카드 (시그니처) ---------- */
-.hero-card{background:linear-gradient(135deg,#3478F6,#5B93FF);border-radius:24px;padding:26px;color:#fff;box-shadow:0 12px 30px rgba(52,120,246,.28);position:relative;overflow:hidden}
-.hero-card::after{content:"";position:absolute;right:-46px;top:-46px;width:190px;height:190px;background:rgba(255,255,255,.12);border-radius:50%}
-.hero-card > *{position:relative;z-index:1}
-.hero-card .lbl{font-size:13px;font-weight:600;opacity:.92}
-.hero-card .big{font-size:clamp(42px,9vw,54px);font-weight:800;letter-spacing:-.03em;line-height:1;margin:8px 0 2px}
-.hero-card .big small{font-size:22px;font-weight:700;opacity:.85}
-.hero-card .delta{font-size:13px;font-weight:600;opacity:.92}
-.hero-card .bar{height:10px;background:rgba(255,255,255,.25);border-radius:6px;margin-top:18px;overflow:hidden}
-.hero-card .bar > i{display:block;height:100%;width:0;background:#fff;border-radius:6px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
-.hero-card .scale{display:flex;justify-content:space-between;font-size:11px;opacity:.8;margin-top:6px}
+/* 히어로 카드 (home·competition 전용) */
+.hero-card{
+  background:linear-gradient(135deg,#3478F6,#5B93FF);
+  border-radius:22px;padding:24px;color:#fff;
+  box-shadow:0 12px 30px rgba(52,120,246,.25);
+  position:relative;overflow:hidden;
+  margin-bottom:14px;
+}
+.hero-card::after{content:"";position:absolute;right:-40px;top:-40px;width:170px;height:170px;background:rgba(255,255,255,.12);border-radius:50%;pointer-events:none}
+.hero-card>*{position:relative;z-index:1}
 
-/* ---------- 틴트 지표 카드 ---------- */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* 틴트 카드 (home 바로가기) */
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.scard{border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--sh)}
-.scard .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:15px;margin-bottom:12px;background:#fff}
-.scard .v{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
-.scard .v small{font-size:13px;font-weight:600;color:var(--muted)}
-.scard .k{font-size:13px;color:var(--muted);margin-top:4px}
-.c-mint{background:var(--mint)} .c-mint .ic{color:var(--mint-ink)}
-.c-sky{background:var(--sky)} .c-sky .ic{color:var(--sky-ink)}
-.c-peach{background:var(--peach)} .c-peach .ic{color:var(--peach-ink)}
-.c-lilac{background:var(--lilac)} .c-lilac .ic{color:var(--lilac-ink)}
-.c-rose{background:var(--rose)} .c-rose .ic{color:var(--rose-ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.scard{border-radius:16px;padding:16px;box-shadow:var(--sh);display:block;transition:.15s}
+.scard:hover{transform:translateY(-1px);box-shadow:var(--sh2)}
+.scard .ic{width:32px;height:32px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;margin-bottom:10px}
+.scard .v{font-size:14px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.scard .k{font-size:12px;margin-top:3px;color:var(--muted)}
+.c-mint{background:var(--mint)}.c-mint .ic{color:var(--mint-ink)}
+.c-sky{background:var(--sky)}.c-sky .ic{color:var(--sky-ink)}
+.c-peach{background:var(--peach)}.c-peach .ic{color:var(--peach-ink)}
+.c-lilac{background:var(--lilac)}.c-lilac .ic{color:var(--lilac-ink)}
+.c-rose{background:var(--rose)}.c-rose .ic{color:var(--rose-ink)}
 
-/* ---------- 소프트 바 차트 ---------- */
-.chart{display:flex;align-items:flex-end;gap:14px;height:200px;padding-top:10px}
-.cbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
-.cbar .bar{width:100%;max-width:46px;background:var(--brand-soft);border-radius:10px 10px 6px 6px;transition:height 1s cubic-bezier(.2,.7,.2,1)}
-.cbar.cur .bar{background:var(--brand)}
+/* 소프트 차트 바 (home 온도게이지) */
+.chart-soft{display:flex;align-items:flex-end;gap:12px;height:180px}
+.cbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.cbar .bar-s{width:100%;max-width:44px;background:var(--brand-soft);border-radius:8px 8px 4px 4px;transition:height .9s cubic-bezier(.2,.7,.2,1)}
+.cbar.cur .bar-s{background:var(--brand)}
 .cbar .val{font-size:12px;font-weight:700}
 .cbar.cur .val{color:var(--brand)}
-.cbar .mo{font-size:12px;color:var(--faint)}
+.cbar .mo{font-size:11px;color:var(--faint)}
 
-/* ---------- 리스트 행 ---------- */
-.row{display:flex;align-items:center;gap:13px;padding:13px 6px;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:none}
-.row .rk{width:26px;height:26px;border-radius:9px;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0}
-.row.top1 .rk{background:var(--brand);color:#fff}
-.row .nm{font-weight:700;font-size:14.5px}
-.row .rg{font-size:12px;color:var(--faint)}
-.row .meta{margin-left:auto;text-align:right;font-weight:800;font-size:16px}
-.row .meta small{display:block;font-size:11px;color:var(--faint);font-weight:600}
-.morebtn{display:block;text-align:center;margin-top:14px;font-size:14px;color:var(--brand);font-weight:700;background:var(--brand-soft);padding:12px;border-radius:13px}
-.morebtn:hover{background:#dbe8fd}
+/* 리스트 행 (search·apt) */
+.al-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.al-row:last-child{border-bottom:none}
+.al-rk{width:26px;height:26px;border-radius:8px;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0}
+.al-row.top1 .al-rk{background:var(--brand);color:#fff}
+.al-nm{font-weight:700;font-size:14px}
+.al-rg{font-size:12px;color:var(--faint)}
+.al-meta{margin-left:auto;text-align:right;font-weight:800;font-size:15px}
+.al-meta small{display:block;font-size:11px;color:var(--faint);font-weight:600}
+.al-morebtn{display:block;text-align:center;margin-top:12px;font-size:14px;color:var(--brand);font-weight:700;background:var(--brand-soft);padding:11px;border-radius:12px}
 
-/* ---------- 칩·뱃지·버튼 ---------- */
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{font-size:13px;font-weight:600;color:var(--muted);background:#fff;border:1px solid var(--line2);padding:8px 14px;border-radius:999px;cursor:pointer;transition:.15s}
-.chip:hover{border-color:var(--brand);color:var(--brand)}
-.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
-.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
-.b-live{background:var(--brand);color:#fff}
-.b-soon{background:var(--peach);color:var(--peach-ink)}
-.b-done{background:var(--line);color:var(--muted)}
-.b-pos{background:var(--mint);color:var(--mint-ink)}
-
-/* ---------- 검색바 ---------- */
-.searchbar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:14px 18px;box-shadow:var(--sh2)}
-.searchbar svg{flex-shrink:0}
+/* 검색바 (search·home) */
+.searchbar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:13px 18px;box-shadow:var(--sh2)}
 .searchbar input{border:none;outline:none;font:inherit;font-size:16px;width:100%;background:none;color:var(--ink)}
 .searchbar input::placeholder{color:var(--faint)}
 
-/* ---------- 광고 ---------- */
-.ad{background:var(--surface);border-radius:var(--r);min-height:104px;display:grid;place-items:center;text-align:center;color:var(--faint);box-shadow:var(--sh);border:1.5px dashed var(--line2)}
-.ad .t{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:700}
-.ad small{display:block;font-size:11px;margin-top:3px}
-.ad-infeed{margin:6px 0}
+/* 칩 그룹 (search) */
+.al-chips{display:flex;gap:8px;flex-wrap:wrap}
+.al-chip{font-size:13px;font-weight:600;color:var(--muted);background:#fff;border:1px solid var(--line2);padding:7px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.al-chip:hover{border-color:var(--brand);color:var(--brand)}
+.al-chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
 
-/* ---------- 데이터 테이블 (간단) ---------- */
-table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
-table.tbl th,table.tbl td{padding:12px 10px;text-align:right;border-bottom:1px solid var(--line)}
-table.tbl th{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
-table.tbl td:first-child,table.tbl th:first-child{text-align:left;font-weight:700}
-table.tbl tr:last-child td{border-bottom:none}
+/* 뱃지 (search·apt) */
+.al-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+.al-live{background:var(--brand);color:#fff}
+.al-soon{background:var(--peach);color:var(--peach-ink)}
+.al-done{background:var(--line);color:var(--muted)}
+.al-pos{background:var(--mint);color:var(--mint-ink)}
 
-/* ---------- 푸터 ---------- */
-footer{margin-top:30px;padding:28px 0}
-.ft{font-size:12px;color:var(--faint);text-align:center;line-height:1.8}
-.ft a{color:var(--muted)}
+/* 광고 자리 */
+.ad-wrap{border-radius:14px;border:1.5px dashed var(--line2);min-height:100px;display:grid;place-items:center;background:#fff;text-align:center;color:var(--faint);margin:14px 0}
 
-/* ---------- 미리보기 플래그 ---------- */
-.flag{position:fixed;left:14px;bottom:14px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:8px 14px;border-radius:999px;z-index:60;box-shadow:var(--sh2);opacity:.9}
+/* 스크롤 리빌 */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
 
-/* ---------- 모바일 ---------- */
+/* 모바일 */
 @media(max-width:780px){
-  .nav{display:none}
-  .navtog{display:flex}
   .grid4{grid-template-columns:1fr 1fr}
-  html.nav-open .drawer{display:block;position:fixed;inset:60px 0 0;background:var(--bg);z-index:39;padding:16px 20px;animation:slidein .2s ease}
-  html.nav-open .drawer a{display:block;padding:15px 14px;font-size:16px;font-weight:600;border-radius:13px}
+  .navtog{display:flex}
+  .gnb .nav{display:none}
+  html.nav-open .drawer{
+    display:block;position:fixed;inset:60px 0 0;
+    background:var(--bg);z-index:39;padding:16px 20px;
+    animation:slidein .2s ease;overflow-y:auto;
+  }
+  html.nav-open .drawer a{
+    display:block;padding:15px 14px;font-size:16px;font-weight:600;border-radius:13px;
+  }
   html.nav-open .drawer a[aria-current]{background:#fff;color:var(--brand);box-shadow:var(--sh)}
   html.nav-open .navtog span:nth-child(1){transform:translateY(6px) rotate(45deg)}
   html.nav-open .navtog span:nth-child(2){opacity:0}
@@ -156,7 +305,3 @@ footer{margin-top:30px;padding:28px 0}
 }
 @keyframes slidein{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-
-/* ---------- 스크롤 리빌 ---------- */
-.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
-.reveal.in{opacity:1;transform:none}

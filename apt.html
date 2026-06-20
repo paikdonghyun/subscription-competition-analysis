@@ -152,7 +152,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 </style>
 </head>
 <body>
-<header class="gnb"><div class="wrap gnb-in">
+<header class="gnb"><div class="al-wrap gnb-in">
   <a class="logo" href="/home.html"><span class="logo-mk"></span>청약<b>랩</b></a>
   <nav class="nav">
     <a href="/home.html">HOME</a><a href="/home.html">분양 캘린더</a><a href="/search.html" class="new">단지검색</a>
@@ -165,7 +165,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
   <a href="/competition.html">청약경쟁률</a><a href="/price.html">분양가격</a><a href="/unsold.html">미분양</a><a href="/bankbook.html">청약통장</a>
 </div></header>
 
-<div class="wrap">
+<div class="al-wrap">
   <nav class="crumb"><a href="/home.html">HOME</a><span>›</span><a href="/search.html">단지검색</a><span>›</span>경기 화성<span>›</span>리버파크 센트럴시티</nav>
 
   <div class="page-head" style="padding-top:10px">
@@ -384,14 +384,14 @@ function renderComp(phase){
   const title=document.getElementById('compTitle'),note=document.getElementById('compNote');
   if(phase!=='post'){
     title.textContent='예상 청약 경쟁률';note.textContent='모델 추정 · 청약 전';
-    let h=`<div class="c2head"><span class="c2avg">${COMP.avg.est.toFixed(1)}<small>:1 단지 예상 평균</small></span><span class="badge b-pos">예상 범위 ${COMP.avg.estLo}~${COMP.avg.estHi}:1</span></div>`;
+    let h=`<div class="c2head"><span class="c2avg">${COMP.avg.est.toFixed(1)}<small>:1 단지 예상 평균</small></span><span class="al-badge al-pos">예상 범위 ${COMP.avg.estLo}~${COMP.avg.estHi}:1</span></div>`;
     COMP.types.forEach(d=>{h+=`<div class="er"><span class="t">${d.t}</span><div class="ertrack"><div class="erband" style="left:${(d.lo/M*100).toFixed(1)}%;width:${((d.hi-d.lo)/M*100).toFixed(1)}%"></div><div class="erfill" data-w="${(d.est/M*100).toFixed(1)}"></div><div class="ermed" style="left:${(d.est/M*100).toFixed(1)}%"></div></div><span class="v">${d.est.toFixed(1)}:1<small>범위 ${d.lo}~${d.hi}</small></span></div>`;});
     h+=`<p class="flag-note">예상 = 지역·평형 최근 청약 평균에 종합점수·공급세대·안전마진 보정. 음영=예상 범위, 흰 선=중앙값. <b>청약 마감 후 실제와 자동 비교</b>됩니다.</p>`;
     body.innerHTML=h;
   }else{
     title.textContent='실제 청약 경쟁률';note.textContent='청약홈 확정';
     const dA=Math.round((COMP.avg.act-COMP.avg.est)/COMP.avg.est*100);
-    let h=`<div class="c2head"><span class="c2avg">${COMP.avg.act.toFixed(1)}<small>:1 단지 실제 평균</small></span><span class="badge b-soon">실제 확정</span><span class="delta up">예상 ${COMP.avg.est.toFixed(1)} 대비 +${dA}%</span></div>`;
+    let h=`<div class="c2head"><span class="c2avg">${COMP.avg.act.toFixed(1)}<small>:1 단지 실제 평균</small></span><span class="al-badge al-soon">실제 확정</span><span class="delta up">예상 ${COMP.avg.est.toFixed(1)} 대비 +${dA}%</span></div>`;
     COMP.types.forEach(d=>{const dl=Math.round((d.act-d.est)/d.est*100);h+=`<div class="cr"><div class="crtop"><span class="t">${d.t}</span><span class="delta ${dl>=0?'up':'down'}">예상 대비 ${dl>=0?'+':''}${dl}%</span></div><div class="cb est"><span class="lbl">예상</span><div class="cbtrack"><i data-w="${(d.est/M*100).toFixed(1)}"></i></div><span class="val">${d.est.toFixed(1)}</span></div><div class="cb act"><span class="lbl">실제</span><div class="cbtrack"><i data-w="${(d.act/M*100).toFixed(1)}"></i></div><span class="val">${d.act.toFixed(1)}</span></div></div>`;});
     h+=`<p class="flag-note">실제가 예상을 평균 <b>+${dA}%</b> 상회. 안전마진·브랜드가 막판 쏠림을 키운 것으로 분석되며, 오차는 다음 단지 모델 보정에 반영됩니다.</p>`;
     body.innerHTML=h;

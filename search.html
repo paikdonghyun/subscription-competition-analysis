@@ -29,7 +29,7 @@
 </style>
 </head>
 <body>
-<header class="gnb"><div class="wrap gnb-in">
+<header class="gnb"><div class="al-wrap gnb-in">
   <a class="logo" href="/home.html"><span class="logo-mk"></span>청약<b>랩</b></a>
   <nav class="nav">
     <a href="/home.html">HOME</a><a href="/home.html">분양 캘린더</a><a href="/search.html" class="new" aria-current="page">단지검색</a>
@@ -42,7 +42,7 @@
   <a href="/competition.html">청약경쟁률</a><a href="/price.html">분양가격</a><a href="/unsold.html">미분양</a><a href="/bankbook.html">청약통장</a>
 </div></header>
 
-<div class="wrap">
+<div class="al-wrap">
   <div class="page-head"><h1>단지검색</h1><p>지역·상태·분석 점수로 분양 단지를 찾아보세요.</p></div>
 
   <div class="searchbar" style="margin-top:12px">
@@ -50,9 +50,9 @@
     <input type="text" placeholder="단지명·지역으로 검색" aria-label="단지 검색">
   </div>
 
-  <div class="chips" style="margin-top:14px">
-    <span class="chip on">전체</span><span class="chip">접수중</span><span class="chip">청약예정</span><span class="chip">무순위·잔여</span>
-    <span class="chip">서울</span><span class="chip">경기</span><span class="chip">인천</span>
+  <div class="al-chips" style="margin-top:14px">
+    <span class="al-chip on">전체</span><span class="al-chip">접수중</span><span class="al-chip">청약예정</span><span class="al-chip">무순위·잔여</span>
+    <span class="al-chip">서울</span><span class="al-chip">경기</span><span class="al-chip">인천</span>
   </div>
 
   <!-- 분석 랭킹 -->
@@ -87,7 +87,7 @@
     <div class="sec-h"><h2>전체 단지</h2><span class="pill">종합점수순</span></div>
 
     <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="badge b-live">접수중</span><span class="nm">리버파크 센트럴시티</span><span class="rg">경기 화성 · D-1</span></div>
+      <div class="top"><span class="al-badge al-live">접수중</span><span class="nm">리버파크 센트럴시티</span><span class="rg">경기 화성 · D-1</span></div>
       <div class="stats">
         <div class="st"><div class="sv b">83</div><div class="sk">종합 A</div></div>
         <div class="st"><div class="sv">10.0:1</div><div class="sk">예상 경쟁률</div></div>
@@ -97,7 +97,7 @@
     </a>
 
     <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="badge b-soon">예정</span><span class="nm">송도 더샵 마리나</span><span class="rg">인천 연수 · D-5</span></div>
+      <div class="top"><span class="al-badge al-soon">예정</span><span class="nm">송도 더샵 마리나</span><span class="rg">인천 연수 · D-5</span></div>
       <div class="stats">
         <div class="st"><div class="sv b">81</div><div class="sk">종합 A</div></div>
         <div class="st"><div class="sv">12.5:1</div><div class="sk">예상 경쟁률</div></div>
@@ -107,7 +107,7 @@
     </a>
 
     <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="badge b-soon">예정</span><span class="nm">수원 매교 푸르지오</span><span class="rg">경기 수원 · D-3</span></div>
+      <div class="top"><span class="al-badge al-soon">예정</span><span class="nm">수원 매교 푸르지오</span><span class="rg">경기 수원 · D-3</span></div>
       <div class="stats">
         <div class="st"><div class="sv b">78</div><div class="sk">종합 B</div></div>
         <div class="st"><div class="sv">9.1:1</div><div class="sk">예상 경쟁률</div></div>
@@ -117,7 +117,7 @@
     </a>
 
     <a class="aptcard" href="/apt.html">
-      <div class="top"><span class="badge b-done">마감</span><span class="nm">마곡 르엘</span><span class="rg">서울 강서 · 청약완료</span></div>
+      <div class="top"><span class="al-badge al-done">마감</span><span class="nm">마곡 르엘</span><span class="rg">서울 강서 · 청약완료</span></div>
       <div class="stats">
         <div class="st"><div class="sv b">90</div><div class="sk">종합 S</div></div>
         <div class="st"><div class="sv">84.2:1</div><div class="sk">실제 경쟁률</div></div>
@@ -126,7 +126,7 @@
       </div>
     </a>
 
-    <a class="morebtn" href="#">더 많은 단지 보기</a>
+    <a class="al-morebtn" href="#">더 많은 단지 보기</a>
   </section>
 </div>
 
@@ -134,7 +134,7 @@
 
 
 <script>
-document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{c.classList.toggle('on')}));
+document.querySelectorAll('.al-chip').forEach(c=>c.addEventListener('click',()=>{c.classList.toggle('on')}));
 </script>
 </body>
 </html>
