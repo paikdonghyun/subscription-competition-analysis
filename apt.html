@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>리버파크 센트럴시티 청약 분석 | 청약랩 ApplyLab</title>
-<meta name="description" content="리버파크 센트럴시티 종합점수·예상경쟁률·안전마진·가점 분석. 청약랩 단지 상세. ※ 샘플">
+<meta name="description" content="리버파크 센트럴시티 종합점수·예상경쟁률·시세차익 여력·가점 분석. 청약랩 단지 상세. ※ 샘플">
 <meta name="robots" content="index, follow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="applylab.css">
 <script>window.kakaoMapKey='559cfc83b21afe7a9f359160ec2fe48d';</script>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=559cfc83b21afe7a9f359160ec2fe48d&libraries=services&autoload=false"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=559cfc83b21afe7a9f359160ec2fe48d&libraries=services"></script>
 <style>
 .crumb{font-size:12px;color:var(--faint);padding:14px 0 0;display:flex;gap:6px;flex-wrap:wrap}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
@@ -204,7 +204,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 
   <div class="grid4" style="margin-top:8px">
     <div class="scard c-sky"><span class="ic">₩</span><span class="v" id="kpi1">6.85<small>억</small></span><span class="k">분양가 · 84㎡</span></div>
-    <div class="scard c-mint"><span class="ic">↑</span><span class="v" id="kpi2">+13<small>%</small></span><span class="k">안전마진</span></div>
+    <div class="scard c-mint"><span class="ic">↑</span><span class="v" id="kpi2">+13<small>%</small></span><span class="k">시세차익 여력</span></div>
     <div class="scard c-lilac"><span class="ic">≈</span><span class="v" id="kpi3">10.0<small>:1</small></span><span class="k">예상 경쟁률</span></div>
     <div class="scard c-peach"><span class="ic">★</span><span class="v" id="kpi4">54<small>점</small></span><span class="k">가점 커트라인 84A</span></div>
   </div>
@@ -271,7 +271,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
         </table>
       </div>
       <div class="card safe">
-        <div class="k">주변 시세 대비 안전마진</div>
+        <div class="k">주변 시세 대비 시세차익 여력</div>
         <div class="v" id="safeMargin">계산 중…</div>
         <div class="n" id="safeDesc">인근 실거래가 데이터 로딩 중입니다.</div>
         <div class="safebar"><i id="safeBar" data-w="0"></i></div>
@@ -336,7 +336,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
     <div class="sec-h"><h2>인근 분양권 프리미엄</h2><span class="pill">최근 3개월</span></div>
     <div class="card prem">
       <div class="big">+1.2억</div>
-      <p>인근 동일 생활권 단지(2024년 분양) 84㎡ 분양권이 평균 <b>1.2억 프리미엄</b>에 거래. 본 단지 안전마진(+1.05억)과 유사한 흐름.</p>
+      <p>인근 동일 생활권 단지(2024년 분양) 84㎡ 분양권이 평균 <b>1.2억 프리미엄</b>에 거래. 본 단지 시세차익 여력(+1.05억)과 유사한 흐름.</p>
     </div>
   </section>
 
@@ -463,7 +463,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
       loadKakaoLocation(d.HSSPLY_ADRES, d.HOUSE_NM || '단지');
     }
 
-    // ── 실거래가 JSON 로드 → 안전마진 계산 ──
+    // ── 실거래가 JSON 로드 → 시세차익 여력 계산 ──
     if (d.SUBSCRPT_AREA_CODE) {
       loadTradeData(d.SUBSCRPT_AREA_CODE, d.HOUSE_NM || '');
     }
@@ -583,28 +583,28 @@ async function loadKakaoLocation(address, aptName) {
     // pill 업데이트
     document.getElementById('locPill').textContent = `반경 3km · 실데이터`;
 
-    // 4. 카카오맵 렌더
-    kakao.maps.load(() => {
+    // 4. 카카오맵 렌더 (SDK 즉시 로드 방식)
+    try {
       const container = document.getElementById('kakaoMap');
       const coords = new kakao.maps.LatLng(y, x);
       const map = new kakao.maps.Map(container, { center: coords, level: 4 });
 
       // 단지 마커
-      const marker = new kakao.maps.Marker({ position: coords, map });
+      const markerPos = new kakao.maps.LatLng(y, x);
+      const marker = new kakao.maps.Marker({ position: markerPos, map });
       const infoWindow = new kakao.maps.InfoWindow({
-        content: `<div style="padding:6px 10px;font-size:13px;font-weight:700;white-space:nowrap">${aptName}</div>`,
-        removable: false
+        content: `<div style="padding:6px 10px;font-size:13px;font-weight:700;font-family:Pretendard,sans-serif;white-space:nowrap">${aptName}</div>`,
+        removable: true
       });
       infoWindow.open(map, marker);
 
-      // POI 마커
-      const icons = { '역':'🚇', '학':'🏫', '상':'🛒', '병':'🏥' };
-      rows.forEach(r => {
-        // 키워드로 각 장소 좌표 가져오기는 이미 documents에 있음
-      });
-
-      document.getElementById('mapTag').style.display = 'none';
-    });
+      const mapTagEl = document.getElementById('mapTag');
+      if(mapTagEl) mapTagEl.style.display = 'none';
+    } catch(mapErr) {
+      console.warn('카카오맵 렌더 실패:', mapErr);
+      const mapWrap = document.getElementById('kakaoMapWrap');
+      if(mapWrap) mapWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:270px;color:var(--faint);font-size:13px">지도를 불러올 수 없습니다.<br><small>카카오맵 도메인 설정을 확인해 주세요.</small></div>';
+    }
 
   } catch(e) {
     console.warn('카카오 입지 분석 실패:', e);
@@ -613,7 +613,7 @@ async function loadKakaoLocation(address, aptName) {
   }
 }
 
-/* ── 실거래가 JSON 로드 → 안전마진 계산 ── */
+/* ── 실거래가 JSON 로드 → 시세차익 여력 계산 ── */
 async function loadTradeData(areaCode, aptName) {
   try {
     // 청약홈 SUBSCRPT_AREA_CODE(3자리) → 법정동 앞 5자리 매핑
@@ -695,14 +695,14 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt) {
   const updTxt  = updated ? ` · ${updated} 기준` : '';
   if(descEl) descEl.innerHTML =
     `${regTxt}최근 6개월 아파트 매매 평균 실거래가${cntTxt}${updTxt}.<br>` +
-    `분양가 입력 시 안전마진(%)을 자동 계산합니다.`;
+    `분양가 입력 시 시세차익 여력(%)을 자동 계산합니다.`;
 
   // 바 60%로 고정 표시 (분양가 없이는 비율 계산 불가)
   if(barEl) { barEl.style.width='60%'; }
   if(lEl)   lEl.textContent = '인근 시세';
   if(rEl)   rEl.textContent = `평균 ${avgEok}억`;
 
-  // kpi2(안전마진 카드) 업데이트
+  // kpi2(시세차익 여력 카드) 업데이트
   const kpi2 = document.getElementById('kpi2');
   if (kpi2) {
     kpi2.innerHTML = `${avgEok}<small>억</small>`;
@@ -712,7 +712,7 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt) {
 
 /* 종합 점수 */
 const SUB={교통:88,학교:82,인프라:75,브랜드:80,인기도:78,분양가격:86};
-const FACT={교통:'동탄역 SRT·GTX-A 800m',학교:'초등학교 250m·초품아급',인프라:'호수공원 400m·마트 1.2km',브랜드:'시공능력평가 상위권',인기도:'검색·커뮤니티 관심도 상위',분양가격:'시세 대비 +13% 안전마진'};
+const FACT={교통:'동탄역 SRT·GTX-A 800m',학교:'초등학교 250m·초품아급',인프라:'호수공원 400m·마트 1.2km',브랜드:'시공능력평가 상위권',인기도:'검색·커뮤니티 관심도 상위',분양가격:'시세 대비 +13% 시세차익 여력'};
 const PHASES={
   pre:{note:'분양 전 · 가격 미반영',weights:{교통:25,학교:15,인프라:15,브랜드:15,인기도:30}},
   main:{note:'모집공고 후 · 가격 포함',weights:{교통:18,학교:11,인프라:11,브랜드:10,인기도:20,분양가격:30}},
@@ -752,14 +752,14 @@ function renderComp(phase){
     title.textContent='예상 청약 경쟁률';note.textContent='모델 추정 · 청약 전';
     let h=`<div class="c2head"><span class="c2avg">${COMP.avg.est.toFixed(1)}<small>:1 단지 예상 평균</small></span><span class="al-badge al-pos">예상 범위 ${COMP.avg.estLo}~${COMP.avg.estHi}:1</span></div>`;
     COMP.types.forEach(d=>{h+=`<div class="er"><span class="t">${d.t}</span><div class="ertrack"><div class="erband" style="left:${(d.lo/M*100).toFixed(1)}%;width:${((d.hi-d.lo)/M*100).toFixed(1)}%"></div><div class="erfill" data-w="${(d.est/M*100).toFixed(1)}"></div><div class="ermed" style="left:${(d.est/M*100).toFixed(1)}%"></div></div><span class="v">${d.est.toFixed(1)}:1<small>범위 ${d.lo}~${d.hi}</small></span></div>`;});
-    h+=`<p class="flag-note">예상 = 지역·평형 최근 청약 평균에 종합점수·공급세대·안전마진 보정. 음영=예상 범위, 흰 선=중앙값. <b>청약 마감 후 실제와 자동 비교</b>됩니다.</p>`;
+    h+=`<p class="flag-note">예상 = 지역·평형 최근 청약 평균에 종합점수·공급세대·시세차익 여력 보정. 음영=예상 범위, 흰 선=중앙값. <b>청약 마감 후 실제와 자동 비교</b>됩니다.</p>`;
     body.innerHTML=h;
   }else{
     title.textContent='실제 청약 경쟁률';note.textContent='청약홈 확정';
     const dA=Math.round((COMP.avg.act-COMP.avg.est)/COMP.avg.est*100);
     let h=`<div class="c2head"><span class="c2avg">${COMP.avg.act.toFixed(1)}<small>:1 단지 실제 평균</small></span><span class="al-badge al-soon">실제 확정</span><span class="delta up">예상 ${COMP.avg.est.toFixed(1)} 대비 +${dA}%</span></div>`;
     COMP.types.forEach(d=>{const dl=Math.round((d.act-d.est)/d.est*100);h+=`<div class="cr"><div class="crtop"><span class="t">${d.t}</span><span class="delta ${dl>=0?'up':'down'}">예상 대비 ${dl>=0?'+':''}${dl}%</span></div><div class="cb est"><span class="lbl">예상</span><div class="cbtrack"><i data-w="${(d.est/M*100).toFixed(1)}"></i></div><span class="val">${d.est.toFixed(1)}</span></div><div class="cb act"><span class="lbl">실제</span><div class="cbtrack"><i data-w="${(d.act/M*100).toFixed(1)}"></i></div><span class="val">${d.act.toFixed(1)}</span></div></div>`;});
-    h+=`<p class="flag-note">실제가 예상을 평균 <b>+${dA}%</b> 상회. 안전마진·브랜드가 막판 쏠림을 키운 것으로 분석되며, 오차는 다음 단지 모델 보정에 반영됩니다.</p>`;
+    h+=`<p class="flag-note">실제가 예상을 평균 <b>+${dA}%</b> 상회. 시세차익 여력·브랜드가 막판 쏠림을 키운 것으로 분석되며, 오차는 다음 단지 모델 보정에 반영됩니다.</p>`;
     body.innerHTML=h;
   }
   requestAnimationFrame(()=>body.querySelectorAll('[data-w]').forEach(i=>i.style.width=i.dataset.w+'%'));
