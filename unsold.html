@@ -26,6 +26,7 @@
   <meta name="twitter:image" content="https://applylab.kr/favicon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -250,9 +251,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
 </script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5133871958265300"
      crossorigin="anonymous"></script>
-
-<!-- ApplyLab C-Direction Override CSS -->
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="/applylab.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -281,6 +279,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
   <a href="/unsold.html" aria-current="page">미분양</a>
   <a href="/bankbook.html">청약통장</a>
 </div></header>
+
 <div class="wrap">
   <!-- 좌측 광고 -->
   <div class="ad-col"><div class="ad-sticky">
@@ -411,48 +410,520 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-weight:3
     </div>
   </div>
 </div>
+
 <footer class="al-footer"><div class="al-footer-in">
   청약랩 · ApplyLab · 데이터 출처: 한국부동산원 청약홈 · 국토교통부 (공공데이터포털)<br>
   <a href="/privacy.html">개인정보취급방침</a> · <a href="mailto:shake100@gmail.com">문의</a> · © 2026 ApplyLab
 </div></footer>
-<script>
-(function(){
-  // 단지검색 메뉴 삽입 (기존 nav-menu에 추가)
-  var nm=document.querySelector('.nav-menu');
-  var mm=document.querySelector('.nav-mobile-inner');
-  if(nm && !nm.querySelector('.nav-search-new')){
-    var li=document.createElement('a');
-    li.href='/search.html'; li.className='nav-a nav-search-new'; li.textContent='단지검색';
-    var first=nm.querySelector('a');
-    if(first && first.nextSibling) nm.insertBefore(li, first.nextSibling);
-    else nm.appendChild(li);
-  }
-  if(mm && !mm.querySelector('.nav-search-new')){
-    var mi=document.createElement('a');
-    mi.href='/search.html'; mi.className='nav-mobile-a nav-search-new'; mi.textContent='단지검색';
-    var mfirst=mm.querySelector('a');
-    if(mfirst && mfirst.nextSibling) mm.insertBefore(mi, mfirst.nextSibling);
-    else mm.appendChild(mi);
-  }
-})();
-</script>
 
-</body>
+<script>
+/* ============================================================
+   미분양 현황 — 부산광역시 / 경상남도 공공데이터 API
+   ============================================================ */
+const SERVICE_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+
+const REGIONS = {
+  busan: {
+    label: '부산광역시',
+    url: 'https://apis.data.go.kr/6260000/UnSellStusService/UnSellStusInfo',
+    source: '부산광역시_공동주택 미분양 현황 (공공데이터포털)'
+  },
+  gn: {
+    label: '경상남도',
+    url: 'https://apis.data.go.kr/6480000/gyeongnamunsold/gyeongnamunsoldlist',
+    source: '경상남도_미분양주택현황 (공공데이터포털)'
+  },
+  gg: {
+    label: '경기도',
+    url: 'https://openapi.gg.go.kr/CopertnhousngUnsol',
+    source: '경기도_공동주택 미분양 현황 (경기데이터드림)'
+  }
+};
+
+// 경기데이터드림 인증키 (data.gg.go.kr 발급)
+const GG_KEY = '226eb1ceed0b4e1ebe1ddccb0008077c';
+
+const state = {
+  region: 'gg',
+  cache: { busan: null, gn: null, gg: null },   // 정규화된 타입(row) 단위 데이터
+  groups: [],                          // 필터 적용된 단지 그룹
+  sortKey: 'unsold', sortDir: -1,
+  page: 1, perPage: 15,
+  charts: { sigungu: null, top: null }
+};
+
+/* ---------- 유틸 ---------- */
+const fmt = n => (n==null||isNaN(n)) ? '–' : Number(n).toLocaleString('ko-KR');
+const txt = (node, tag) => { const el = node.querySelector(tag); return el ? el.textContent.trim() : ''; };
+const toInt = v => { const n = parseInt(String(v).replace(/[^0-9-]/g,''),10); return isNaN(n)?0:n; };
+const norm = s => (s||'').replace(/\s+/g,'');
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- API 호출 (페이지 순회) ---------- */
+async function fetchAll(region) {
+  if (region === 'gg') return fetchGG();
+  const cfg = REGIONS[region];
+  const rows = [];
+  let pageNo = 1, totalCount = Infinity;
+  const numOfRows = 500;
+
+  while ((pageNo - 1) * numOfRows < totalCount && pageNo <= 10) {
+    const url = `${cfg.url}?serviceKey=${SERVICE_KEY}&numOfRows=${numOfRows}&pageNo=${pageNo}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xmlText = await res.text();
+    const xml = new DOMParser().parseFromString(xmlText, 'text/xml');
+
+    const code = txt(xml, 'resultCode');
+    if (code && code !== '00') throw new Error(`API 오류 (${code}) ${txt(xml,'resultMsg')}`);
+
+    const tc = toInt(txt(xml, 'totalCount'));
+    if (tc) totalCount = tc;
+
+    const items = xml.querySelectorAll('item');
+    if (!items.length) break;
+    items.forEach(it => rows.push(region === 'busan' ? normBusan(it) : normGN(it)));
+    pageNo++;
+  }
+  return rows;
+}
+
+/* ---------- 정규화: 부산 ---------- */
+function normBusan(it) {
+  const addr = txt(it,'addr');
+  const m = addr.match(/\(([^)]+)\)\s*$/);          // 주소 끝 괄호 = 단지명
+  const name = m ? m[1] : addr;
+  return {
+    sigungu: txt(it,'sigungu'),
+    dong: txt(it,'eupmundong'),
+    addr, name,
+    contractor: txt(it,'contractor'),
+    developer: txt(it,'developer'),
+    pubType: txt(it,'private_public'),
+    leaseType: txt(it,'lease_sell_inlots'),
+    scale: txt(it,'scale'),
+    total: toInt(txt(it,'tot_sell_nm_household')),
+    unsold: toInt(txt(it,'unsell_nm_household')),
+    unsoldPrev: null,
+    subscDt: txt(it,'sell_subscription_dt'),
+    deadline: txt(it,'contract_deadline'),
+    moveIn: txt(it,'move_in_month'),
+    complete: txt(it,'completion_at'),
+    refDate: txt(it,'reference_date'),
+    key: norm(txt(it,'sigungu') + '|' + addr)
+  };
+}
+
+/* ---------- 정규화: 경남 ---------- */
+function normGN(it) {
+  const rdnm = txt(it,'rdnmadr');
+  return {
+    sigungu: txt(it,'signgunm'),
+    dong: txt(it,'dongnm'),
+    addr: rdnm, name: rdnm,
+    contractor: txt(it,'construction'),
+    developer: txt(it,'enforcer'),
+    pubType: txt(it,'publictypenm'),
+    leaseType: txt(it,'leasetypenm'),
+    scale: txt(it,'privatear'),
+    total: toInt(txt(it,'totalcnt')),
+    unsold: toInt(txt(it,'unsoldcnt_this')),
+    unsoldPrev: toInt(txt(it,'unsoldcnt_prev')),
+    subscDt: txt(it,'approvaldt'),
+    deadline: txt(it,'deadlinedt'),
+    moveIn: txt(it,'planinmonth'),
+    complete: txt(it,'completetypenm'),
+    refDate: '',
+    key: norm(txt(it,'signgunm') + '|' + rdnm)
+  };
+}
+
+/* ---------- API 호출: 경기도 (경기데이터드림 JSON) ---------- */
+async function fetchGG() {
+  const rows = [];
+  let pIndex = 1, total = Infinity;
+  const pSize = 1000;
+
+  while ((pIndex - 1) * pSize < total && pIndex <= 5) {
+    const keyParam = GG_KEY ? `KEY=${GG_KEY}&` : '';
+    const url = `${REGIONS.gg.url}?${keyParam}Type=json&pIndex=${pIndex}&pSize=${pSize}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+
+    // 오류 응답 (인증키 오류 등): { RESULT: { CODE, MESSAGE } }
+    if (d.RESULT && d.RESULT.CODE && d.RESULT.CODE !== 'INFO-000')
+      throw new Error(`API 오류 (${d.RESULT.CODE}) ${d.RESULT.MESSAGE || ''}`);
+
+    const body = d.CopertnhousngUnsol;
+    if (!body || !Array.isArray(body)) throw new Error('응답 형식 오류');
+    const head = body[0] && body[0].head ? body[0].head : [];
+    head.forEach(h => { if (h.list_total_count != null) total = toInt(h.list_total_count); });
+    const page = (body[1] && body[1].row) ? body[1].row : [];
+    if (!page.length) break;
+    page.forEach(r => rows.push(r));
+    if (page.length < pSize) break;   // 샘플 모드(키 없음) 등 조기 종료
+    pIndex++;
+  }
+
+  // 원천 데이터가 전 행 2중 수록(2·4·6·8회 짝수 출현)되어 있어 출현 횟수를 절반으로 보정
+  const counter = new Map();
+  rows.forEach(r => {
+    const sig = JSON.stringify(r, Object.keys(r).sort());
+    if (!counter.has(sig)) counter.set(sig, { row: r, n: 0 });
+    counter.get(sig).n++;
+  });
+  const allEven = [...counter.values()].every(v => v.n % 2 === 0);
+  const out = [];
+  counter.forEach(v => {
+    const keep = allEven ? v.n / 2 : v.n;   // 짝수 패턴이 깨지면(데이터 정비 시) 원본 그대로 사용
+    for (let i = 0; i < keep; i++) out.push(normGG(v.row));
+  });
+  return out;
+}
+
+/* ---------- 정규화: 경기도 ---------- */
+function normGG(r) {
+  const ym = v => { const s = String(v || '').replace(/[^0-9]/g,''); return s.length >= 6 ? s.slice(0,4) + '-' + s.slice(4,6) : (v || ''); };
+  const masked = !r.CNSTRCT_LOCPLC_ADDR;   // 단지 요청에 의한 위치 미공개 행
+  const addr = masked ? (r.RM || '단지 요청에 의한 미공개') : r.CNSTRCT_LOCPLC_ADDR;
+  const name = masked ? `비공개 단지 (${r.SIGUN_NM || ''} 합산)` : addr;
+  return {
+    sigungu: r.SIGUN_NM || '',
+    dong: r.JURISD_EMD_NM || '',
+    addr, name,
+    contractor: r.CNSTRCT_BIZNES_INFO || '',
+    developer: r.IMPLMTN_BIZNES_INFO || '',
+    pubType: r.PRVATE_PUBL_DIV_NM || '',
+    leaseType: r.RENT_LOTOUT_DIV_NM || '',
+    scale: r.SCALE_ACCTO_AR != null ? String(r.SCALE_ACCTO_AR) : '',
+    total: toInt(r.TOT_LOTOUT_HSHLD_CNT),
+    unsold: toInt(r.MT_HSHLD_CNT),
+    unsoldPrev: null,
+    subscDt: ym(r.LOTOUT_SUBSCRPT_DE),
+    deadline: '',
+    moveIn: ym(r.MOVEIN_PREARNGE_DE),
+    complete: r.COMPLTN_YN_DIV_NM || '',
+    refDate: '',
+    key: norm((r.SIGUN_NM || '') + '|' + (masked ? '※비공개' : addr))
+  };
+}
+
+/* ---------- 지역 전환 / 로딩 ---------- */
+function switchRegion(region) {
+  state.region = region;
+  document.getElementById('rt-busan').classList.toggle('on', region==='busan');
+  document.getElementById('rt-gn').classList.toggle('on', region==='gn');
+  document.getElementById('rt-gg').classList.toggle('on', region==='gg');
+  resetFilter(false);
+  loadRegion(region);
+}
+
+async function loadRegion(region, force) {
+  const $load = document.getElementById('loading');
+  const $err = document.getElementById('error-box');
+  const $content = document.getElementById('content');
+  $err.style.display = 'none';
+
+  if (!state.cache[region] || force) {
+    $load.style.display = 'block'; $content.style.display = 'none';
+    try {
+      state.cache[region] = await fetchAll(region);
+    } catch (e) {
+      $load.style.display = 'none';
+      document.getElementById('error-msg').textContent =
+        `${REGIONS[region].label} API 응답에 실패했습니다. (${e.message}) 잠시 후 다시 시도해 주세요.`;
+      $err.style.display = 'block';
+      return;
+    }
+  }
+  $load.style.display = 'none'; $content.style.display = 'block';
+  buildSigunguOptions(region);
+  buildChips(region);
+  applyFilter();
+}
+
+/* ---------- 필터 UI ---------- */
+function buildSigunguOptions(region) {
+  const sel = document.getElementById('sel-sigungu');
+  const cur = sel.value;
+  const list = [...new Set(state.cache[region].map(r => r.sigungu))].sort((a,b)=>a.localeCompare(b,'ko'));
+  sel.innerHTML = '<option value="">전체</option>' + list.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  if (list.includes(cur)) sel.value = cur;
+}
+
+function buildChips(region) {
+  const rows = state.cache[region];
+  const agg = {};
+  rows.forEach(r => { agg[r.sigungu] = (agg[r.sigungu]||0) + r.unsold; });
+  const top = Object.entries(agg).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('chip-row').innerHTML =
+    top.map(([s,v]) => `<button class="chip" onclick="chipFilter('${esc(s)}')">${esc(s)} ${fmt(v)}호</button>`).join('');
+}
+
+function chipFilter(sigungu) {
+  document.getElementById('sel-sigungu').value = sigungu;
+  applyFilter();
+}
+
+function resetFilter(reload = true) {
+  document.getElementById('sel-sigungu').value = '';
+  document.getElementById('inp-search').value = '';
+  document.getElementById('sel-lease').value = '';
+  document.getElementById('sel-complete').value = '';
+  document.getElementById('chk-unsold').checked = true;
+  state.sortKey = 'unsold'; state.sortDir = -1; state.page = 1;
+  if (reload && state.cache[state.region]) applyFilter();
+}
+
+/* ---------- 필터 적용 → 단지 그룹화 ---------- */
+function applyFilter() {
+  const rows = state.cache[state.region];
+  if (!rows) return;
+
+  const sigungu = document.getElementById('sel-sigungu').value;
+  const q = norm(document.getElementById('inp-search').value).toLowerCase();
+  const lease = document.getElementById('sel-lease').value;
+  const complete = document.getElementById('sel-complete').value;
+  const onlyUnsold = document.getElementById('chk-unsold').checked;
+
+  let filtered = rows.filter(r => {
+    if (sigungu && r.sigungu !== sigungu) return false;
+    if (lease && r.leaseType !== lease) return false;
+    if (complete && r.complete !== complete) return false;
+    if (q) {
+      const hay = norm(r.name + r.addr + r.contractor + r.developer + r.dong + r.sigungu).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // 단지(주소) 단위 그룹화
+  const map = new Map();
+  filtered.forEach(r => {
+    if (!map.has(r.key)) map.set(r.key, {
+      key:r.key, sigungu:r.sigungu, dong:r.dong, name:r.name, addr:r.addr,
+      contractor:r.contractor, developer:r.developer,
+      leaseTypes:new Set(), completes:new Set(),
+      total:0, unsold:0, unsoldPrev:0, types:[]
+    });
+    const g = map.get(r.key);
+    g.total += r.total; g.unsold += r.unsold;
+    if (r.unsoldPrev!=null) g.unsoldPrev += r.unsoldPrev;
+    g.leaseTypes.add(r.leaseType); g.completes.add(r.complete);
+    g.types.push(r);
+  });
+
+  let groups = [...map.values()];
+  if (onlyUnsold) groups = groups.filter(g => g.unsold > 0);
+
+  state.groups = groups;
+  state.page = 1;
+  render();
+}
+
+/* ---------- 정렬/페이지 ---------- */
+function setSort(key) {
+  if (state.sortKey === key) state.sortDir *= -1;
+  else { state.sortKey = key; state.sortDir = -1; }
+  render();
+}
+function movePage(d) {
+  const maxPage = Math.max(1, Math.ceil(state.groups.length / state.perPage));
+  state.page = Math.min(maxPage, Math.max(1, state.page + d));
+  renderTable();
+}
+
+/* ---------- 렌더 ---------- */
+function render() { renderStats(); renderCharts(); renderTable(); renderNote(); }
+
+function renderStats() {
+  const g = state.groups;
+  const total = g.reduce((s,x)=>s+x.total,0);
+  const unsold = g.reduce((s,x)=>s+x.unsold,0);
+  document.getElementById('st-complex').innerHTML = fmt(g.length) + '<span class="sc-u"> 개</span>';
+  document.getElementById('st-total').innerHTML = fmt(total) + '<span class="sc-u"> 호</span>';
+  document.getElementById('st-unsold').innerHTML = fmt(unsold) + '<span class="sc-u"> 호</span>';
+  document.getElementById('st-rate').innerHTML = (total ? (unsold/total*100).toFixed(1) : '0.0') + '<span class="sc-u"> %</span>';
+
+  const sub = document.getElementById('st-unsold-sub');
+  if (state.region === 'gn') {
+    const prev = g.reduce((s,x)=>s+x.unsoldPrev,0);
+    const diff = unsold - prev;
+    sub.innerHTML = diff === 0 ? '전월 동일' :
+      `전월 대비 <span style="color:${diff>0?'var(--red)':'var(--green)'}">${diff>0?'▲':'▼'} ${fmt(Math.abs(diff))}호</span>`;
+  } else sub.textContent = '잔여 미분양 합계';
+}
+
+function renderCharts() {
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  Chart.defaults.font.family = css('--sans');
+  Chart.defaults.font.size = 10;
+  Chart.defaults.color = css('--ink3');
+
+  // 시군구별
+  const agg = {};
+  state.groups.forEach(g => { agg[g.sigungu] = (agg[g.sigungu]||0) + g.unsold; });
+  const entries = Object.entries(agg).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('chart1-sub').textContent = `${REGIONS[state.region].label} · 필터 적용 기준`;
+
+  if (state.charts.sigungu) state.charts.sigungu.destroy();
+  state.charts.sigungu = new Chart(document.getElementById('chart-sigungu'), {
+    type: 'bar',
+    data: { labels: entries.map(e=>e[0]),
+      datasets: [{ data: entries.map(e=>e[1]), backgroundColor: css('--accent'), borderRadius: 3, maxBarThickness: 30 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display:false }, tooltip: { callbacks: { label: c => ` 미분양 ${fmt(c.parsed.y)}호` } } },
+      scales: { y: { beginAtZero:true, grid:{color:css('--bg2')} }, x: { grid:{display:false} } } }
+  });
+
+  // 상위 10 단지
+  const top = [...state.groups].sort((a,b)=>b.unsold-a.unsold).slice(0,10);
+  if (state.charts.top) state.charts.top.destroy();
+  state.charts.top = new Chart(document.getElementById('chart-top'), {
+    type: 'bar',
+    data: { labels: top.map(g => shortName(g).slice(0,16)),
+      datasets: [{ data: top.map(g=>g.unsold), backgroundColor: css('--red'), borderRadius: 3, maxBarThickness: 16 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display:false }, tooltip: { callbacks: {
+        title: items => shortName(top[items[0].dataIndex]),
+        label: c => ` 미분양 ${fmt(c.parsed.x)}호 / 총 ${fmt(top[c.dataIndex].total)}호` } } },
+      scales: { x: { beginAtZero:true, grid:{color:css('--bg2')} }, y: { grid:{display:false} } } }
+  });
+}
+
+function shortName(g) {
+  // 경남 rdnmadr이 길면 시군구 이후 핵심부만 표시
+  let n = g.name;
+  if (state.region === 'gn') n = n.replace(/^경상남도\s*/,'').replace(g.sigungu,'').trim();
+  if (state.region === 'gg') n = n.replace(/^경기도\s*/,'').replace(g.sigungu,'').trim();
+  return n || g.addr;
+}
+
+function renderTable() {
+  const { sortKey, sortDir, page, perPage } = state;
+  const sorted = [...state.groups].sort((a,b)=>(a[sortKey]-b[sortKey])*sortDir || b.unsold-a.unsold);
+  const maxPage = Math.max(1, Math.ceil(sorted.length / perPage));
+  const slice = sorted.slice((page-1)*perPage, page*perPage);
+  const maxUnsold = Math.max(1, ...state.groups.map(g=>g.unsold));
+
+  document.getElementById('tbl-sub').textContent =
+    `${fmt(sorted.length)}개 단지 · ${sortKey==='unsold'?'미분양':'총분양'} ${sortDir<0?'많은 순':'적은 순'}`;
+
+  const body = document.getElementById('tbl-body');
+  body.innerHTML = slice.map((g,i) => {
+    const rate = g.total ? (g.unsold/g.total*100) : 0;
+    const compl = [...g.completes].join('·');
+    return `<tr onclick="openDetail('${g.key}')">
+      <td style="white-space:nowrap">${esc(g.sigungu)}</td>
+      <td><div style="font-weight:400;color:var(--ink)">${esc(shortName(g))}</div>
+          <div style="font-size:11px;color:var(--ink4)">${esc(g.dong)} · ${esc(g.developer||'-')}</div></td>
+      <td style="white-space:nowrap;font-size:12px">${esc(g.contractor||'-')}</td>
+      <td><span class="badge">${esc([...g.leaseTypes].join('·'))}</span></td>
+      <td><span class="badge ${compl==='준공'?'green':''}">${esc(compl||'-')}</span></td>
+      <td class="num">${fmt(g.total)}</td>
+      <td class="num" style="color:${g.unsold>0?'var(--red)':'var(--ink4)'};font-weight:500">${fmt(g.unsold)}</td>
+      <td><div class="bar-w"><div class="bar" style="width:${Math.max(2, g.unsold/maxUnsold*70)}px;opacity:${g.unsold>0?1:.15}"></div>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${rate.toFixed(1)}%</span></div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('empty').style.display = sorted.length ? 'none' : 'block';
+  document.getElementById('pager').style.display = sorted.length ? 'flex' : 'none';
+  document.getElementById('pg-info').textContent = `${page} / ${maxPage}`;
+  document.getElementById('pg-prev').disabled = page <= 1;
+  document.getElementById('pg-next').disabled = page >= maxPage;
+}
+
+function renderNote() {
+  const rows = state.cache[state.region] || [];
+  let ref = '';
+  if (state.region === 'busan') {
+    const dates = [...new Set(rows.map(r=>r.refDate).filter(Boolean))].sort().reverse();
+    ref = dates.length ? ` · 기준일 ${dates.join(', ')}` : '';
+  }
+  let warn = '';
+  if (state.region === 'gg')
+    warn = ' · 원천 중복행 보정 적용 · 위치 미공개 단지는 시군별 "비공개 단지"로 합산 표시';
+  document.getElementById('src-note').textContent =
+    `※ 출처: ${REGIONS[state.region].source}${ref} · 전용면적(타입) 단위 데이터를 단지(주소) 기준으로 합산 · 단지 행 클릭 시 타입별 상세 표시${warn}`;
+}
+
+/* ---------- 상세 모달 ---------- */
+function openDetail(key) {
+  const g = state.groups.find(x => x.key === key);
+  if (!g) return;
+  const isGN = state.region === 'gn';
+
+  document.getElementById('md-title').textContent = shortName(g);
+  document.getElementById('md-meta').innerHTML =
+    `${esc(g.sigungu)} ${esc(g.dong)} · ${esc(g.addr)}<br>` +
+    `시공: ${esc(g.contractor||'-')} · 시행: ${esc(g.developer||'-')} · ` +
+    `총 ${fmt(g.total)}호 중 미분양 <span style="color:var(--red)">${fmt(g.unsold)}호</span>`;
+
+  const isGG = state.region === 'gg';
+  document.getElementById('md-thead').innerHTML = `<tr>
+    <th>전용면적(타입)</th><th>구분</th><th class="num">총분양</th>
+    ${isGN ? '<th class="num">전월 미분양</th>' : ''}
+    <th class="num">미분양</th><th>${isGN?'승인일':'청약일'}</th>${isGG?'':'<th>계약마감</th>'}<th>입주예정</th><th>준공</th>
+  </tr>`;
+
+  const sorted = [...g.types].sort((a,b)=>b.unsold-a.unsold);
+  document.getElementById('md-body').innerHTML = sorted.map(t => `<tr style="cursor:default">
+    <td class="num" style="text-align:left">${esc(t.scale)}㎡</td>
+    <td><span class="badge">${esc(t.leaseType)}</span></td>
+    <td class="num">${fmt(t.total)}</td>
+    ${isGN ? `<td class="num" style="color:var(--ink4)">${fmt(t.unsoldPrev)}</td>` : ''}
+    <td class="num" style="color:${t.unsold>0?'var(--red)':'var(--ink4)'};font-weight:500">${fmt(t.unsold)}</td>
+    <td style="font-family:var(--mono);font-size:11px">${esc(t.subscDt||'-')}</td>
+    ${isGG ? '' : `<td style="font-family:var(--mono);font-size:11px">${esc(t.deadline||'-')}</td>`}
+    <td style="font-family:var(--mono);font-size:11px">${esc(t.moveIn||'-')}</td>
+    <td><span class="badge ${t.complete==='준공'?'green':''}">${esc(t.complete||'-')}</span></td>
+  </tr>`).join('');
+
+  document.getElementById('modal-bg').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ---------- 시작 ---------- */
+loadRegion('gg');
+</script>
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-(async()=>{try{
-  const app=getApps().find(a=>a.name==="[DEFAULT]")||initializeApp(FIREBASE_CONFIG);
-  const db=getFirestore(app),today=new Date().toISOString().slice(0,10);
-  const[ts,as]=await Promise.all([getDoc(doc(db,"analytics_daily",today)),getDocs(collection(db,"analytics_daily"))]);
-  const tv=ts.exists()?(ts.data().views||0):0;let tot=50000;as.forEach(d=>{tot+=(d.data().views||0);});
-  const el=document.getElementById("visitor-counter");if(!el)return;
-  const fmt=n=>n.toLocaleString("ko-KR");
-  el.innerHTML=`<span style="display:inline-flex;align-items:center;gap:.4rem;font-size:11px;padding:.2rem .6rem;background:#fff;border-radius:20px;border:1px solid #eaeff4"><span style="color:#9aa6b2;font-size:9px">TODAY</span><span style="color:#3478f6;font-weight:700">${fmt(tv)}</span><span style="color:#dfe6ed">|</span><span style="color:#9aa6b2;font-size:9px">TOTAL</span><span style="font-weight:700">${fmt(tot)}</span></span>`;
-  el.style.display="flex";
-}catch(e){}})();
+(async () => {
+  try {
+    const app = getApps().find(a=>a.name==='[DEFAULT]') || initializeApp(FIREBASE_CONFIG);
+    const db = getFirestore(app);
+    const today = new Date().toISOString().slice(0,10);
+    const [todaySnap, allSnap] = await Promise.all([
+      getDoc(doc(db,'analytics_daily',today)),
+      getDocs(collection(db,'analytics_daily'))
+    ]);
+    const todayV = todaySnap.exists() ? (todaySnap.data().views||0) : 0;
+    let total = 50000;
+    allSnap.forEach(d => { total += (d.data().views||0); });
+    const el = document.getElementById('visitor-counter');
+    if (!el) return;
+    const fmt = n => n.toLocaleString('ko-KR');
+    el.innerHTML =
+      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
+      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
+      `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
+      `<span style="color:var(--bg3)">|</span>` +
+      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TOTAL</span>` +
+      `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
+      `</span>`;
+    el.style.display = 'flex';
+  } catch(e) {}
+})();
 </script>
-<script src="/js/firebase-config.js"></script>
-<script type="module" src="/js/inquiry.js"></script>
+<script src="js/firebase-config.js"></script>
+<script type="module" src="js/inquiry.js"></script>
 </body>
 </html>
