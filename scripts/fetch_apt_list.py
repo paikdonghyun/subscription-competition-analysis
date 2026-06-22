@@ -41,7 +41,7 @@ def fetch_page(page, per=100, retry=3):
 
 def slim(row):
     """필요한 필드만 추출 → 파일 크기 최소화"""
-    def d(k): return (row.get(k) or '').strip()
+    def d(k): return str(row.get(k) or '').strip()
     return {
         'no':   d('HOUSE_MANAGE_NO'),
         'pbno': d('PBLANC_NO'),
