@@ -86,7 +86,7 @@
     <a href="/search.html" class="new" aria-current="page">단지검색</a>
     <a href="/competition.html">청약경쟁률</a>
     <a href="/price.html">분양가격</a>
-    <a href="/unsold.html">미분양</a>
+    <a href="/unsold.html">지역별 미분양 현황</a>
     <a href="/bankbook.html">청약통장</a>
   </nav>
   <span id="visitor-counter" style="display:none;margin-left:8px"></span>
@@ -99,7 +99,7 @@
   <a href="/search.html" aria-current="page">단지검색</a>
   <a href="/competition.html">청약경쟁률</a>
   <a href="/price.html">분양가격</a>
-  <a href="/unsold.html">미분양</a>
+  <a href="/unsold.html">지역별 미분양 현황</a>
   <a href="/bankbook.html">청약통장</a>
 </div></header>
 
@@ -201,8 +201,8 @@ const todayStr = today.toISOString().slice(0,10).replace(/-/g,'');
 function parseDate(s){ return s ? s.replace(/-/g,'') : ''; }
 
 function getStatus(row){
-  const rcptS = parseDate(row.GNRL_RNK1_CRSPAREA_RCPTDE || row.RCEPT_BGNDE || row.SPSPLY_RCEPT_BGNDE || '');
-  const rcptE = parseDate(row.GNRL_RNK2_CRSPAREA_ENDDE || row.RCEPT_ENDDE || '');
+  const rcptS = parseDate(row.r1s || row.GNRL_RNK1_CRSPAREA_RCPTDE || row.RCEPT_BGNDE || '');
+  const rcptE = parseDate(row.r2e || row.GNRL_RNK2_CRSPAREA_ENDDE || row.RCEPT_ENDDE || '');
   if(!rcptS) return 'soon';
   if(todayStr < rcptS) return 'soon';
   if(todayStr <= rcptE) return 'live';
@@ -210,7 +210,7 @@ function getStatus(row){
 }
 
 function dday(row){
-  const rcptS = parseDate(row.GNRL_RNK1_CRSPAREA_RCPTDE || row.RCEPT_BGNDE || row.SPSPLY_RCEPT_BGNDE || '');
+  const rcptS = parseDate(row.r1s || row.GNRL_RNK1_CRSPAREA_RCPTDE || row.RCEPT_BGNDE || row.SPSPLY_RCEPT_BGNDE || '');
   if(!rcptS) return null;
   const diff = Math.ceil((new Date(rcptS.slice(0,4)+'-'+rcptS.slice(4,6)+'-'+rcptS.slice(6,8)) - today) / 86400000);
   return diff;
@@ -286,8 +286,8 @@ async function loadAll(){
 function applyFilter(){
   const kw = keyword.replace(/\s/g,'').toLowerCase();
   filtered = allData.filter(row => {
-    const nm   = (row.HOUSE_NM || '').replace(/\s/g,'').toLowerCase();
-    const area = (row.SUBSCRPT_AREA_CODE_NM || '') + ' ' + (row.HSSPLY_ADRES || '');
+    const nm   = (row.nm || row.HOUSE_NM || '').replace(/\s/g,'').toLowerCase();
+    const area = (row.area || row.SUBSCRPT_AREA_CODE_NM || '') + ' ' + (row.addr || row.HSSPLY_ADRES || '');
     const st   = getStatus(row);
 
     if(kw && !nm.includes(kw) && !area.includes(keyword)) return false;
@@ -305,13 +305,13 @@ function applyFilter(){
 function sortData(){
   const sel = document.getElementById('sortSel').value;
   filtered.sort((a,b)=>{
-    if(sel === 'name') return (a.HOUSE_NM||'').localeCompare(b.HOUSE_NM||'','ko');
-    if(sel === 'area') return (a.SUBSCRPT_AREA_CODE_NM||'').localeCompare(b.SUBSCRPT_AREA_CODE_NM||'','ko');
+    if(sel === 'name') return (a.nm||a.HOUSE_NM||'').localeCompare(b.nm||b.HOUSE_NM||'','ko');
+    if(sel === 'area') return (a.area||a.SUBSCRPT_AREA_CODE_NM||'').localeCompare(b.area||b.SUBSCRPT_AREA_CODE_NM||'','ko');
     // date: 임박순 (접수중 > 예정 > 마감, 같은 그룹은 날짜 오름차순)
     const stA = getStatus(a), stB = getStatus(b);
     const order = {live:0, soon:1, done:2};
     if(order[stA] !== order[stB]) return order[stA] - order[stB];
-    return (parseDate(a.GNRL_RNK1_CRSPAREA_RCPTDE||a.RCEPT_BGNDE||a.SPSPLY_RCEPT_BGNDE||'9') > parseDate(b.GNRL_RNK1_CRSPAREA_RCPTDE||b.RCEPT_BGNDE||b.SPSPLY_RCEPT_BGNDE||'9')) ? 1 : -1;
+    return (parseDate(a.r1s||a.GNRL_RNK1_CRSPAREA_RCPTDE||'9') > parseDate(b.r1s||b.GNRL_RNK1_CRSPAREA_RCPTDE||'9')) ? 1 : -1;
   });
 }
 
@@ -339,9 +339,9 @@ function renderList(){
     const dd    = dday(row);
     const area  = row.SUBSCRPT_AREA_CODE_NM || (row.HSSPLY_ADRES||'').split(' ').slice(0,2).join(' ');
     const adres = (row.HSSPLY_ADRES||'').split(' ').slice(0,3).join(' ');
-    const rcptS = fmtDate(row.GNRL_RNK1_CRSPAREA_RCPTDE || row.RCEPT_BGNDE || row.SPSPLY_RCEPT_BGNDE);
-    const rcptE = fmtDate(row.GNRL_RNK2_CRSPAREA_ENDDE || row.RCEPT_ENDDE);
-    const tot   = row.TOT_SUPLY_HSHLDCO ? Number(row.TOT_SUPLY_HSHLDCO).toLocaleString()+'세대' : '-';
+    const rcptS = fmtDate(row.r1s || row.GNRL_RNK1_CRSPAREA_RCPTDE || row.RCEPT_BGNDE);
+    const rcptE = fmtDate(row.r2e || row.GNRL_RNK2_CRSPAREA_ENDDE || row.RCEPT_ENDDE);
+    const tot   = row.tot ? Number(row.tot).toLocaleString()+'세대' : (row.TOT_SUPLY_HSHLDCO ? Number(row.TOT_SUPLY_HSHLDCO).toLocaleString()+'세대' : '-');
 
     const bdg = st==='live'
       ? `<span class="bdg bdg-live">접수중</span>`
@@ -351,10 +351,10 @@ function renderList(){
 
     const houseType = row.HOUSE_SECD_NM || '';
 
-    return `<a class="aptcard" href="/apt.html?no=${row.HOUSE_MANAGE_NO}&pbno=${row.PBLANC_NO}">
+    return `<a class="aptcard" href="/apt.html?no=${row.no||row.HOUSE_MANAGE_NO}&pbno=${row.pbno||row.PBLANC_NO}">
       <div class="card-top">
         ${bdg}
-        <span class="card-nm">${row.HOUSE_NM||'-'}</span>
+        <span class="card-nm">${row.nm||row.HOUSE_NM||'-'}</span>
         <span class="card-rg">${adres || area}</span>
       </div>
       <div class="card-stats">
