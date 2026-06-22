@@ -519,23 +519,49 @@ function fmtDist(m) {
 }
 
 async function loadKakaoLocation(address, aptName) {
+  const poiList   = document.getElementById('poiList');
+  const mapTagEl  = document.getElementById('mapTag');
+
+  // POI 초기 로딩 메시지
+  if (poiList) poiList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px"><span style="display:block;width:18px;height:18px;border:2.5px solid var(--line2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px"></span>주변 정보 로딩 중…</div>';
+
+  let x, y;
+
   try {
-    // 1. 주소 → 좌표
-    const addrRes = await kakaoFetch(
-      `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`
-    );
-    let x, y;
-    if (addrRes.documents && addrRes.documents.length > 0) {
-      x = addrRes.documents[0].x;
-      y = addrRes.documents[0].y;
-    } else {
-      // 키워드 검색으로 fallback
-      const kwRes = await kakaoFetch(
-        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(aptName)}&size=1`
-      );
-      if (!kwRes.documents || !kwRes.documents.length) return;
-      x = kwRes.documents[0].x;
-      y = kwRes.documents[0].y;
+    // ── 1단계: 전체 주소로 검색 ──
+    if (address) {
+      const r1 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`);
+      if (r1.documents?.length) { x = r1.documents[0].x; y = r1.documents[0].y; }
+    }
+
+    // ── 2단계: 주소 앞 3어절로 축약 검색 ──
+    if (!x && address) {
+      const shortAddr = address.split(' ').slice(0, 3).join(' ');
+      const r2 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(shortAddr)}`);
+      if (r2.documents?.length) { x = r2.documents[0].x; y = r2.documents[0].y; }
+    }
+
+    // ── 3단계: 단지명 핵심어 추출 후 키워드 검색 ──
+    if (!x && aptName) {
+      // 블록번호·특수문자 제거, 앞 10자 이내 핵심어 추출
+      const core = aptName.replace(/[A-Z0-9]+블록|행복주택|아파트|오피스텔/g, '').trim().slice(0, 12);
+      const r3 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(core)}&size=1`);
+      if (r3.documents?.length) { x = r3.documents[0].x; y = r3.documents[0].y; }
+    }
+
+    // ── 4단계: 주소 시군구 + 단지명 핵심어 조합 ──
+    if (!x && address && aptName) {
+      const district = address.split(' ').slice(0, 2).join(' ');
+      const core2    = aptName.replace(/[A-Z0-9]+블록|행복주택|아파트|오피스텔|\(.*?\)/g, '').trim().slice(0, 10);
+      const r4 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(district + ' ' + core2)}&size=1`);
+      if (r4.documents?.length) { x = r4.documents[0].x; y = r4.documents[0].y; }
+    }
+
+    // 좌표 획득 실패
+    if (!x || !y) {
+      if (poiList) poiList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">위치 정보를 찾을 수 없습니다.<br><small>' + (address || aptName) + '</small></div>';
+      if (mapTagEl) mapTagEl.textContent = '위치 정보 없음';
+      return;
     }
 
     // 2. 카테고리별 POI 병렬 호출
@@ -547,7 +573,6 @@ async function loadKakaoLocation(address, aptName) {
     ]);
 
     // 3. POI 렌더
-    const poiList = document.getElementById('poiList');
     const rows = [];
 
     const subItems = subway.documents || [];
