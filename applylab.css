@@ -64,15 +64,15 @@ header.gnb {
 }
 /* 로고 */
 header.gnb .logo {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -.03em;
-  text-decoration: none;
-  color: var(--ink);
-  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-weight: 800 !important;
+  font-size: 18px !important;
+  letter-spacing: -.03em !important;
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  flex-shrink: 0 !important;
 }
 header.gnb .logo b { color: var(--brand); }
 header.gnb .logo-mk {
@@ -96,13 +96,14 @@ header.gnb .nav {
   flex: 1 !important;
   overflow-x: auto !important;
   background: transparent !important;
-  border-bottom: none !important;
+  border: none !important;
   box-shadow: none !important;
   position: static !important;
   height: auto !important;
   padding: 0 !important;
   margin: 0 !important;
   z-index: auto !important;
+  top: auto !important;
 }
 header.gnb .nav a {
   color: var(--muted) !important;

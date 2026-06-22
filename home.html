@@ -50,46 +50,46 @@ html{scroll-behavior:smooth}
 body{font-family:'Pretendard',var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
 
 /* ── NAV (반응형) ── */
-.nav{}
-.nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
-.logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0}
-.logo-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
-.logo-en{font-family:var(--mono);font-size:.68rem;color:var(--ink3);letter-spacing:.05em}
-.nav-div{width:1px;height:16px;background:var(--bg3);flex-shrink:0}
-.nav-menu{display:flex;gap:.125rem;flex:1}
-.nav-a{font-size:13px;color:var(--ink3);padding:.38rem .75rem;border-radius:var(--r);transition:all .12s;text-decoration:none;white-space:nowrap}
-.nav-a:hover{color:var(--ink);background:var(--bg2)}
-.nav-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
-.nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
-.nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
+
+
+
+
+
+
+
+
+
+
+
+
 /* 햄버거 버튼 */
-.nav-hamburger{display:none!important!important;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--r);flex-shrink:0}
-.nav-hamburger span{display:block;height:2px;background:var(--ink2);border-radius:2px;transition:all .25s}
-.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.nav-hamburger.open span:nth-child(2){opacity:0}
-.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+
+
+
+
 /* 모바일 드롭다운 */
-.nav-mobile{display:none;flex-direction:column;background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:0 4px 12px rgba(0,0,0,.08);position:sticky;top:54px;z-index:99}
-.nav-mobile.open{display:flex}
-.nav-mobile-inner{max-width:1400px;margin:0 auto;width:100%;padding:.5rem 1.25rem .75rem;display:flex;flex-direction:column;gap:2px}
-.nav-mobile-a{font-size:14px;color:var(--ink2);padding:.65rem .875rem;border-radius:var(--r);text-decoration:none;transition:background .12s;font-weight:300}
-.nav-mobile-a:hover{background:var(--bg2)}
-.nav-mobile-a.on{color:var(--accent);font-weight:500;background:var(--accent-l)}
-.nav-mobile-divider{height:1px;background:var(--bg2);margin:.35rem 0}
-.nav-mobile-btn{display:none}
+
+
+
+
+
+
+
+
 /* 방문자 카운터 */
-#visitor-counter{flex-shrink:0}
+
 /* 반응형 분기 */
 @media(max-width:900px){
-  .nav-menu,.nav-div,.nav-right{display:none}
-  .nav-hamburger{display:none!important}
-  .nav-in{padding:0 1rem}
+  .nav-menu,.nav-div,
+  
+  
 }
 @media(min-width:901px){
-  .nav-mobile{display:none!important}
+  
 }
 @media(max-width:480px){
-  .logo-en{display:none}
+  
 }
 
 /* ── 모바일 최적화 ── */
