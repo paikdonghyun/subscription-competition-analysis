@@ -147,6 +147,7 @@
   <div class="result-head">
     <h2>단지 목록</h2>
     <span class="result-count" id="resultCount"></span>
+    <span id="data-note" style="font-size:11px;color:var(--faint);margin-left:4px"></span>
     <select class="sort-sel" id="sortSel" onchange="renderList()">
       <option value="date">청약일 임박순</option>
       <option value="name">단지명순</option>
@@ -231,42 +232,53 @@ async function fetchPage(pg){
 }
 
 async function loadAll(){
-  document.getElementById('loading-msg').style.display = 'block';
+  const loadMsg  = document.getElementById('loading-msg');
+  const loadNote = document.getElementById('loading-note');
+  loadMsg.style.display = 'block';
   document.getElementById('resultList').innerHTML = '';
   document.getElementById('moreBtn').style.display = 'none';
   loadedAll = false;
 
   try {
-    // 1단계: 1페이지(100건) 즉시 로드 → 접수중·예정 단지 우선 표시
+    // ── 1순위: JSON 파일 로드 (빠름, Actions로 매일 갱신) ──
+    const metaRes = await fetch('/data/apt/meta.json');
+    if(metaRes.ok){
+      const listRes = await fetch('/data/apt/list.json');
+      if(listRes.ok){
+        allData = await listRes.json();
+        loadedAll = true;
+        loadMsg.style.display = 'none';
+        // 메타 정보 표시
+        const meta = await metaRes.json();
+        const note = document.getElementById('data-note');
+        if(note) note.textContent = `청약홈 ${meta.count.toLocaleString()}건 · ${meta.updated} 기준`;
+        applyFilter();
+        return;
+      }
+    }
+  } catch(e) {}
+
+  // ── 2순위: JSON 없으면 API 직접 호출 (초기 배포 시) ──
+  try {
+    if(loadNote) loadNote.style.display = 'block';
     const p1 = await fetchPage(1);
     allData = [...p1];
-    document.getElementById('loading-msg').style.display = 'none';
+    loadMsg.style.display = 'none';
     applyFilter();
 
-    // 2단계: 나머지 전체 백그라운드 로드 (총 페이지 계산)
     const totalPages = Math.ceil(totalCount / 100);
-    if(totalPages > 1){
-      const loadingNote = document.getElementById('loading-note');
-      if(loadingNote) loadingNote.style.display = 'block';
-
-      // 5페이지씩 병렬 로드
-      for(let pg=2; pg<=totalPages; pg+=5){
-        const batch = [];
-        for(let i=pg; i<Math.min(pg+5, totalPages+1); i++) batch.push(fetchPage(i));
-        const results = await Promise.all(batch);
-        results.forEach(rows => allData.push(...rows));
-        // 접수중·예정 단지 위주 필터 중이면 중간 업데이트
-        if(!keyword && statusVal !== 'done') applyFilter();
-      }
-      loadedAll = true;
-      if(loadingNote) loadingNote.style.display = 'none';
-      applyFilter(); // 최종 업데이트
-    } else {
-      loadedAll = true;
+    for(let pg=2; pg<=totalPages; pg+=5){
+      const batch = [];
+      for(let i=pg; i<Math.min(pg+5, totalPages+1); i++) batch.push(fetchPage(i));
+      const results = await Promise.all(batch);
+      results.forEach(rows => allData.push(...rows));
+      if(!keyword && statusVal !== 'done') applyFilter();
     }
+    loadedAll = true;
+    if(loadNote) loadNote.style.display = 'none';
+    applyFilter();
   } catch(e) {
-    document.getElementById('loading-msg').innerHTML =
-      '<span style="color:#e2563f">데이터 조회 실패. 잠시 후 새로고침해 주세요.</span>';
+    loadMsg.innerHTML = '<span style="color:#e2563f">데이터 조회 실패. 잠시 후 새로고침해 주세요.</span>';
   }
 }
 
