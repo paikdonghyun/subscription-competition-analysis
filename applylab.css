@@ -325,29 +325,48 @@ footer.al-footer {
 
 /* ── 17. 모바일 ── */
 @media (max-width: 900px) {
-  header.gnb .nav { display: none; }
-  .navtog { display: flex; }
+  /* GNB 메뉴 숨기고 햄버거 표시 */
+  header.gnb .nav { display: none !important; }
+  .navtog { display: flex !important; }
+
+  /* gnb-in 패딩 축소 */
+  .gnb-in { padding: 0 14px; gap: 8px; }
+
+  /* visitor counter 모바일에서 숨김 (공간 부족) */
+  header.gnb #visitor-counter { display: none !important; }
+
+  /* 드로어 (전체화면 메뉴) */
   html.nav-open .drawer {
     display: block;
-    position: fixed; inset: 60px 0 0;
+    position: fixed; inset: 60px 0 0 0;
     background: var(--bg); z-index: 9998;
     padding: 16px 20px; overflow-y: auto;
     animation: al-slidein .2s ease;
     font-family: 'Pretendard', system-ui, sans-serif;
   }
   html.nav-open .drawer a {
-    display: block; padding: 15px 14px;
+    display: block; padding: 14px 16px;
     font-size: 16px; font-weight: 600;
     border-radius: 13px; color: var(--ink);
-    text-decoration: none;
+    text-decoration: none; margin-bottom: 2px;
   }
+  html.nav-open .drawer a:hover { background: var(--surface); }
   html.nav-open .drawer a[aria-current] {
     background: var(--surface); color: var(--brand); box-shadow: var(--sh);
   }
+  html.nav-open .drawer a.new { color: var(--brand); }
+
+  /* 햄버거 X 변환 */
   html.nav-open .navtog span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
   html.nav-open .navtog span:nth-child(2) { opacity: 0; }
   html.nav-open .navtog span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
   html.nav-open { overflow: hidden; }
+
+  /* 기존 페이지 구 nav 모바일 요소 완전 숨김 */
+  .nav-hamburger { display: none !important; }
+  .nav-mobile    { display: none !important; }
+
+  /* 레이아웃 */
   .al-grid4 { grid-template-columns: 1fr 1fr; }
 }
 @keyframes al-slidein {

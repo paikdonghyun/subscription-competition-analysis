@@ -50,7 +50,7 @@ html{scroll-behavior:smooth}
 body{font-family:'Pretendard',var(--sans);background:var(--bg);color:var(--ink);font-weight:300;font-size:14px;line-height:1.6}
 
 /* ── NAV (반응형) ── */
-.nav{background:var(--white);border-bottom:1px solid var(--bg3);box-shadow:var(--sh);position:sticky;top:0;z-index:100}
+.nav{}
 .nav-in{max-width:1400px;margin:0 auto;height:54px;display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
 .logo{display:flex;align-items:baseline;gap:.35rem;text-decoration:none;flex-shrink:0}
 .logo-kr{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
@@ -63,7 +63,7 @@ body{font-family:'Pretendard',var(--sans);background:var(--bg);color:var(--ink);
 .nav-right{display:flex;align-items:center;gap:.75rem;margin-left:auto;flex-shrink:0}
 .nav-btn{font-size:12px;font-weight:500;padding:.35rem .875rem;border-radius:var(--r);background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
 /* 햄버거 버튼 */
-.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--r);flex-shrink:0}
+.nav-hamburger{display:none!important!important;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--r);flex-shrink:0}
 .nav-hamburger span{display:block;height:2px;background:var(--ink2);border-radius:2px;transition:all .25s}
 .nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .nav-hamburger.open span:nth-child(2){opacity:0}
@@ -82,7 +82,7 @@ body{font-family:'Pretendard',var(--sans);background:var(--bg);color:var(--ink);
 /* 반응형 분기 */
 @media(max-width:900px){
   .nav-menu,.nav-div,.nav-right{display:none}
-  .nav-hamburger{display:flex}
+  .nav-hamburger{display:none!important}
   .nav-in{padding:0 1rem}
 }
 @media(min-width:901px){
