@@ -236,7 +236,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
         <div class="method">
           <b>평가 방법</b> · 사실값(공공 API)을 0~100 환산 후 단계별 가중합. 룰은 공개합니다.
           <div class="wchips" id="weightChips"></div>
-          <div class="caveat">⚠ 인기도는 실제 청약 경쟁률(또는 청약통장 가입 추세) + 네이버 블로그·카페 언급량 + 지역 청약통장 규모를 종합 산출합니다. 점수는 참고 지표입니다.</div>
+          <div class="caveat">⚠ 인기도 = 수요지표(65%, 실제 경쟁률·청약통장 추세에 네이버 언급량 혼합) + 안정성지표(35%, 지역 청약통장 규모). 점수는 참고 지표입니다.</div>
         </div>
       </div>
     </div>
@@ -353,7 +353,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
         <li>가점 커트라인 — 청약홈 가점제 당첨자 점수</li>
         <li>시세·프리미엄 — 국토교통부 실거래가 API</li>
         <li>입지·지도 — 카카오 로컬 API</li>
-        <li>브랜드 — 시공능력평가 순위 · 인기도 — 청약 경쟁률·네이버 언급량·청약통장 추세</li>
+        <li>브랜드 — 시공능력평가 순위 · 인기도 — 수요65%(경쟁률·청약통장·네이버) + 안정성35%(지역 가입자 규모)</li>
       </ul>
     </div>
   </section>
@@ -1033,36 +1033,42 @@ async function loadPopularity(houseManageNo, areaNm, aptName, actualCompRate) {
     const prevCnt   = byMonth[prev3]?.[bnkbArea] || 1;
     const growthPct = ((latestCnt - prevCnt) / prevCnt) * 100;
 
-    // ── ③ 수요지표 (실제 경쟁률 또는 청약통장 증가율) ──
-    let demandScore, demandLabel;
+    // ── ③ 수요지표 (65%) — 핵심신호 + 네이버 언급량 보조 ──
+    let coreScore, coreLabel;
     if (actualCompRate != null && actualCompRate > 0) {
-      demandScore = Math.min(100, (actualCompRate / 30) * 100);
-      demandLabel = `실제 경쟁률 ${actualCompRate.toFixed(1)}:1 기준`;
+      // 청약 마감: 실제 경쟁률 (30:1=만점 기준)
+      coreScore = Math.min(100, (actualCompRate / 30) * 100);
+      coreLabel = `실제 경쟁률 ${actualCompRate.toFixed(1)}:1`;
     } else {
-      demandScore = Math.max(0, Math.min(100, 50 + growthPct * 25));
-      demandLabel = `${areaNm||'해당지역'} 청약통장 최근 3개월 ${growthPct>=0?'+':''}${growthPct.toFixed(1)}%`;
+      // 청약 전/진행중: 지역 청약통장 증가율 (월 +0.5%=중간, +2%=만점)
+      coreScore = Math.max(0, Math.min(100, 50 + growthPct * 25));
+      coreLabel = `${areaNm||'해당지역'} 청약통장 추세 ${growthPct>=0?'+':''}${growthPct.toFixed(1)}%`;
     }
 
-    // ── ④ 안정성지표 (지역 청약통장 규모 백분위) ──
+    let demandScore, demandLabel;
+    if (mentionPercentile != null) {
+      // 네이버 언급량 있음 → 핵심신호와 혼합 (청약마감: 핵심70%+네이버30% / 진행중: 핵심60%+네이버40%)
+      const naverWeight = (actualCompRate != null && actualCompRate > 0) ? 0.30 : 0.40;
+      const coreWeight  = 1 - naverWeight;
+      demandScore = coreScore * coreWeight + mentionPercentile * naverWeight;
+      demandLabel = `${coreLabel} · ${mentionLabel}(백분위${mentionPercentile})`;
+    } else {
+      // 네이버 데이터 없음 → 핵심신호 단독
+      demandScore = coreScore;
+      demandLabel = coreLabel;
+    }
+
+    // ── ④ 안정성지표 (35%) — 지역 청약통장 규모 백분위 ──
     const allAreaCounts = Object.values(byMonth[latest] || {});
     const maxCnt = Math.max(...allAreaCounts, 1);
     const stabilityScore = Math.min(100, (latestCnt / maxCnt) * 100);
 
-    // ── ⑤ 최종 가중합 ──
-    let popularity, finalLabel;
-    if (mentionPercentile != null) {
-      // 네이버 언급량 데이터 있음 → 3축 모델
-      popularity = Math.round(demandScore * 0.45 + stabilityScore * 0.25 + mentionPercentile * 0.30);
-      finalLabel = `${demandLabel} · ${mentionLabel}`;
-    } else {
-      // 네이버 데이터 없음(미수집/최근±60일 외 단지) → 2축 모델로 폴백
-      popularity = Math.round(demandScore * 0.65 + stabilityScore * 0.35);
-      finalLabel = demandLabel;
-    }
+    // ── ⑤ 최종 가중합: 수요(65%) + 안정성(35%) ──
+    const popularity = Math.round(demandScore * 0.65 + stabilityScore * 0.35);
 
     return {
       score: popularity,
-      label: finalLabel,
+      label: demandLabel,
       demandScore: Math.round(demandScore),
       stabilityScore: Math.round(stabilityScore),
       mentionPercentile,
