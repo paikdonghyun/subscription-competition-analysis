@@ -91,9 +91,9 @@ def main():
         # 검색어: "단지명 지역명" 조합으로 정확도 향상
         query = f'{nm} {area}'.strip()
 
-        blog_cnt = naver_search('blog', query, debug=(i < 5))
+        blog_cnt = naver_search('blog', query)
         time.sleep(0.05)
-        cafe_cnt = naver_search('cafearticle', query, debug=(i < 5))
+        cafe_cnt = naver_search('cafearticle', query)
         time.sleep(0.05)
 
         results[no] = {
