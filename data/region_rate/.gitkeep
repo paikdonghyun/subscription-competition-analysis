@@ -1,0 +1,2 @@
+# GitHub Actions가 매일 수집한 지역별 최근 1년 청약 경쟁률 캐시를 저장합니다.
+# list.json: {지역명: {avg, median, count, percentile}}
