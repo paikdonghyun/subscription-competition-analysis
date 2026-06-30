@@ -1125,11 +1125,6 @@ async function loadCompetRate(houseManageNo, areaCode, totalScore) {
     const json = await res.json();
     const actual = json.data || [];
 
-    // 2. 인근 지역 최근 3년 경쟁률 조회 (예상 계산용)
-    const regionRes = await fetch(`${API_CMPET}?page=1&perPage=200&serviceKey=${API_KEY}`);
-    const regionJson = await regionRes.json();
-    const regionData = regionJson.data || [];
-
     let actualAvgRate = null;
     if (actual.length > 0) {
       // 실제 경쟁률 있음 → 표시
@@ -1144,11 +1139,11 @@ async function loadCompetRate(houseManageNo, areaCode, totalScore) {
       const rates = (rank1.length ? rank1 : actual).map(d => parseRate(d.CMPET_RATE)).filter(r => r > 0);
       actualAvgRate = rates.length ? rates.reduce((a,b)=>a+b,0)/rates.length : null;
     } else {
-      // 실제 없음 → 예상 계산
+      // 실제 없음 → 해당 지역 최근 1년 캐시 기반 예상 계산
       COMP.hasActual = false;
       title.textContent = '예상 청약 경쟁률';
-      note.textContent = '인근 지역 최근 데이터 기반';
-      renderExpectedComp(regionData, areaCode, totalScore, body);
+      note.textContent = '해당 지역 최근 1년 데이터 기반';
+      await renderExpectedComp(areaCode, totalScore, body);
     }
 
     // ── 인기도 산출 및 반영 ──
@@ -1206,12 +1201,40 @@ function renderActualComp(data, body) {
   requestAnimationFrame(() => body.querySelectorAll('[data-w]').forEach(i => i.style.width = i.dataset.w + '%'));
 }
 
-function renderExpectedComp(regionData, areaCode, totalScore, body) {
-  // 인근 지역 최근 경쟁률 평균으로 기준값 산출
-  const rates = regionData.map(d => parseRate(d.CMPET_RATE)).filter(r => r > 0);
-  const baseAvg = rates.length ? rates.reduce((a,b)=>a+b,0)/rates.length : 10;
+async function renderExpectedComp(areaCode, totalScore, body) {
+  // ── 해당 지역 최근 1년 청약 경쟁률 캐시 로드 ──
+  // (GitHub Actions가 매일 청약홈 경쟁률 API 전체를 수집해
+  //  지역(시도)별 최근 1년 평균을 캐시해 둔 데이터)
+  let baseAvg = null, sampleCount = 0, cacheUpdated = '';
+  try {
+    const res = await fetch('/data/region_rate/list.json');
+    if (res.ok) {
+      const data = await res.json();
+      const entry = data[areaCode];
+      if (entry) {
+        baseAvg = entry.avg;
+        sampleCount = entry.count;
+      }
+    }
+    const metaRes = await fetch('/data/region_rate/meta.json');
+    if (metaRes.ok) {
+      const meta = await metaRes.json();
+      cacheUpdated = meta.updated;
+    }
+  } catch(e) { /* 캐시 없으면 폴백 */ }
 
-  // 종합점수 기반 보정 (점수 높을수록 경쟁 치열)
+  if (baseAvg == null) {
+    // 캐시에 해당 지역 데이터가 없는 경우 → 명확히 데이터 부족으로 표시
+    body.innerHTML = `<p style="color:var(--faint);font-size:13px;text-align:center;padding:20px">
+      ${areaCode || '해당 지역'}의 최근 1년 청약 경쟁률 데이터가 부족하여 예상치를 산출할 수 없습니다.<br>
+      <small>청약 마감 후 실제 경쟁률로 업데이트됩니다.</small>
+    </p>`;
+    const kpi3 = document.getElementById('kpi3');
+    if (kpi3) { kpi3.innerHTML = '–'; kpi3.closest('.scard').querySelector('.k').textContent = '예상 경쟁률'; }
+    return;
+  }
+
+  // ── 종합점수 기반 보정 (점수 높을수록 경쟁 치열) ──
   const scoreFactor = totalScore ? (totalScore / 70) : 1.0;  // 70점 기준 정규화
   const est = Math.max(1, baseAvg * scoreFactor);
   const lo  = Math.max(1, Math.round(est * 0.6));
@@ -1238,8 +1261,9 @@ function renderExpectedComp(regionData, areaCode, totalScore, body) {
     <span class="v">${est.toFixed(1)}<small>:1</small></span>
   </div>
   <p class="flag-note">
-    인근 지역 최근 청약 경쟁률(평균 ${baseAvg.toFixed(1)}:1)에 단지 종합점수(${totalScore||'–'}점) 보정 적용.
-    음영=예상 범위(${lo}~${hi}:1). <b>실제 청약 마감 후 실데이터로 자동 교체</b>됩니다.
+    ${areaCode} 최근 1년간 마감된 청약 ${sampleCount}건의 평균 경쟁률(${baseAvg.toFixed(1)}:1)에
+    단지 종합점수(${totalScore||'–'}점) 보정 적용. 음영=예상 범위(${lo}~${hi}:1).
+    ${cacheUpdated ? `기준일: ${cacheUpdated} · ` : ''}<b>실제 청약 마감 후 실데이터로 자동 교체</b>됩니다.
   </p>`;
   body.innerHTML = h;
   requestAnimationFrame(() => body.querySelectorAll('[data-w]').forEach(i => i.style.width = i.dataset.w + '%'));
