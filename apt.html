@@ -409,7 +409,7 @@ const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869
     set('aptSize',   d.CNSTRCT_ENTRPS_NM || '');
 
     // ── 브랜드 점수 자동 계산 ──
-    const brandResult = calcBrandScore(d.CNSTRCT_ENTRPS_NM || '');
+    const brandResult = calcBrandScore(d.CNSTRCT_ENTRPS_NM || '', d.HOUSE_NM || '');
     SUB['브랜드'] = brandResult.score;
     FACT['브랜드'] = (d.CNSTRCT_ENTRPS_NM || '') + ' · ' + brandResult.label;
     render('main'); // 브랜드 점수 반영해 즉시 재렌더
@@ -776,9 +776,12 @@ const BRAND_SCORE = {
   // 1군 일반 (9점) - 시공능력 상위 10위권
   '삼성물산':9,'현대건설':9,'대우건설':9,'포스코이앤씨':9,'지에스건설':9,'롯데건설':9,
   'DL이앤씨':9,'현대엔지니어링':9,'sk에코플랜트':9,'호반건설':9,
+  // 한글 표기 변형 (공공데이터 API에 영문 약자가 한글로만 기재되는 경우 대응)
+  '디엘이앤씨':9,'디엘건설':9,'디엘 ':9,'에스케이에코플랜트':9,'에스케이건설':9,
+  '한화건설':9,'한화 건설부문':9,
   // 브랜드명으로도 매핑
   '래미안':9,'힐스테이트':9,'푸르지오':9,'더샵':9,'자이':9,'롯데캐슬':9,
-  'e편한세상':9,'아이파크':9,'SK뷰':9,'호반써밋':9,
+  'e편한세상':9,'아이파크':9,'SK뷰':9,'호반써밋':9,'포레나':9,
 
   // 2군 하이앤드 (8점)
   '펜트힐':8,'클라우드힐':8,'어반하이브':8,'리버파크':8,
@@ -795,21 +798,38 @@ const BRAND_SCORE = {
   '신안':6,'삼도':6,'대명':6,'청구':6,'경남':6,'동양':6,
 };
 
-function calcBrandScore(companyName) {
-  if (!companyName) return { score: 50, label: '미확인' };
-  const nm = companyName.replace(/\s|\(주\)|주식회사|\(|\)/g,'').toLowerCase();
+function calcBrandScore(companyName, houseName) {
+  const normalize = s => (s || '').replace(/\s|\(주\)|㈜|주식회사|\(|\)/g,'').toLowerCase();
+  const nm = normalize(companyName);
 
-  // 하이앤드 브랜드 직접 포함 여부 먼저 확인 (10점)
+  // 하이앤드 브랜드 직접 포함 여부 먼저 확인 (10점) — 시공사명 기준
   const hiend10 = ['디에이치','아크로','르엘','오티에르','써밋'];
   for (const b of hiend10) { if (nm.includes(b.toLowerCase())) return { score:100, label:b+' (1군 하이앤드)' }; }
 
-  // 나머지 브랜드 테이블 순회
-  for (const [key, score] of Object.entries(BRAND_SCORE)) {
-    if (nm.includes(key.toLowerCase())) {
-      const tier = score===10?'1군 하이앤드' : score===9?'1군' : score===8?'2군 하이앤드' : score===7?'2군' : score===6?'3군' : '기타';
-      return { score: score*10, label: `${tier} (${score}/10점)` };
+  // 시공사명으로 브랜드 테이블 매칭
+  if (nm) {
+    for (const [key, score] of Object.entries(BRAND_SCORE)) {
+      if (nm.includes(normalize(key))) {
+        const tier = score===10?'1군 하이앤드' : score===9?'1군' : score===8?'2군 하이앤드' : score===7?'2군' : score===6?'3군' : '기타';
+        return { score: score*10, label: `${tier} (${score}/10점)` };
+      }
     }
   }
+
+  // ── 폴백: 시공사명 매칭 실패 시 단지명에서 브랜드명 탐색 ──
+  // (공공데이터 시공사명 표기가 등록 안 된 변형이거나 누락된 경우 대응)
+  const hnm = normalize(houseName);
+  if (hnm) {
+    for (const b of hiend10) { if (hnm.includes(b.toLowerCase())) return { score:100, label:b+' (1군 하이앤드, 단지명 기준)' }; }
+    for (const [key, score] of Object.entries(BRAND_SCORE)) {
+      if (hnm.includes(normalize(key))) {
+        const tier = score===10?'1군 하이앤드' : score===9?'1군' : score===8?'2군 하이앤드' : score===7?'2군' : score===6?'3군' : '기타';
+        return { score: score*10, label: `${tier} (${score}/10점, 단지명 기준)` };
+      }
+    }
+  }
+
+  if (!companyName) return { score: 50, label: '미확인' };
   return { score: 50, label: '기타 건설사 (5/10점)' };
 }
 
