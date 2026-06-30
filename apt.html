@@ -363,14 +363,15 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 
 
 <script>
+/* ── 전역 API 키 (모든 스크립트 블록에서 공용 사용) ── */
+const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
+
 /* ── URL 파라미터로 실제 API 데이터 로드 ── */
 (async () => {
   const params = new URLSearchParams(location.search);
   const no   = params.get('no');
   const pbno = params.get('pbno');
   if (!no && !pbno) return; // 파라미터 없으면 샘플 데이터 유지
-
-  const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869c';
 
   try {
     // 단지 상세 API 호출
