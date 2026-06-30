@@ -236,7 +236,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
         <div class="method">
           <b>평가 방법</b> · 사실값(공공 API)을 0~100 환산 후 단계별 가중합. 룰은 공개합니다.
           <div class="wchips" id="weightChips"></div>
-          <div class="caveat">⚠ 인기도는 외부 사이트 크롤링 없이 네이버 데이터랩 검색량 + 자체 조회수(+청약 후 실제 경쟁률)로 산출. 점수는 참고 지표입니다.</div>
+          <div class="caveat">⚠ 인기도는 실제 청약 경쟁률(또는 지역 청약통장 가입 추세) + 지역 청약통장 규모를 종합 산출합니다. 점수는 참고 지표입니다.</div>
         </div>
       </div>
     </div>
@@ -353,7 +353,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
         <li>가점 커트라인 — 청약홈 가점제 당첨자 점수</li>
         <li>시세·프리미엄 — 국토교통부 실거래가 API</li>
         <li>입지·지도 — 카카오 로컬 API</li>
-        <li>브랜드 — 시공능력평가 순위 · 인기도 — 네이버 데이터랩</li>
+        <li>브랜드 — 시공능력평가 순위 · 인기도 — 청약 경쟁률·청약통장 가입 추세</li>
       </ul>
     </div>
   </section>
@@ -976,6 +976,81 @@ function updateCompWithScore(totalScore) {
   loadCompetRate(new URLSearchParams(location.search).get('no'), areaText, totalScore);
 }
 
+/* ── 인기도 산출 (2축 혼합 모델) ──────────────────────────
+   ① 수요지표 (65%): 실제 경쟁률 백분위 또는 지역 청약통장 증가율
+   ② 안정성지표 (35%): 지역 청약통장 총 가입자 규모 백분위
+   ───────────────────────────────────────────────────────── */
+const BNKB_BASE = 'https://api.odcloud.kr/api/ApplyhomeBnkbStatSvc/v1';
+
+// 청약홈 지역코드 → 청약통장 통계 광역권 매핑
+function mapToBnkbArea(areaNm) {
+  if (!areaNm) return '900';
+  if (areaNm.includes('서울')) return '100';
+  if (areaNm.includes('인천') || areaNm.includes('경기')) return '400';
+  if (['부산','대구','광주','대전','울산'].some(c => areaNm.includes(c))) return '700';
+  return '900'; // 기타지역
+}
+
+async function loadPopularity(houseManageNo, areaNm, actualCompRate) {
+  try {
+    const bnkbArea = mapToBnkbArea(areaNm);
+
+    // 최근 3개월 청약통장 가입자 데이터 조회
+    const res = await fetch(`${BNKB_BASE}/getBnkbAcnutAllStat?page=1&perPage=3000&serviceKey=${API_KEY}`);
+    const json = await res.json();
+    const rows = json.data || [];
+
+    // 월별로 그룹화 (전체 청약저축 기준, BLNC_SECD 무관 합산)
+    const byMonth = {};
+    rows.forEach(r => {
+      const ym = r.DELNG_OCCRRNC_YM;
+      const area = r.SUBSCRPT_AREA_CODE;
+      if (!byMonth[ym]) byMonth[ym] = {};
+      byMonth[ym][area] = (byMonth[ym][area] || 0) + (Number(r.RNK1_ACNUT_CO) || 0) + (Number(r.RNK2_ACNUT_CO) || 0);
+    });
+
+    const months = Object.keys(byMonth).sort();
+    if (months.length < 2) return null;
+
+    const latest = months[months.length - 1];
+    const prev3  = months[Math.max(0, months.length - 4)];
+
+    const latestCnt = byMonth[latest]?.[bnkbArea] || 0;
+    const prevCnt   = byMonth[prev3]?.[bnkbArea] || 1;
+    const growthPct = ((latestCnt - prevCnt) / prevCnt) * 100;
+
+    // ① 수요지표 계산
+    let demandScore;
+    let demandLabel;
+    if (actualCompRate != null && actualCompRate > 0) {
+      // 실제 경쟁률 있음 → 백분위 환산 (30:1 이상 만점 기준)
+      demandScore = Math.min(100, (actualCompRate / 30) * 100);
+      demandLabel = `실제 경쟁률 ${actualCompRate.toFixed(1)}:1 기준`;
+    } else {
+      // 청약 전 → 지역 청약통장 증가율 기준 (월 +0.5%=중간, +2%=만점)
+      demandScore = Math.max(0, Math.min(100, 50 + growthPct * 25));
+      demandLabel = `${areaNm||'해당지역'} 청약통장 최근 3개월 ${growthPct>=0?'+':''}${growthPct.toFixed(1)}%`;
+    }
+
+    // ② 안정성지표: 전체 지역 대비 가입자 규모 백분위
+    const allAreaCounts = Object.values(byMonth[latest] || {});
+    const maxCnt = Math.max(...allAreaCounts, 1);
+    const stabilityScore = Math.min(100, (latestCnt / maxCnt) * 100);
+
+    const popularity = Math.round(demandScore * 0.65 + stabilityScore * 0.35);
+
+    return {
+      score: popularity,
+      label: demandLabel,
+      demandScore: Math.round(demandScore),
+      stabilityScore: Math.round(stabilityScore),
+    };
+  } catch(e) {
+    console.warn('인기도 산출 실패:', e);
+    return null;
+  }
+}
+
 async function loadCompetRate(houseManageNo, areaCode, totalScore) {
   const body = document.getElementById('compBody');
   const title = document.getElementById('compTitle');
@@ -995,6 +1070,7 @@ async function loadCompetRate(houseManageNo, areaCode, totalScore) {
     const regionJson = await regionRes.json();
     const regionData = regionJson.data || [];
 
+    let actualAvgRate = null;
     if (actual.length > 0) {
       // 실제 경쟁률 있음 → 표시
       COMP.hasActual = true;
@@ -1002,12 +1078,25 @@ async function loadCompetRate(houseManageNo, areaCode, totalScore) {
       title.textContent = '실제 청약 경쟁률';
       note.textContent = '청약홈 확정';
       renderActualComp(actual, body);
+
+      // 평균 경쟁률 산출 (인기도 계산용)
+      const rank1 = actual.filter(d => d.SUBSCRPT_RANK_CODE == 1);
+      const rates = (rank1.length ? rank1 : actual).map(d => parseRate(d.CMPET_RATE)).filter(r => r > 0);
+      actualAvgRate = rates.length ? rates.reduce((a,b)=>a+b,0)/rates.length : null;
     } else {
       // 실제 없음 → 예상 계산
       COMP.hasActual = false;
       title.textContent = '예상 청약 경쟁률';
       note.textContent = '인근 지역 최근 데이터 기반';
       renderExpectedComp(regionData, areaCode, totalScore, body);
+    }
+
+    // ── 인기도 산출 및 반영 ──
+    const popResult = await loadPopularity(houseManageNo, areaCode, actualAvgRate);
+    if (popResult) {
+      SUB['인기도'] = popResult.score;
+      FACT['인기도'] = popResult.label;
+      render('main'); // 인기도 반영해 즉시 재렌더
     }
   } catch(e) {
     body.innerHTML = '<p style="color:var(--faint);font-size:13px;text-align:center;padding:20px">경쟁률 데이터를 불러올 수 없습니다.</p>';
