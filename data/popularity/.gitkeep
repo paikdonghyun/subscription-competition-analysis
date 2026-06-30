@@ -1,0 +1,3 @@
+# GitHub Actions가 하루 2회 수집한 네이버 블로그·카페 언급량 데이터를 저장합니다.
+# list.json: {단지번호: {nm, blog, cafe, total, percentile}}
+# meta.json: 수집 메타정보

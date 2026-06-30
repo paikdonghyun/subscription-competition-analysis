@@ -1,0 +1,36 @@
+name: 네이버 언급량(인기도) 수집
+
+on:
+  schedule:
+    - cron: '20 15 * * *'   # 00:20 KST (단지목록 수집 직후)
+    - cron: '20 3 * * *'    # 12:20 KST (단지목록 수집 직후)
+  workflow_dispatch:
+
+jobs:
+  fetch-popularity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 네이버 언급량 수집
+        env:
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+        run: python3 scripts/fetch_popularity.py
+
+      - name: 변경사항 커밋 & 푸시
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/popularity/
+          git diff --staged --quiet || git commit -m "네이버 언급량 자동수집 $(date +'%Y-%m-%d %H:%M') KST"
+          git push
