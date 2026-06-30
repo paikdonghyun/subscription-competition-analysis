@@ -19,7 +19,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 NOW     = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 NOW_STR = NOW.strftime('%Y-%m-%d %H:%M')
 
-def naver_search(api, query, retry=3):
+def naver_search(api, query, retry=3, debug=False):
     """blog 또는 cafearticle 검색 → total(검색결과 총건수) 반환"""
     url = f'https://openapi.naver.com/v1/search/{api}.json?' + urllib.parse.urlencode({
         'query': query, 'display': 1,
@@ -34,11 +34,16 @@ def naver_search(api, query, retry=3):
                 d = json.loads(r.read())
             return d.get('total', 0)
         except urllib.error.HTTPError as e:
+            body = e.read().decode('utf-8', errors='ignore')
+            if debug:
+                print(f'  [HTTPError {e.code}] {api} "{query}": {body[:200]}')
             if e.code == 429:  # 쿼터 초과
                 time.sleep(3)
                 continue
             return 0
-        except Exception:
+        except Exception as ex:
+            if debug:
+                print(f'  [Exception] {api} "{query}": {ex}')
             if attempt < retry - 1:
                 time.sleep(1)
             else:
@@ -86,9 +91,9 @@ def main():
         # 검색어: "단지명 지역명" 조합으로 정확도 향상
         query = f'{nm} {area}'.strip()
 
-        blog_cnt = naver_search('blog', query)
+        blog_cnt = naver_search('blog', query, debug=(i < 5))
         time.sleep(0.05)
-        cafe_cnt = naver_search('cafearticle', query)
+        cafe_cnt = naver_search('cafearticle', query, debug=(i < 5))
         time.sleep(0.05)
 
         results[no] = {
