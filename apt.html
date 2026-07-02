@@ -727,6 +727,7 @@ async function loadTradeData(areaCode, aptName) {
       if (top) { sampleName = top[0]; sampleAmt = top[1].recent || top[1].avg; }
     }
 
+    window._lastTradeAvgMan = avgMan; // 나중에 분양가 로드 시 재사용
     setMarginUI(avgMan, sampleAmt, null, json.region, json.updated, stats.cnt, window._hugAvgPerM2 || null);
 
   } catch(e) {
@@ -766,15 +767,17 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null
   // hugAvg(원/㎡)가 전달된 경우: 분양가가 실거래 대비 얼마나 저렴한지를 점수화
   // 분양가 < 실거래 → 저렴(고점수), 분양가 > 실거래 → 비쌈(저점수)
   if (hugAvg && tradeAvg) {
-    // hugAvg: 원/㎡, tradeAvg: 만원/전체 → 84㎡ 기준으로 단위 통일
-    // hugAvg(원/㎡) × 84 → 원 → 만원
-    const hugTotalMan = (hugAvg * 84) / 10000;
-    const ratio = tradeAvg / hugTotalMan; // 1.0 = 분양가 = 시세, >1 = 시세가 더 비쌈(저렴 분양)
-    // ratio 1.3 이상 = 100점, 1.0 = 60점, 0.8 이하 = 0점
-    const priceScore = Math.max(0, Math.min(100, (ratio - 0.8) / 0.5 * 100));
+    // hugAvg: window._hugAvgPerM2 = (분양가 만원 × 10000) / 면적㎡ = 원/㎡
+    // _hugTotalRepAr: 대표 주택형 면적(㎡)을 별도 저장해서 정확히 환산
+    const repAr   = window._hugRepAr || 84;               // 대표 주택형 면적 (㎡)
+    const aptMan  = (hugAvg * repAr) / 10000;             // 분양가 (만원) = 원/㎡ × ㎡ / 10000
+    const ratio   = tradeAvg / aptMan;                    // 시세 / 분양가 — >1 = 시세가 비쌈(좋음)
+    // ratio 1.3 이상=100점, 1.0=50점, 0.7 이하=0점
+    const priceScore = Math.max(0, Math.min(100, (ratio - 0.7) / 0.6 * 100));
     SUB['분양가격'] = Math.round(priceScore);
     const diffPct = ((ratio - 1) * 100).toFixed(1);
-    FACT['분양가격'] = `시세 대비 분양가 ${diffPct >= 0 ? '+' : ''}${diffPct}% (${(hugTotalMan/10000).toFixed(2)}억 vs ${(tradeAvg/10000).toFixed(2)}억)`;
+    const sign    = Number(diffPct) >= 0 ? '+' : '';
+    FACT['분양가격'] = `인근 시세 대비 분양가 ${sign}${diffPct}% (시세 ${(tradeAvg/10000).toFixed(2)}억 / 분양가 ${(aptMan/10000).toFixed(2)}억)`;
     render('main');
   }
 
@@ -1016,14 +1019,12 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
       const repAr     = parseFloat(rep.SUPLY_AR || 84);
       // ㎡당 원으로 변환 (setMarginUI가 원/㎡ 기대)
       window._hugAvgPerM2 = (repAmtMan * 10000) / repAr;
+      window._hugRepAr = repAr; // 대표 주택형 면적 저장
 
-      const kpi2 = document.getElementById('kpi2');
-      if (kpi2) {
-        const tradeEok = parseFloat(kpi2.textContent);
-        if (tradeEok > 0) {
-          const tradeMan = tradeEok * 10000;
-          setMarginUI(tradeMan, 0, null, regionNm, '청약홈 확정', null, window._hugAvgPerM2);
-        }
+      // tradeAvg는 setMarginUI가 이미 마지막으로 받은 값을 전역에서 재사용
+      // kpi2.textContent는 HTML 태그 포함으로 파싱 불안정 → 전역 변수로 관리
+      if (window._lastTradeAvgMan > 0) {
+        setMarginUI(window._lastTradeAvgMan, 0, null, regionNm, '청약홈 확정', null, window._hugAvgPerM2);
       }
     }
     return; // 확정 분양가 성공 → HUG 폴백 불필요
