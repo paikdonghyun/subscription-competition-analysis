@@ -71,6 +71,34 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 
 /* 분양가 */
 .split{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+/* 분양가 카드 */
+.price-card{padding:0!important;overflow:hidden}
+.price-thead{
+  display:grid;grid-template-columns:80px 60px 1fr 90px;
+  gap:0;padding:10px 16px;
+  background:var(--bg);border-bottom:1px solid var(--line);
+  font-size:11.5px;font-weight:700;color:var(--muted);
+}
+.price-row{
+  display:grid;grid-template-columns:80px 60px 1fr 90px;
+  gap:0;padding:11px 16px;
+  border-bottom:1px solid var(--line);
+  align-items:center;transition:background .12s;
+}
+.price-row:last-child{border-bottom:none}
+.price-row:hover{background:var(--bg)}
+.price-ty{font-weight:700;font-size:13.5px;color:var(--ink)}
+.price-sup{font-size:12px;color:var(--muted)}
+.price-amt{font-size:15px;font-weight:800;color:var(--ink)}
+.price-m2{font-size:11.5px;color:var(--muted);text-align:right}
+.price-loading{padding:24px;text-align:center;color:var(--faint);font-size:13px}
+.price-tag{
+  display:inline-block;font-size:10px;font-weight:700;
+  padding:2px 6px;border-radius:5px;margin-left:4px;vertical-align:middle;
+}
+.price-tag-sm{background:var(--sky);color:var(--sky-ink)}
+.price-tag-md{background:var(--mint);color:var(--mint-ink)}
+.price-tag-lg{background:var(--peach);color:var(--peach-ink)}
 .safe{display:flex;flex-direction:column;justify-content:center}
 .safe .k{font-size:12px;color:var(--muted);font-weight:600}
 .safe .v{font-size:32px;font-weight:800;color:var(--mint-ink);letter-spacing:-.02em;margin:4px 0 2px}
@@ -279,22 +307,26 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
 
   <!-- 분양가 분석 -->
   <section class="sec reveal">
-    <div class="sec-h"><h2>분양가 분석</h2><span class="pill">시세 대비</span></div>
+    <div class="sec-h"><h2>분양가 분석</h2><span class="pill" id="priceNote" style="display:none"></span></div>
     <div class="split">
-      <div class="card">
-        <table class="tbl">
-          <thead><tr><th>주택형</th><th>세대</th><th>분양가</th><th>㎡당</th></tr></thead>
-          <tbody id="priceTableBody">
-            <tr><td colspan="4" style="text-align:center;color:var(--faint);padding:16px">
-              <span class="spin" style="display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px"></span>
-              분양가 데이터 로딩 중…
-            </td></tr>
-          </tbody>
-        </table>
-        <p id="priceNote" style="font-size:11px;color:var(--faint);margin-top:8px;display:none">※ HUG 지역별 분양가 기준 (단지별 확정 분양가는 청약홈 공고문 참고)</p>
+      <!-- 주택형별 분양가 카드 리스트 -->
+      <div class="card price-card">
+        <div class="price-thead">
+          <span>주택형</span>
+          <span>공급</span>
+          <span>분양가</span>
+          <span>㎡당</span>
+        </div>
+        <div id="priceTableBody">
+          <div class="price-loading">
+            <span class="spin" style="display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px"></span>
+            분양가 데이터 로딩 중…
+          </div>
+        </div>
       </div>
+      <!-- 시세 비교 카드 -->
       <div class="card safe">
-        <div class="k">주변 시세 대비 시세차익 여력</div>
+        <div class="k">인근 시세 대비</div>
         <div class="v" id="safeMargin">계산 중…</div>
         <div class="n" id="safeDesc">인근 실거래가 데이터 로딩 중입니다.</div>
         <div class="safebar"><i id="safeBar" data-w="0"></i></div>
@@ -995,24 +1027,33 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
       return Math.round(totalMan / arM2).toLocaleString() + '만/㎡';
     };
 
+    // 전용면적 구간 태그
+    const sizeTag = ar => {
+      if (ar < 80)  return '<span class="price-tag price-tag-sm">소형</span>';
+      if (ar < 130) return '<span class="price-tag price-tag-md">중형</span>';
+      return '<span class="price-tag price-tag-lg">대형</span>';
+    };
+
     let html = '';
     typeRows.forEach(r => {
       if (!r.LTTOT_TOP_AMOUNT || Number(r.LTTOT_TOP_AMOUNT) <= 0) return;
-      const tyRaw = (r.HOUSE_TY || '').replace(/^0+/,'');
-      const ty    = tyRaw.replace(/^(\d+\.\d)\d*/, '$1'); // 84.8315A → 84.8A
-      const ar    = parseFloat(r.SUPLY_AR || 0);
+      const tyRaw  = (r.HOUSE_TY || '').replace(/^0+/,'');
+      const ty     = tyRaw.replace(/^(\d+\.\d)\d*/, '$1');
+      const ar     = parseFloat(r.SUPLY_AR || 0);
       const amtMan = Number(r.LTTOT_TOP_AMOUNT);
-      const sup   = r.SUPLY_HSHLDCO != null ? r.SUPLY_HSHLDCO : '–';
-      html += `<tr>
-        <td><b>${ty}</b></td>
-        <td>${sup}세대</td>
-        <td style="font-weight:800;color:var(--ink)">${fmtEok(amtMan)}</td>
-        <td style="color:var(--muted)">${fmtPerM2(amtMan, ar)}</td>
-      </tr>`;
+      const sup    = r.SUPLY_HSHLDCO != null ? r.SUPLY_HSHLDCO : '–';
+      const perM2  = ar > 0 ? Math.round(amtMan / ar).toLocaleString() : '–';
+      const eok    = (Math.round(amtMan / 1000) / 10).toFixed(1) + '억';
+      html += `<div class="price-row">
+        <span class="price-ty">${ty}${sizeTag(ar)}</span>
+        <span class="price-sup">${sup}세대</span>
+        <span class="price-amt">${eok}</span>
+        <span class="price-m2">${perM2}만/㎡</span>
+      </div>`;
     });
 
-    tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px">분양가 정보 없음</td></tr>';
-    if (note) { note.style.display='block'; note.textContent='※ 청약홈 확정 분양가 (주택형별 최고 공급금액 기준)'; }
+    tbody.innerHTML = html || '<div class="price-loading">분양가 정보 없음</div>';
+    if (note) { note.style.display='block'; note.textContent='청약홈 확정 분양가 · 주택형별 최고 공급금액 기준'; }
 
     // ── 분양가격 점수: 대표 주택형(84㎡급) 기준 실거래가 비교 ──
     const rep = typeRows.find(r => {
@@ -1051,7 +1092,7 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
     }
 
     if (!hugRows.length) {
-      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px;font-size:13px">분양가 데이터 없음</td></tr>';
+      tbody.innerHTML='<div class="price-loading">분양가 데이터 없음</div>';
       return;
     }
 
@@ -1066,10 +1107,17 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
     hugRows.forEach(r=>{
       const info=areaMap[r['규모구분']]; if(!info) return;
       const k=parseInt(r['분양가격(제곱미터당 천원)']||0); if(!k) return;
-      html+=`<tr><td>${info.label}</td><td style="color:var(--faint)">–</td><td style="font-weight:700">${fmtPrice(k,info.area)}</td><td>${fmtPerM2(k)}</td></tr>`;
+      const eok = (Math.round(k*info.area/100000)/10).toFixed(1)+'억';
+      const perM2 = Math.round(k/10).toLocaleString()+'만/㎡';
+      html+=`<div class="price-row">
+        <span class="price-ty">${info.label}</span>
+        <span class="price-sup">–</span>
+        <span class="price-amt">${eok}</span>
+        <span class="price-m2">${perM2}</span>
+      </div>`;
     });
-    tbody.innerHTML=html||'<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px">분양가 정보 없음</td></tr>';
-    if(note){note.style.display='block';note.textContent=`※ HUG ${regionShort} 지역 평균 분양가 기준 · 단지 확정가는 청약홈 공고문 참고`;}
+    tbody.innerHTML=html||'<div class="price-loading">분양가 정보 없음</div>';
+    if(note){note.style.display='block';note.textContent=`HUG ${regionShort} 지역 평균 분양가 기준 · 단지 확정가는 청약홈 공고문 참고`;}
 
     // HUG 84㎡ 단가로 점수 계산
     const r84=hugRows.find(r=>r['규모구분']==='전용면적 60제곱미터초과 85제곱미터이하')||hugRows.find(r=>r['규모구분']==='모든면적');
@@ -1079,7 +1127,7 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
     }
   } catch(e) {
     console.warn('분양가 로드 실패:', e);
-    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px;font-size:13px">분양가 데이터 조회 실패</td></tr>';
+    tbody.innerHTML='<div class="price-loading">분양가 데이터 조회 실패</div>';
   }
 }
 
