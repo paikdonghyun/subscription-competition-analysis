@@ -489,7 +489,9 @@ const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869
       scoreSection.insertBefore(banner, scoreSection.firstChild);
     }
 
-    // ── 카카오 입지 분석 ──
+    // ── 카카오 입지 분석 ── (호출 전 이전 단지 값 초기화)
+    SUB['교통'] = 50; SUB['학교'] = 50; SUB['인프라'] = 50;
+    FACT['교통'] = '조회 중…'; FACT['학교'] = '조회 중…'; FACT['인프라'] = '조회 중…';
     if (d.HSSPLY_ADRES) {
       loadKakaoLocation(d.HSSPLY_ADRES, d.HOUSE_NM || '단지');
     }
@@ -564,26 +566,30 @@ async function loadKakaoLocation(address, aptName) {
       if (r2.documents?.length) { x = r2.documents[0].x; y = r2.documents[0].y; }
     }
 
-    // ── 3단계: 단지명 핵심어 추출 후 키워드 검색 ──
-    if (!x && aptName) {
-      // 블록번호·특수문자 제거, 앞 10자 이내 핵심어 추출
-      const core = aptName.replace(/[A-Z0-9]+블록|행복주택|아파트|오피스텔/g, '').trim().slice(0, 12);
-      const r3 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(core)}&size=1`);
+    // ── 3단계: 단지명 핵심어 + 시군구 조합 키워드 검색 ──
+    if (!x && aptName && address) {
+      const district = address.split(' ').slice(0, 2).join(' '); // 앞 2어절(시도+시군구)
+      const core = aptName.replace(/[A-Z0-9]+블록|행복주택|아파트|오피스텔|우선분양전환|잔여세대|\(.*?\)/g, '').trim().slice(0, 12);
+      const r3 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(district + ' ' + core)}&size=1`);
       if (r3.documents?.length) { x = r3.documents[0].x; y = r3.documents[0].y; }
     }
 
-    // ── 4단계: 주소 시군구 + 단지명 핵심어 조합 ──
-    if (!x && address && aptName) {
-      const district = address.split(' ').slice(0, 2).join(' ');
-      const core2    = aptName.replace(/[A-Z0-9]+블록|행복주택|아파트|오피스텔|\(.*?\)/g, '').trim().slice(0, 10);
-      const r4 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(district + ' ' + core2)}&size=1`);
+    // ── 4단계: 주소 앞 2어절만으로 지역 중심좌표 폴백 ──
+    if (!x && address) {
+      const districtOnly = address.split(' ').slice(0, 2).join(' ');
+      const r4 = await kakaoFetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(districtOnly)}`);
       if (r4.documents?.length) { x = r4.documents[0].x; y = r4.documents[0].y; }
     }
 
-    // 좌표 획득 실패
+    // 좌표 획득 실패 → 입지 점수 초기화 (이전 단지 값 잔류 방지)
     if (!x || !y) {
       if (poiList) poiList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--faint);font-size:13px">위치 정보를 찾을 수 없습니다.<br><small>' + (address || aptName) + '</small></div>';
       if (mapTagEl) mapTagEl.textContent = '위치 정보 없음';
+      // SUB·FACT 초기화 — 이전 단지 값이 남아 다른 단지에 표시되는 오류 방지
+      SUB['교통']  = 50; FACT['교통']  = '위치 정보 없음';
+      SUB['학교']  = 50; FACT['학교']  = '위치 정보 없음';
+      SUB['인프라']= 50; FACT['인프라'] = '위치 정보 없음';
+      render('main');
       return;
     }
 
