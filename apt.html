@@ -1205,15 +1205,21 @@ function renderActualComp(data, body) {
   display.forEach(d => {
     const rate = parseRate(d.CMPET_RATE);
     const pct  = Math.min(rate / M * 100, 100).toFixed(1);
-    const ty   = (d.HOUSE_TY || '').replace(/^0+/, '');
+    // 주택형명 단순화: "084.9186B" → "84.9B" (소수점 첫째 자리까지)
+    const tyRaw = (d.HOUSE_TY || '').replace(/^0+/, '');
+    const ty = tyRaw.replace(/^(\d+\.\d)\d*/, '$1');
     const sup  = d.SUPLY_HSHLDCO || '-';
     const req  = d.REQ_CNT ? Number(d.REQ_CNT).toLocaleString() : '-';
-    h += `<div class="er">
-      <span class="t">${ty}<small style="display:block;color:var(--faint);font-size:10px">${sup}세대</small></span>
-      <div class="ertrack">
+    h += `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+        <span style="font-weight:700;font-size:14px">${ty}
+          <span style="font-weight:400;font-size:11px;color:var(--muted);margin-left:4px">${sup}세대</span>
+        </span>
+        <span style="font-weight:800;font-size:15px">${rate.toFixed(1)}<span style="font-weight:500;font-size:11px;color:var(--muted)">:1&nbsp;(${req}명)</span></span>
+      </div>
+      <div class="ertrack" style="height:16px">
         <div class="erfill" data-w="${pct}"></div>
       </div>
-      <span class="v">${rate.toFixed(1)}<small>:1 (${req}명)</small></span>
     </div>`;
   });
 
