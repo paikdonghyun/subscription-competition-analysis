@@ -505,7 +505,7 @@ const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869
 
     // ── 분양가 HUG API 로드 ──
     if (d.SUBSCRPT_AREA_CODE_NM) {
-      loadHugPrice(d.SUBSCRPT_AREA_CODE_NM, d.HOUSE_NM || '');
+      loadHugPrice(d.SUBSCRPT_AREA_CODE_NM, d.HOUSE_NM || '', d.HOUSE_MANAGE_NO || no, d.PBLANC_NO || pbno);
     }
 
     if (d.PBLANC_URL) {
@@ -964,110 +964,118 @@ const API_CMPET = 'https://api.odcloud.kr/api/ApplyhomeInfoCmpetRtSvc/v1/getAPTL
 let COMP = { actual: [], expected: [], hasActual: false };
 
 /* ── HUG 지역별 분양가 로드 ── */
-async function loadHugPrice(regionNm, aptName) {
+async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
   const tbody = document.getElementById('priceTableBody');
   const note  = document.getElementById('priceNote');
   if (!tbody) return;
 
+  // ── 1순위: 단지별 확정 분양가 API (getAPTLttotPblancMdl) ──
+  const TYPE_URL = 'https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancMdl';
+  let typeRows = [];
   try {
-    // 지역명 정규화 (서울특별시 → 서울, 경기도 → 경기)
-    const regionShort = regionNm.replace(/특별시|광역시|특별자치시|도$/,'').slice(0,2);
+    const res  = await fetch(`${TYPE_URL}?page=1&perPage=30&cond[HOUSE_MANAGE_NO::EQ]=${houseManageNo}&serviceKey=${API_KEY}`);
+    const json = await res.json();
+    typeRows = json.data || [];
+  } catch(e) { console.warn('주택형별 분양가 로드 실패:', e); }
 
-    // HUG 분양가 API — 최근 연도·월 자동 계산
-    const now = new Date();
-    const yr  = now.getFullYear();
-    const mo  = now.getMonth(); // 0-indexed
-    // 최근 3개월 시도
-    const months = [];
-    for(let i=0; i<3; i++){
-      const d = new Date(yr, mo - i, 1);
-      months.push({ y: d.getFullYear(), m: d.getMonth()+1 });
-    }
-
-    let rows = [];
-    for(const {y, m} of months){
-      const url = `https://api.odcloud.kr/api/15061057/v1/uddi:056e87ff-8f04-4d4a-a444-bd73434bb40f?page=1&perPage=20&serviceKey=${API_KEY}&cond[연도::EQ]=${y}&cond[월::EQ]=${m}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      const data = (json.data || []).filter(r => (r['지역명']||'').includes(regionShort));
-      if(data.length){ rows = data; break; }
-    }
-
-    if(!rows.length){
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px;font-size:13px">해당 지역 분양가 데이터 없음</td></tr>';
-      return;
-    }
-
-    // ㎡당 천원 → 억원 환산 (84㎡ 기준)
-    const fmtPrice = (perM2K, area) => {
-      const amt = Math.round(perM2K * area / 100000) / 10; // 억
-      return amt.toFixed(1) + '억';
-    };
-    const fmtPerM2 = (perM2K) => Math.round(perM2K/10).toLocaleString() + '만';
-
-    // 규모구분별로 테이블 행 생성
-    const areaMap = {
-      '전용면적 60제곱미터이하': { label:'60㎡ 이하', area:59 },
-      '전용면적 60제곱미터초과 85제곱미터이하': { label:'60~85㎡', area:84 },
-      '전용면적 85제곱미터초과 102제곱미터이하': { label:'85~102㎡', area:99 },
-      '모든면적': { label:'전 면적', area:84 },
+  if (typeRows.length > 0) {
+    // ── 단지별 확정 분양가 표시 ──
+    const fmtEok   = v => (Math.round(Number(v) / 1000) / 10).toFixed(1) + '억'; // 만원 → 억
+    const fmtPerM2 = (totalMan, arM2) => {
+      if (!arM2 || arM2 <= 0) return '–';
+      return Math.round(totalMan / arM2).toLocaleString() + '만/㎡';
     };
 
     let html = '';
-    rows.forEach(r => {
-      const key = r['규모구분'] || '';
-      const info = areaMap[key];
-      if(!info || key === '모든면적') return;
-      const perM2K = parseInt(r['분양가격(제곱미터당 천원)'] || 0);
-      if(!perM2K) return;
+    typeRows.forEach(r => {
+      if (!r.LTTOT_TOP_AMOUNT || Number(r.LTTOT_TOP_AMOUNT) <= 0) return;
+      const tyRaw = (r.HOUSE_TY || '').replace(/^0+/,'');
+      const ty    = tyRaw.replace(/^(\d+\.\d)\d*/, '$1'); // 84.8315A → 84.8A
+      const ar    = parseFloat(r.SUPLY_AR || 0);
+      const amtMan = Number(r.LTTOT_TOP_AMOUNT);
+      const sup   = r.SUPLY_HSHLDCO != null ? r.SUPLY_HSHLDCO : '–';
       html += `<tr>
-        <td>${info.label}</td>
-        <td style="color:var(--faint)">–</td>
-        <td style="font-weight:700">${fmtPrice(perM2K, info.area)}</td>
-        <td>${fmtPerM2(perM2K)}</td>
+        <td><b>${ty}</b></td>
+        <td>${sup}세대</td>
+        <td style="font-weight:800;color:var(--ink)">${fmtEok(amtMan)}</td>
+        <td style="color:var(--muted)">${fmtPerM2(amtMan, ar)}</td>
       </tr>`;
     });
 
-    if(!html){
-      // 모든면적만 있을 경우
-      const all = rows.find(r => r['규모구분'] === '모든면적');
-      if(all){
-        const perM2K = parseInt(all['분양가격(제곱미터당 천원)'] || 0);
-        html = `<tr><td>전 면적</td><td style="color:var(--faint)">–</td><td style="font-weight:700">${fmtPrice(perM2K,84)}</td><td>${fmtPerM2(perM2K)}</td></tr>`;
-      }
-    }
-
     tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px">분양가 정보 없음</td></tr>';
-    if(note) note.style.display = 'block';
+    if (note) { note.style.display='block'; note.textContent='※ 청약홈 확정 분양가 (주택형별 최고 공급금액 기준)'; }
 
-    // 기준연월 표시
-    const yr2 = rows[0]?.['연도'], mo2 = rows[0]?.['월'];
-    if(yr2 && mo2 && note) note.textContent = `※ HUG ${regionShort} 지역 분양가 기준 (${yr2}년 ${mo2}월) · 단지별 확정가는 청약홈 공고문 참고`;
+    // ── 분양가격 점수: 대표 주택형(84㎡급) 기준 실거래가 비교 ──
+    const rep = typeRows.find(r => {
+      const ar = parseFloat(r.SUPLY_AR || 0);
+      return ar >= 75 && ar <= 95 && Number(r.LTTOT_TOP_AMOUNT) > 0;
+    }) || typeRows.find(r => Number(r.LTTOT_TOP_AMOUNT) > 0);
 
-    // ── HUG 84㎡ 단가를 전역에 저장 → setMarginUI 재호출로 분양가격 점수 계산 ──
-    const hugRow84 = rows.find(r => r['규모구분'] === '전용면적 60제곱미터초과 85제곱미터이하')
-                  || rows.find(r => r['규모구분'] === '모든면적');
-    if (hugRow84) {
-      const perM2K = parseInt(hugRow84['분양가격(제곱미터당 천원)'] || 0);
-      if (perM2K) {
-        window._hugAvgPerM2 = perM2K * 1000; // 원/㎡ 단위로 변환
-        // 실거래가가 이미 로드됐으면 점수 재계산
-        const safeMarginEl = document.getElementById('safeMargin');
-        if (safeMarginEl && safeMarginEl.textContent && safeMarginEl.textContent !== '–') {
-          const tradeText = document.getElementById('kpi2')?.textContent?.replace(/[억\s]/g, '');
-          if (tradeText) {
-            const tradeMan = parseFloat(tradeText) * 10000;
-            if (tradeMan > 0) setMarginUI(tradeMan, 0, null, regionShort, `${yr2}년 ${mo2}월`, null, window._hugAvgPerM2);
-          }
+    if (rep) {
+      const repAmtMan = Number(rep.LTTOT_TOP_AMOUNT);  // 만원
+      const repAr     = parseFloat(rep.SUPLY_AR || 84);
+      // ㎡당 원으로 변환 (setMarginUI가 원/㎡ 기대)
+      window._hugAvgPerM2 = (repAmtMan * 10000) / repAr;
+
+      const kpi2 = document.getElementById('kpi2');
+      if (kpi2) {
+        const tradeEok = parseFloat(kpi2.textContent);
+        if (tradeEok > 0) {
+          const tradeMan = tradeEok * 10000;
+          setMarginUI(tradeMan, 0, null, regionNm, '청약홈 확정', null, window._hugAvgPerM2);
         }
       }
     }
+    return; // 확정 분양가 성공 → HUG 폴백 불필요
+  }
 
+  // ── 2순위 폴백: HUG 지역 평균 분양가 ──
+  try {
+    const regionShort = (regionNm||'').replace(/특별시|광역시|특별자치시|도$/,'').slice(0,2);
+    const now = new Date();
+    let hugRows = [];
+    for (let i=0; i<3; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      const url = `https://api.odcloud.kr/api/15061057/v1/uddi:056e87ff-8f04-4d4a-a444-bd73434bb40f?page=1&perPage=20&serviceKey=${API_KEY}&cond[연도::EQ]=${d.getFullYear()}&cond[월::EQ]=${d.getMonth()+1}`;
+      const res  = await fetch(url);
+      const json = await res.json();
+      const data = (json.data||[]).filter(r=>(r['지역명']||'').includes(regionShort));
+      if (data.length) { hugRows=data; break; }
+    }
+
+    if (!hugRows.length) {
+      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px;font-size:13px">분양가 데이터 없음</td></tr>';
+      return;
+    }
+
+    const fmtPrice=(k,a)=>((Math.round(k*a/100000)/10).toFixed(1))+'억';
+    const fmtPerM2=(k)=>Math.round(k/10).toLocaleString()+'만';
+    const areaMap={
+      '전용면적 60제곱미터이하':{label:'60㎡ 이하',area:59},
+      '전용면적 60제곱미터초과 85제곱미터이하':{label:'60~85㎡',area:84},
+      '전용면적 85제곱미터초과 102제곱미터이하':{label:'85~102㎡',area:99},
+    };
+    let html='';
+    hugRows.forEach(r=>{
+      const info=areaMap[r['규모구분']]; if(!info) return;
+      const k=parseInt(r['분양가격(제곱미터당 천원)']||0); if(!k) return;
+      html+=`<tr><td>${info.label}</td><td style="color:var(--faint)">–</td><td style="font-weight:700">${fmtPrice(k,info.area)}</td><td>${fmtPerM2(k)}</td></tr>`;
+    });
+    tbody.innerHTML=html||'<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px">분양가 정보 없음</td></tr>';
+    if(note){note.style.display='block';note.textContent=`※ HUG ${regionShort} 지역 평균 분양가 기준 · 단지 확정가는 청약홈 공고문 참고`;}
+
+    // HUG 84㎡ 단가로 점수 계산
+    const r84=hugRows.find(r=>r['규모구분']==='전용면적 60제곱미터초과 85제곱미터이하')||hugRows.find(r=>r['규모구분']==='모든면적');
+    if(r84){
+      const k=parseInt(r84['분양가격(제곱미터당 천원)']||0);
+      if(k){ window._hugAvgPerM2=k*1000; }
+    }
   } catch(e) {
-    console.warn('HUG 분양가 로드 실패:', e);
-    if(tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px;font-size:13px">분양가 데이터 조회 실패</td></tr>';
+    console.warn('분양가 로드 실패:', e);
+    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:12px;font-size:13px">분양가 데이터 조회 실패</td></tr>';
   }
 }
+
 
 /* ── 경쟁률 종합점수 연계 업데이트 ── */
 function updateCompWithScore(totalScore) {
