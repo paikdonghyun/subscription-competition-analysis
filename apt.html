@@ -315,7 +315,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
           <span>주택형</span>
           <span>공급</span>
           <span>분양가</span>
-          <span>㎡당</span>
+          <span>평당</span>
         </div>
         <div id="priceTableBody">
           <div class="price-loading">
@@ -1022,10 +1022,6 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
   if (typeRows.length > 0) {
     // ── 단지별 확정 분양가 표시 ──
     const fmtEok   = v => (Math.round(Number(v) / 1000) / 10).toFixed(1) + '억'; // 만원 → 억
-    const fmtPerM2 = (totalMan, arM2) => {
-      if (!arM2 || arM2 <= 0) return '–';
-      return Math.round(totalMan / arM2).toLocaleString() + '만/㎡';
-    };
 
     // 전용면적 구간 태그
     const sizeTag = ar => {
@@ -1042,13 +1038,13 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
       const ar     = parseFloat(r.SUPLY_AR || 0);
       const amtMan = Number(r.LTTOT_TOP_AMOUNT);
       const sup    = r.SUPLY_HSHLDCO != null ? r.SUPLY_HSHLDCO : '–';
-      const perM2  = ar > 0 ? Math.round(amtMan / ar).toLocaleString() : '–';
+      const perPy  = ar > 0 ? Math.round((amtMan / ar) * 3.3058).toLocaleString() : '–'; // 평당(만)
       const eok    = (Math.round(amtMan / 1000) / 10).toFixed(1) + '억';
       html += `<div class="price-row">
         <span class="price-ty">${ty}${sizeTag(ar)}</span>
         <span class="price-sup">${sup}세대</span>
         <span class="price-amt">${eok}</span>
-        <span class="price-m2">${perM2}만/㎡</span>
+        <span class="price-m2">${perPy}만/평</span>
       </div>`;
     });
 
@@ -1108,12 +1104,12 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
       const info=areaMap[r['규모구분']]; if(!info) return;
       const k=parseInt(r['분양가격(제곱미터당 천원)']||0); if(!k) return;
       const eok = (Math.round(k*info.area/100000)/10).toFixed(1)+'억';
-      const perM2 = Math.round(k/10).toLocaleString()+'만/㎡';
+      const perPy = Math.round(k * 3.3058 / 10).toLocaleString()+'만/평'; // 평당(만원)
       html+=`<div class="price-row">
         <span class="price-ty">${info.label}</span>
         <span class="price-sup">–</span>
         <span class="price-amt">${eok}</span>
-        <span class="price-m2">${perM2}</span>
+        <span class="price-m2">${perPy}</span>
       </div>`;
     });
     tbody.innerHTML=html||'<div class="price-loading">분양가 정보 없음</div>';
