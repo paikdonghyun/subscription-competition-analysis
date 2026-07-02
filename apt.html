@@ -727,7 +727,7 @@ async function loadTradeData(areaCode, aptName) {
       if (top) { sampleName = top[0]; sampleAmt = top[1].recent || top[1].avg; }
     }
 
-    setMarginUI(avgMan, sampleAmt, null, json.region, json.updated, stats.cnt);
+    setMarginUI(avgMan, sampleAmt, null, json.region, json.updated, stats.cnt, window._hugAvgPerM2 || null);
 
   } catch(e) {
     console.warn('실거래가 로드 실패:', e);
@@ -735,7 +735,7 @@ async function loadTradeData(areaCode, aptName) {
   }
 }
 
-function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt) {
+function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null) {
   const marginEl = document.getElementById('safeMargin');
   const descEl   = document.getElementById('safeDesc');
   const barEl    = document.getElementById('safeBar');
@@ -761,9 +761,27 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt) {
   const cntTxt  = cnt ? ` ${cnt}건` : '';
   const regTxt  = region ? `${region} ` : '';
   const updTxt  = updated ? ` · ${updated} 기준` : '';
+
+  // ── HUG 분양가 vs 실거래가 비교로 분양가격 점수 계산 ──
+  // hugAvg(원/㎡)가 전달된 경우: 분양가가 실거래 대비 얼마나 저렴한지를 점수화
+  // 분양가 < 실거래 → 저렴(고점수), 분양가 > 실거래 → 비쌈(저점수)
+  if (hugAvg && tradeAvg) {
+    // hugAvg: 원/㎡, tradeAvg: 만원/전체 → 84㎡ 기준으로 단위 통일
+    // hugAvg(원/㎡) × 84 → 원 → 만원
+    const hugTotalMan = (hugAvg * 84) / 10000;
+    const ratio = tradeAvg / hugTotalMan; // 1.0 = 분양가 = 시세, >1 = 시세가 더 비쌈(저렴 분양)
+    // ratio 1.3 이상 = 100점, 1.0 = 60점, 0.8 이하 = 0점
+    const priceScore = Math.max(0, Math.min(100, (ratio - 0.8) / 0.5 * 100));
+    SUB['분양가격'] = Math.round(priceScore);
+    const diffPct = ((ratio - 1) * 100).toFixed(1);
+    FACT['분양가격'] = `시세 대비 분양가 ${diffPct >= 0 ? '+' : ''}${diffPct}% (${(hugTotalMan/10000).toFixed(2)}억 vs ${(tradeAvg/10000).toFixed(2)}억)`;
+    render('main');
+  }
+
   if(descEl) descEl.innerHTML =
     `${regTxt}최근 6개월 아파트 매매 평균 실거래가${cntTxt}${updTxt}.<br>` +
-    `분양가 입력 시 시세차익 여력(%)을 자동 계산합니다.`;
+    (hugAvg ? `HUG 지역 분양가와 비교해 분양가격 점수(${SUB['분양가격']}점)를 산출했습니다.` :
+    `분양가 확정 후 시세차익 여력(%)을 자동 계산합니다.`);
 
   // 바 60%로 고정 표시 (분양가 없이는 비율 계산 불가)
   if(barEl) { barEl.style.width='60%'; }
@@ -1025,6 +1043,25 @@ async function loadHugPrice(regionNm, aptName) {
     // 기준연월 표시
     const yr2 = rows[0]?.['연도'], mo2 = rows[0]?.['월'];
     if(yr2 && mo2 && note) note.textContent = `※ HUG ${regionShort} 지역 분양가 기준 (${yr2}년 ${mo2}월) · 단지별 확정가는 청약홈 공고문 참고`;
+
+    // ── HUG 84㎡ 단가를 전역에 저장 → setMarginUI 재호출로 분양가격 점수 계산 ──
+    const hugRow84 = rows.find(r => r['규모구분'] === '전용면적 60제곱미터초과 85제곱미터이하')
+                  || rows.find(r => r['규모구분'] === '모든면적');
+    if (hugRow84) {
+      const perM2K = parseInt(hugRow84['분양가격(제곱미터당 천원)'] || 0);
+      if (perM2K) {
+        window._hugAvgPerM2 = perM2K * 1000; // 원/㎡ 단위로 변환
+        // 실거래가가 이미 로드됐으면 점수 재계산
+        const safeMarginEl = document.getElementById('safeMargin');
+        if (safeMarginEl && safeMarginEl.textContent && safeMarginEl.textContent !== '–') {
+          const tradeText = document.getElementById('kpi2')?.textContent?.replace(/[억\s]/g, '');
+          if (tradeText) {
+            const tradeMan = parseFloat(tradeText) * 10000;
+            if (tradeMan > 0) setMarginUI(tradeMan, 0, null, regionShort, `${yr2}년 ${mo2}월`, null, window._hugAvgPerM2);
+          }
+        }
+      }
+    }
 
   } catch(e) {
     console.warn('HUG 분양가 로드 실패:', e);
