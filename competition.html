@@ -1476,80 +1476,10 @@ function changePage(dir) {
 }
 </script>
 
-<script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-(async () => {
-  try {
-    const app = getApps().find(a=>a.name==='[DEFAULT]') || initializeApp(FIREBASE_CONFIG);
-    const db = getFirestore(app);
-    const today = new Date().toISOString().slice(0,10);
-    const [todaySnap, allSnap] = await Promise.all([
-      getDoc(doc(db,'analytics_daily',today)),
-      getDocs(collection(db,'analytics_daily'))
-    ]);
-    const todayV = todaySnap.exists() ? (todaySnap.data().views||0) : 0;
-    let total = 50000;
-    allSnap.forEach(d => { total += (d.data().views||0); });
-    const el = document.getElementById('visitor-counter');
-    if (!el) return;
-    const fmt = n => n.toLocaleString('ko-KR');
-    el.innerHTML =
-      `<span style="display:inline-flex;align-items:center;gap:.5rem;font-family:'Pretendard',monospace;font-size:11px;color:var(--ink3);padding:.2rem .5rem;background:var(--bg2);border-radius:20px;border:1px solid var(--bg3)">` +
-      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TODAY</span>` +
-      `<span style="color:var(--accent);font-weight:500">${fmt(todayV)}</span>` +
-      `<span style="color:var(--bg3)">|</span>` +
-      `<span style="color:var(--ink4);font-size:9px;letter-spacing:.05em">TOTAL</span>` +
-      `<span style="color:var(--ink2);font-weight:500">${fmt(total)}</span>` +
-      `</span>`;
-    el.style.display = 'flex';
-  } catch(e) {}
-})();
-</script>
+
 <script src="/js/firebase-config.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const _app = initializeApp(FIREBASE_CONFIG);
-const _auth = getAuth(_app);
-const _db = getFirestore(_app);
-onAuthStateChanged(_auth, async u => {
-  const right = document.getElementById('gnav-right');
-  if(!right) return;
-  if(u) {
-    const snap = await getDoc(doc(_db,'users',u.uid));
-    const ud = snap.data();
-    const name = ud?.displayName || u.email.split('@')[0];
-    const isAdmin = ud?.role === 'admin';
-    right.innerHTML = `<div style="position:relative" onmouseenter="this.querySelector('.dd').style.display='block'" onmouseleave="this.querySelector('.dd').style.display='none'">
-      <div style="display:flex;align-items:center;gap:.4rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;font-size:12px;color:var(--ink2)">
-        <div style="width:26px;height:26px;background:var(--accent,#1d4ed8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:500">${name[0].toUpperCase()}</div>
-        <span>${name}</span>${isAdmin?'<span style="background:#fef2f2;color:#dc2626;font-size:9px;padding:1px 5px;border-radius:3px;font-family:monospace">관리자</span>':''}▾
-      </div>
-      <div class="dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--bg3,#e5e7eb);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,.08);min-width:150px;padding:.375rem;z-index:300">
-        ${isAdmin?'<a href="/admin/" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px;font-weight:500">⚙ 관리자 대시보드</a><hr style="border:none;border-top:1px solid var(--bg3);margin:.25rem 0">':''}
-        <a href="#" onclick="signOut(_auth).then(()=>{location.href='/competition.html';});return false" style="display:block;padding:.5rem .75rem;font-size:13px;color:#dc2626;border-radius:6px">로그아웃</a>
-      </div>
-    </div>`;
-  } else {
-    right.innerHTML = `<a href="/login.html" style="font-size:12px;font-weight:500;padding:.375rem .875rem;border-radius:6px;background:#1d4ed8;color:#fff;border:1px solid #1d4ed8">관리자 로그인</a>`;
-  }
-  // 방문자 추적
-  try {
-    const today = new Date().toISOString().slice(0,10);
-    const month = today.slice(0,7);
-    const sk = 'al_v_'+today;
-    if(!sessionStorage.getItem(sk)) {
-      sessionStorage.setItem(sk,'1');
-      await setDoc(doc(_db,'analytics_daily',today),{views:increment(1),date:today,month},{merge:true});
-      await setDoc(doc(_db,'analytics_monthly',month),{views:increment(1),month},{merge:true});
-      const page = location.pathname.replace(/\//g,'_').replace(/^_/,'')||'home';
-      await setDoc(doc(_db,'analytics_pages',page),{views:increment(1),page:location.pathname},{merge:true});
-    }
-  } catch(e) {}
-});
-</script>
+<script type="module" src="/js/visit.js"></script>
+
 
 <script type="module" src="/js/inquiry.js"></script>
 </body>
