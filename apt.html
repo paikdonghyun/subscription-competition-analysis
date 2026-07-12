@@ -530,7 +530,7 @@ const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869
 
     // ── 실거래가 JSON 로드 → 시세차익 여력 계산 ──
     if (d.SUBSCRPT_AREA_CODE) {
-      loadTradeData(d.SUBSCRPT_AREA_CODE, d.HOUSE_NM || '');
+      loadTradeData(d.HSSPLY_ADRES || '', d.HOUSE_NM || '');
     }
 
     // ── 경쟁률 API 로드 ──
@@ -720,28 +720,62 @@ async function loadKakaoLocation(address, aptName) {
 }
 
 /* ── 실거래가 JSON 로드 → 시세차익 여력 계산 ── */
-async function loadTradeData(areaCode, aptName) {
+async function loadTradeData(address, aptName) {
   try {
-    // 청약홈 SUBSCRPT_AREA_CODE(3자리) → 법정동 앞 5자리 매핑
-    // 주요 지역만 우선 지원 (추후 확장)
-    const codeMap = {
-      '100':'11110','110':'11650','111':'11680','112':'11710', // 서울 일부
-      '410':'41590', // 경기 화성
-      '411':'41131', // 경기 성남
-      '412':'41285', // 경기 고양
-      '413':'41190', // 경기 부천
-      '280':'28185', // 인천 연수
-      '260':'26305', // 부산 해운대
+    if (!address) {
+      setMarginUI(null, null, '주소 정보가 없어 실거래가를 조회할 수 없습니다.');
+      return;
+    }
+
+    // ── 주소에서 시도·시군구 추출 후 94개 캐시 지역과 매칭 ──
+    const regionsRes = await fetch('/data/trade/regions.json');
+    if (!regionsRes.ok) {
+      setMarginUI(null, null, '실거래가 데이터 준비 중 (매일 새벽 자동 수집)');
+      return;
+    }
+    const regions = await regionsRes.json();
+
+    // 시도 축약 매핑 (주소는 "서울특별시", 캐시는 "서울")
+    const SIDO_SHORT = {
+      '서울특별시':'서울','부산광역시':'부산','대구광역시':'대구','인천광역시':'인천',
+      '광주광역시':'광주','대전광역시':'대전','울산광역시':'울산','세종특별자치시':'세종',
+      '경기도':'경기','강원특별자치도':'강원','강원도':'강원','충청북도':'충북','충청남도':'충남',
+      '전북특별자치도':'전북','전라북도':'전북','전라남도':'전남','경상북도':'경북',
+      '경상남도':'경남','제주특별자치도':'제주',
     };
 
-    // SUBSCRPT_AREA_CODE가 없으면 HSSPLY_ADRES로 매핑 시도는 스킵
-    // 지역별 JSON 파일 경로
-    const lawd = codeMap[areaCode] || areaCode.slice(0,5);
-    const url  = `/data/trade/${lawd}.json`;
+    const parts = address.trim().split(/\s+/);
+    const sidoFull = parts[0] || '';
+    const sido = SIDO_SHORT[sidoFull] || sidoFull.slice(0,2);
 
-    const res = await fetch(url);
+    // 시군구 정규화: "고양시 덕양구" → "고양 덕양구", "수원시" → "수원"
+    // (캐시 지역명은 "고양 덕양구", "수원 장안구"처럼 '시'를 뺀 형태)
+    const normGu = s => s.replace(/시\s/g, ' ').replace(/시$/, '').trim();
+    const gu1 = normGu(parts[1] || '');
+    const gu2 = parts.length > 2 ? normGu(parts[1] + ' ' + parts[2]) : '';
+
+    // 매칭: ① 시도 일치 + 2어절 완전일치 ② 캐시 gu 정규화 후 1어절 매칭
+    let lawd = null;
+    for (const [code, r] of Object.entries(regions)) {
+      if (r.sido !== sido) continue;
+      const rg = normGu(r.gu);
+      if (gu2 && rg === gu2) { lawd = code; break; }
+    }
+    if (!lawd) {
+      for (const [code, r] of Object.entries(regions)) {
+        if (r.sido !== sido) continue;
+        const rg = normGu(r.gu);
+        if (gu1 && (rg === gu1 || rg.startsWith(gu1))) { lawd = code; break; }
+      }
+    }
+
+    if (!lawd) {
+      setMarginUI(null, null, `${sido} ${gu1} 지역은 실거래가 수집 대상이 아직 아닙니다.`);
+      return;
+    }
+
+    const res = await fetch(`/data/trade/${lawd}.json`);
     if (!res.ok) {
-      // 데이터 아직 없음 (첫 Actions 실행 전)
       setMarginUI(null, null, '실거래가 데이터 준비 중 (매일 새벽 자동 수집)');
       return;
     }
@@ -750,28 +784,23 @@ async function loadTradeData(areaCode, aptName) {
     const stats = json.stats;
     if (!stats) return;
 
-    // 분양가 추정: 테이블에서 읽거나 최고가 기준
-    // 분양가 정보가 공공 API에 없으므로 시세 정보만 표시
     const avgMan  = stats.recent || stats.avg; // 만원
-    const avgEok  = (avgMan / 10000).toFixed(2); // 억원
 
-    // 단지명으로 인근 최신 시세 찾기
-    let sampleName = '';
-    let sampleAmt  = 0;
+    // 거래건수 가장 많은 인근 단지 샘플
+    let sampleAmt = 0;
     if (json.apts) {
-      // 가장 거래건수 많은 단지
-      const top = Object.entries(json.apts)
-        .sort((a,b) => b[1].cnt - a[1].cnt)[0];
-      if (top) { sampleName = top[0]; sampleAmt = top[1].recent || top[1].avg; }
+      const top = Object.entries(json.apts).sort((a,b) => b[1].cnt - a[1].cnt)[0];
+      if (top) sampleAmt = top[1].recent || top[1].avg;
     }
 
-    window._lastTradeAvgMan = avgMan; // 나중에 분양가 로드 시 재사용
+    window._lastTradeAvgMan = avgMan; // 분양가 로드 시 재사용
     setMarginUI(avgMan, sampleAmt, null, json.region, json.updated, stats.cnt, window._hugAvgPerM2 || null);
 
   } catch(e) {
     console.warn('실거래가 로드 실패:', e);
     setMarginUI(null, null, '실거래가 데이터를 불러올 수 없습니다.');
   }
+}
 }
 
 function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null) {
