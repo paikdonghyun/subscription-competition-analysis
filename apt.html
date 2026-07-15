@@ -1165,7 +1165,14 @@ async function loadHugPrice(regionNm, aptName, houseManageNo, pbNo) {
     const r84=hugRows.find(r=>r['규모구분']==='전용면적 60제곱미터초과 85제곱미터이하')||hugRows.find(r=>r['규모구분']==='모든면적');
     if(r84){
       const k=parseInt(r84['분양가격(제곱미터당 천원)']||0);
-      if(k){ window._hugAvgPerM2=k*1000; }
+      if(k){
+        window._hugAvgPerM2=k*1000;
+        window._hugRepAr=84; // HUG 폴백은 84㎡ 기준
+        // 실거래가가 이미 로드됐으면 시세차익·점수 재계산 (병렬 로드 타이밍 대응)
+        if(window._lastTradeAvgMan>0){
+          setMarginUI(window._lastTradeAvgMan, 0, null, regionShort, 'HUG 지역 평균', null, window._hugAvgPerM2);
+        }
+      }
     }
   } catch(e) {
     console.warn('분양가 로드 실패:', e);
