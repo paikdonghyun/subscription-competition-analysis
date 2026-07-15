@@ -387,12 +387,12 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
     </div>
   </section>
 
-  <!-- 프리미엄 -->
+  <!-- 시세차익 여력 (실거래가 × 확정분양가 실측) -->
   <section class="sec reveal">
-    <div class="sec-h"><h2>인근 분양권 프리미엄</h2><span class="pill">최근 3개월</span></div>
+    <div class="sec-h"><h2>시세차익 여력</h2><span class="pill">실거래 기반</span></div>
     <div class="card prem">
-      <div class="big">+1.2억</div>
-      <p>인근 동일 생활권 단지(2024년 분양) 84㎡ 분양권이 평균 <b>1.2억 프리미엄</b>에 거래. 본 단지 시세차익 여력(+1.05억)과 유사한 흐름.</p>
+      <div class="big" id="premBig">계산 중…</div>
+      <p id="premDesc">인근 실거래가와 분양가 데이터를 불러오는 중입니다.</p>
     </div>
   </section>
 
@@ -404,7 +404,7 @@ h1.apt{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.03em}
         <li>청약 일정·분양가·세대수 — 청약홈 분양정보 API</li>
         <li>경쟁률 — 청약홈 청약접수 경쟁률 API</li>
         <li>가점 커트라인 — 청약홈 가점제 당첨자 점수</li>
-        <li>시세·프리미엄 — 국토교통부 실거래가 API</li>
+        <li>시세·시세차익 여력 — 국토교통부 실거래가 API × 청약홈 확정 분양가</li>
         <li>입지·지도 — 카카오 로컬 API</li>
         <li>브랜드 — 시공능력평가 순위 · 인기도 — 수요60%(경쟁률·네이버 언급량) + 지역시세40%(인근 최근 1년 청약률)</li>
       </ul>
@@ -810,7 +810,12 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null
   const rEl      = document.getElementById('safeR');
   if (!marginEl) return;
 
+  // 시세차익 섹션도 데이터 부족 표시
   if (msg || !tradeAvg) {
+    const pb = document.getElementById('premBig');
+    const pd = document.getElementById('premDesc');
+    if (pb) { pb.textContent = '–'; pb.style.color = 'var(--faint)'; }
+    if (pd) pd.textContent = msg || '실거래가 데이터가 없어 시세차익 여력을 계산할 수 없습니다.';
     marginEl.textContent = '–';
     marginEl.style.color = 'var(--faint)';
     if(descEl) descEl.textContent = msg || '데이터 없음';
@@ -845,6 +850,19 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null
     const sign    = Number(diffPct) >= 0 ? '+' : '';
     FACT['분양가격'] = `인근 시세 대비 분양가 ${sign}${diffPct}% (시세 ${(tradeAvg/10000).toFixed(2)}억 / 분양가 ${(aptMan/10000).toFixed(2)}억)`;
     render('main');
+
+    // ── 시세차익 여력 섹션 갱신 (실측: 인근 실거래 − 분양가) ──
+    const premBig  = document.getElementById('premBig');
+    const premDesc = document.getElementById('premDesc');
+    if (premBig && premDesc) {
+      const diffEok  = (tradeAvg - aptMan) / 10000; // 억
+      const diffSign = diffEok >= 0 ? '+' : '−';
+      premBig.textContent = `${diffSign}${Math.abs(diffEok).toFixed(2)}억`;
+      premBig.style.color = diffEok >= 0 ? 'var(--pos)' : 'var(--warn)';
+      premDesc.innerHTML = diffEok >= 0
+        ? `${region||'인근'} 최근 6개월 아파트 평균 실거래가(<b>${(tradeAvg/10000).toFixed(2)}억</b>)가 본 단지 분양가(<b>${(aptMan/10000).toFixed(2)}억</b>·84㎡급 기준)보다 높아, 입주 시점 <b>약 ${Math.abs(diffEok).toFixed(2)}억의 시세차익 여력</b>이 있는 것으로 추정됩니다.`
+        : `${region||'인근'} 최근 6개월 아파트 평균 실거래가(<b>${(tradeAvg/10000).toFixed(2)}억</b>)가 본 단지 분양가(<b>${(aptMan/10000).toFixed(2)}억</b>·84㎡급 기준)보다 낮아, 시세차익 여력은 <b>제한적</b>인 것으로 추정됩니다. 다만 지역 평균은 구축을 포함하므로 신축 프리미엄은 별도 고려가 필요합니다.`;
+    }
   }
 
   if(descEl) descEl.innerHTML =
