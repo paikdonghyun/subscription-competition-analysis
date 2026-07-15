@@ -459,6 +459,8 @@ const API_KEY = 'c0f61c8beabf823840c7b03833cecef9a2d6666e7993796f078a97ca5d5f869
     set('aptPblanc', '◷ 모집공고 ' + fmt(d.RCRIT_PBLANC_DE));
     set('aptTotal',  '⬡ 공급 ' + (d.TOT_SUPLY_HSHLDCO ? Number(d.TOT_SUPLY_HSHLDCO).toLocaleString()+'세대' : '-'));
     set('aptType',   (d.HOUSE_DTL_SECD_NM||'') + ' · ' + (d.RENT_SECD_NM||'분양주택'));
+    // 임대주택 여부 (임대는 LTTOT_TOP_AMOUNT가 보증금이라 시세차익 비교 불가)
+    window._isRental = ((d.RENT_SECD_NM||'') + (d.HOUSE_NM||'')).includes('임대');
     set('aptSize',   d.CNSTRCT_ENTRPS_NM || '');
 
     // ── 브랜드 점수 자동 계산 ──
@@ -837,7 +839,7 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null
   // ── HUG 분양가 vs 실거래가 비교로 분양가격 점수 계산 ──
   // hugAvg(원/㎡)가 전달된 경우: 분양가가 실거래 대비 얼마나 저렴한지를 점수화
   // 분양가 < 실거래 → 저렴(고점수), 분양가 > 실거래 → 비쌈(저점수)
-  if (hugAvg && tradeAvg) {
+  if (hugAvg && tradeAvg && !window._isRental) {
     // hugAvg: window._hugAvgPerM2 = (분양가 만원 × 10000) / 면적㎡ = 원/㎡
     // _hugTotalRepAr: 대표 주택형 면적(㎡)을 별도 저장해서 정확히 환산
     const repAr   = window._hugRepAr || 84;               // 대표 주택형 면적 (㎡)
@@ -854,7 +856,12 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null
     // ── 시세차익 여력 섹션 갱신 (실측: 인근 실거래 − 분양가) ──
     const premBig  = document.getElementById('premBig');
     const premDesc = document.getElementById('premDesc');
-    if (premBig && premDesc) {
+    if (premBig && premDesc && window._isRental) {
+      // 임대주택: 공급금액이 보증금이라 시세차익 비교 불가
+      premBig.textContent = '해당 없음';
+      premBig.style.color = 'var(--faint)';
+      premDesc.textContent = '임대주택(분양전환 포함)은 공급금액이 임대보증금 기준이라 분양가 시세차익 비교 대상이 아닙니다. 분양전환 시점의 전환가격은 별도 공고를 확인해 주세요.';
+    } else if (premBig && premDesc) {
       const diffEok  = (tradeAvg - aptMan) / 10000; // 억
       const diffSign = diffEok >= 0 ? '+' : '−';
       premBig.textContent = `${diffSign}${Math.abs(diffEok).toFixed(2)}억`;
