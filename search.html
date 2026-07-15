@@ -349,7 +349,7 @@ function renderList(){
       ? `<span class="bdg bdg-soon">${dd!=null&&dd>=0?'D-'+dd:'청약예정'}</span>`
       : `<span class="bdg bdg-done">마감</span>`;
 
-    const houseType = row.HOUSE_SECD_NM || '';
+    const houseType = row.type || row.HOUSE_SECD_NM || '';
 
     return `<a class="aptcard" href="/apt.html?no=${row.no||row.HOUSE_MANAGE_NO}&pbno=${row.pbno||row.PBLANC_NO}">
       <div class="card-top">
