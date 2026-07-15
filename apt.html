@@ -805,6 +805,14 @@ async function loadTradeData(address, aptName) {
 }
 
 function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null) {
+  // ── 임대주택: 공급금액이 보증금이라 시세차익·분양가격 비교 불가 ──
+  if (window._isRental) {
+    const pb = document.getElementById('premBig');
+    const pd = document.getElementById('premDesc');
+    if (pb) { pb.textContent = '해당 없음'; pb.style.color = 'var(--faint)'; }
+    if (pd) pd.textContent = '임대주택(분양전환 포함)은 공급금액이 임대보증금 기준이라 분양가 시세차익 비교 대상이 아닙니다. 분양전환 시점의 전환가격은 별도 공고를 확인해 주세요.';
+  }
+
   const marginEl = document.getElementById('safeMargin');
   const descEl   = document.getElementById('safeDesc');
   const barEl    = document.getElementById('safeBar');
@@ -856,12 +864,7 @@ function setMarginUI(tradeAvg, sampleAmt, msg, region, updated, cnt, hugAvg=null
     // ── 시세차익 여력 섹션 갱신 (실측: 인근 실거래 − 분양가) ──
     const premBig  = document.getElementById('premBig');
     const premDesc = document.getElementById('premDesc');
-    if (premBig && premDesc && window._isRental) {
-      // 임대주택: 공급금액이 보증금이라 시세차익 비교 불가
-      premBig.textContent = '해당 없음';
-      premBig.style.color = 'var(--faint)';
-      premDesc.textContent = '임대주택(분양전환 포함)은 공급금액이 임대보증금 기준이라 분양가 시세차익 비교 대상이 아닙니다. 분양전환 시점의 전환가격은 별도 공고를 확인해 주세요.';
-    } else if (premBig && premDesc) {
+    if (premBig && premDesc) {
       const diffEok  = (tradeAvg - aptMan) / 10000; // 억
       const diffSign = diffEok >= 0 ? '+' : '−';
       premBig.textContent = `${diffSign}${Math.abs(diffEok).toFixed(2)}억`;
